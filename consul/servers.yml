@@ -1,0 +1,19 @@
+---
+- name: consul-01
+  box: slowe/ubuntu-trusty-x64
+  ram: 512
+  vcpu: 1
+  priv_ip: 192.168.1.101
+  script: consul-01.sh
+- name: consul-02
+  box: slowe/ubuntu-trusty-x64
+  ram: 512
+  vcpu: 1
+  priv_ip: 192.168.1.102
+  script: consul-02.sh
+- name: consul-03
+  box: slowe/ubuntu-trusty-x64
+  ram: 512
+  vcpu: 1
+  priv_ip: 192.168.1.103
+  script: consul-03.sh
