@@ -12,9 +12,6 @@ require 'yaml'
 # Be sure to edit servers.yml to provide correct IP addresses
 servers = YAML.load_file('servers.yml')
 
-# Define the location of the Consul configuration files
-consul_config_dir = "/etc/consul.d/"
-
 # Create and configure the VMs
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 

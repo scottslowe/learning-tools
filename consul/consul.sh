@@ -18,3 +18,5 @@ sudo mv consul /usr/local/bin/
 
 # Create directories needed by Consul
 sudo mkdir -p /etc/consul.d/{bootstrap,server}
+sudo chmod -R a+rw /etc/consul.d/
+
