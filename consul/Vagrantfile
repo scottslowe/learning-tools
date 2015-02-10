@@ -5,7 +5,7 @@
 Vagrant.require_version ">= 1.6.0"
 VAGRANTFILE_API_VERSION = "2"
 
-# Require 'yaml' and 'fileutils' modules
+# Require 'yaml' module
 require 'yaml'
 
 # Read YAML file with VM details (box, CPU, RAM, IP addresses)
