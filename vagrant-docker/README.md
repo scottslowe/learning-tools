@@ -12,3 +12,10 @@ These files were created to allow users to use Vagrant ([http://www.vagrantup.co
 
 ## Instructions
 
+1. If you wish to use a box _other_ than my "ubuntu-trusty-x64" base box (running Ubuntu 14.04), edit the `Vagrantfile` in the host subdirectory.
+
+2. If you wish to run a Docker container with an image _other_ than the standard Nginx image, edit the main `Vagrantfile` and specify a new image.
+
+3. From the directory where the main `Vagrantfile` is located, simply run `vagrant up` to spin up the specified host VM and specified Docker containers. Note that Internet access **will be** required to download Docker and the Docker images.
+
+Enjoy!
