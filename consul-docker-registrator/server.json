@@ -1,0 +1,10 @@
+{
+	"bootstrap_expect": 3,
+	"server": true,
+	"datacenter": "den1",
+	"data_dir": "/var/consul",
+	"log_level": "INFO",
+	"enable_syslog": false,
+	"retry_join": ["192.168.1.101", "192.168.1.102", "192.168.1.103"],
+	"client_addr": "0.0.0.0"
+}
