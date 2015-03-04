@@ -1,7 +1,7 @@
 {
 	"bootstrap_expect": 3,
 	"server": true,
-	"datacenter": "den1",
+	"datacenter": "dc1",
 	"data_dir": "/var/consul",
 	"log_level": "INFO",
 	"enable_syslog": false,
