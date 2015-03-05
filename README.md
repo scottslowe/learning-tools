@@ -10,6 +10,8 @@ This repository contains a variety of files and tools for learning new technolog
 
 **vagrant-docker-yaml**: This folder is an extension of "vagrant-docker" in that it provides the ability to specify the list of Docker containers that Vagrant will create in a separate YAML file.
 
+**docker-swarm**: This folder contains a `Vagrantfile` and supporting files to run a Consul-backed Docker Swarm cluster under Vagrant on your local system.
+
 ## License
 
 This content is licensed under the MIT License.
