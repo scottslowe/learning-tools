@@ -12,6 +12,8 @@ This repository contains a variety of files and tools for learning new technolog
 
 **docker-swarm**: This folder contains a `Vagrantfile` and supporting files to run a Consul-backed Docker Swarm cluster under Vagrant on your local system.
 
+**openstack-cli**: This folder contains the files for a Vagrant environment that spins up an Ubuntu box with all the OpenStack CLI clients pre-installed.
+
 ## License
 
 This content is licensed under the MIT License.
