@@ -1,0 +1,16 @@
+---
+- name: etcd-01
+  box: slowe/ubuntu-trusty-x64
+  ram: 512
+  vcpu: 1
+  priv_ip: 192.168.101.101
+- name: etcd-02
+  box: slowe/ubuntu-trusty-x64
+  ram: 512
+  vcpu: 1
+  priv_ip: 192.168.101.102
+- name: etcd-03
+  box: slowe/ubuntu-trusty-x64
+  ram: 512
+  vcpu: 1
+  priv_ip: 192.168.101.103
