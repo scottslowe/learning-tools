@@ -6,9 +6,9 @@ These files were created to allow users to use Vagrant ([http://www.vagrantup.co
 
 * **etcd.conf**: This is an Upstart script (written for Ubuntu) to start etcd. No modifications to this file should be necessary. This file is installed by the provisioning script called in `Vagrantfile`.
 
-* **etcd-01.override, etcd-02.override, etcd-03.override**: These are machine-specific Upstart override files for each node in the etcd cluster. The appropriate node-specific file is installed as `etcd.override` in the `/etc/init` directory on each node by the provisioning script called in `Vagrantfile`. If you make any changes to hostnames or IP addresses in `servers.yml`, these files must also be modified so that the hostnames and IP addresses match.
+* **etcd.defaults.erb**: A template used by Vagrant to create machine-specific service defaults files for each node in the etcd cluster. The appropriate node-specific file is installed as `etcd` in the `/etc/default` directory on each node by the provisioning script called in `Vagrantfile`.
 
-* **provision.sh**: This provisioning script is called by the shell provisioner in `Vagrantfile`. It downloads the etcd 2.0.9 release from GitHub, expands it, creates necessary directories, and places files in the appropriate locations.
+* **provision.sh**: This provisioning script is called by the shell provisioner in `Vagrantfile`. It downloads the etcd 2.0.9 release from GitHub, expands it, creates necessary directories, and places files in the appropriate locations.  Finally it starts etcd ( or restarts it if already running ).
 
 * **README.md**: This file you're currently reading.
 
@@ -26,17 +26,11 @@ These instructions assume you've already installed VMware Fusion, Vagrant, and t
 
 3. Edit `servers.yml` to ensure that the box specified in that file matches the Ubuntu 14.04 x64 base box you just installed and will be using. _I recommend that you do not change any other values in this file unless you know it is necessary._
 
-4. If you changed the hostnames or IP addresses provided in `servers.yml`, you **must** edit the Upstart override files (`etcd-01.override`, `etcd-02.override`, and `etcd-03.override`). The hostnames and IP addresses specified in these files are based on the values provided in `servers.yml`. If you changed the values in `servers.yml`, change the values in these files to match.
+4. From a terminal window, change into the directory where the files from this directory are stored and run `vagrant up` to bring up the VMs specified in `servers.yml` and `Vagrantfile`.
 
-5. From a terminal window, change into the directory where the files from this directory are stored and run `vagrant up` to bring up the VMs specified in `servers.yml` and `Vagrantfile`.
+5. Once Vagrant has finished creating, booting, and provisioning each of the VMs and starting etcd, log into the first system ("etcd-01" by default) using `vagrant ssh etcd-01`.
 
-6. Once Vagrant has finished creating, booting, and provisioning each of the VMs, log into the first system ("etcd-01" by default) using `vagrant ssh etcd-01`. Once you are logged into this VM, start etcd with this command:
-
-		sudo initctl start etcd
-
-7. Repeat step 6 with the remaining 2 VMs ("etcd-02" and "etcd-03", by default).
-
-8. Once etcd is running on all 3 VMs, you can test etcd with this command:
+6. You can test etcd with this command:
 
 		etcdctl member list
 	
