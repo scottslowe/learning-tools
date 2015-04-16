@@ -1,7 +1,7 @@
 # Override file for etcd Upstart script
 # Generated from etcd.override.erb by Vagrant
 # Environment variables
-export ETCD_INITIAL_CLUSTER="etcd-01=http://192.168.101.101:2380,etcd-02=http://192.168.101.102:2380,etcd-03=http://192.168.101.103:2380"
+export ETCD_INITIAL_CLUSTER="<%= etcd_initial_cluster.join(',') %>"
 export ETCD_INITIAL_CLUSTER_STATE="new"
 export ETCD_INITIAL_CLUSTER_TOKEN="etcd-cluster-01"
 export ETCD_INITIAL_ADVERTISE_PEER_URLS="http://<%= servers['priv_ip'] %>:2380"
