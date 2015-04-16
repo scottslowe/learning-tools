@@ -43,13 +43,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       end
       # Configure VMs based on Ubuntu box
       if srv.vm.box == "slowe/ubuntu-trusty-x64"
-        # Enable default synced folder
+        # Enable default synced folder (needed for provisioning)
         srv.vm.synced_folder ".", "/vagrant"
-        # Copy files into the VM
-        srv.vm.provision "file", source: "server.json", destination: "/home/vagrant/config.json"
-        srv.vm.provision "file", source: "consul.conf", destination: "/home/vagrant/consul.conf"
         # Run final provisioning script
-        srv.vm.provision "shell", path: "consul.sh"
+        # Note that default shared folder is needed for script to work
+        srv.vm.provision "shell", path: "provision.sh", privileged: true
       end
       # Configure VMs with RAM and CPUs per settings in servers.yml
       srv.vm.provider :vmware_fusion do |vmw|
