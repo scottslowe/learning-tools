@@ -2,7 +2,8 @@
 
 # Define a couple variables for easier future modifications
 VERS="v2.0.9"
-FNAME="etcd-$VERS-linux-amd64.tar.gz"
+BASENAME="etcd-$VERS-linux-amd64"
+FNAME="$BASENAME.tar.gz"
 URL="https://github.com/coreos/etcd/releases/download/$VERS/$FNAME"
 
 # Install curl if needed
@@ -21,14 +22,14 @@ if [[ ! -e /usr/local/bin/etcd ]]; then
   tar xzvf $FNAME
 
   # Move etcd and etcdctl to /usr/local/bin
-  cd etcd-v2.0.9-linux-amd64
+  cd $BASENAME
   sudo mv etcd /usr/local/bin/
   sudo mv etcdctl /usr/local/bin/
   cd ..
 
   # Remove etcd download and directory
   rm $FNAME
-  rm -rf etcd-v2.0.9-linux-amd64
+  rm -rf $BASENAME
 fi
 
   # Create etcd data directory if not already present
@@ -38,4 +39,7 @@ fi
 
 # Copy files into the correct locations; requires shared folders
 sudo cp /vagrant/etcd.conf /etc/init/etcd.conf
-sudo cp /vagrant/$HOSTNAME.override /etc/init/etcd.override
+sudo cp /vagrant/$HOSTNAME.defaults /etc/default/etcd
+
+# Restart if already running; otherwise, start etcd.
+sudo initctl status etcd && initctl restart etcd || initctl start etcd
