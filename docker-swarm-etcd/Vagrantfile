@@ -24,12 +24,16 @@ content = ERB.new File.new(template).read
 
 etcd_initial_cluster = []
 servers.each do |servers|
-  etcd_initial_cluster << "#{servers['name']}=http://#{servers['priv_ip']}:2380"
+  if servers["etcd"] == "active"
+    etcd_initial_cluster << "#{servers['name']}=http://#{servers['priv_ip']}:2380"
+  end
 end
 servers.each do |servers|
-  ip = servers['priv_ip']
-  target = File.join(File.dirname(__FILE__), "#{servers['name']}.defaults")
-  File.open(target, 'w') { |f| f.write(content.result(binding)) }
+  if servers["etcd"] == "active"
+    ip = servers['priv_ip']
+    target = File.join(File.dirname(__FILE__), "#{servers['name']}.defaults")
+    File.open(target, 'w') { |f| f.write(content.result(binding)) }
+  end
 end
 
 # Create and configure the VMs
