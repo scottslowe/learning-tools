@@ -1,0 +1,12 @@
+# Override file for etcd Upstart script
+# Generated from etcd.override.erb by Vagrant
+# Environment variables
+export ETCD_INITIAL_CLUSTER="<%= etcd_initial_cluster.join(',') %>"
+export ETCD_INITIAL_CLUSTER_STATE="new"
+export ETCD_INITIAL_CLUSTER_TOKEN="etcd-cluster-01"
+export ETCD_INITIAL_ADVERTISE_PEER_URLS="http://<%= servers['priv_ip'] %>:2380"
+export ETCD_DATA_DIR="/var/etcd"
+export ETCD_LISTEN_PEER_URLS="http://<%= servers['priv_ip'] %>:2380"
+export ETCD_LISTEN_CLIENT_URLS="http://<%= servers['priv_ip'] %>:2379,http://0.0.0.0:4001"
+export ETCD_ADVERTISE_CLIENT_URLS="http://<%= servers['priv_ip'] %>:2379"
+export ETCD_NAME="<%= servers['name'] %>"

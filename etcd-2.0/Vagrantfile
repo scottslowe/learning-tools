@@ -12,6 +12,23 @@ require 'yaml'
 # Be sure to edit servers.yml to provide correct IP addresses
 servers = YAML.load_file('servers.yml')
 
+# Require 'erb' module
+require 'erb'
+
+# Use config from YAML file to write out templates for etcd overrides
+template = File.join(File.dirname(__FILE__), 'etcd.defaults.erb')
+content = ERB.new File.new(template).read
+
+etcd_initial_cluster = []
+servers.each do |servers|
+  etcd_initial_cluster << "#{servers['name']}=http://#{servers['priv_ip']}:2380"
+end
+servers.each do |servers|
+  ip = servers['priv_ip']
+  target = File.join(File.dirname(__FILE__), "#{servers['name']}.defaults")
+  File.open(target, 'w') { |f| f.write(content.result(binding)) }
+end
+
 # Create and configure the VMs
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
