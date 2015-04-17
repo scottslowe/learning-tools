@@ -6,7 +6,7 @@ This repository contains a variety of files and tools for learning new technolog
 
 **consul**: In this folder you'll find a `Vagrantfile` and supporting documents to run a Consul cluster under Vagrant on your local laptop.
 
-**docker-swarm-etcd**: In this folder is a `Vagrantfile` and supporting files for turning up a Docker Swarm cluster powered by etcd 2.0. _(INCOMPLETE)_
+**docker-swarm-etcd**: In this folder is a `Vagrantfile` and supporting files for turning up an etcd 2.0-backed Docker Swarm cluster.
 
 **docker-swarm**: This folder contains a `Vagrantfile` and supporting files to run a Consul-backed Docker Swarm cluster under Vagrant on your local system.
 
