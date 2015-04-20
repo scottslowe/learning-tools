@@ -1,0 +1,22 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Specify Vagrant version and Vagrant API version
+Vagrant.require_version ">= 1.6.0"
+VAGRANTFILE_API_VERSION = "2"
+
+# Create and configure the VMs
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  # Specify the Vagrant box to use
+  config.vm.box = "vmware/photon"
+
+  # Disable automatic box update checking
+  config.vm.box_check_update = false
+
+  # Use Vagrant's default insecure SSH key
+  config.ssh.insert_key = false
+
+  # Disable default synced folder
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+end
