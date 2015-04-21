@@ -1,5 +1,5 @@
 ---
-- name: openstack-cli
-  box: slowe/ubuntu-trusty-x64
+- name: photon-01
+  box: vmware/photon
   ram: 512
   vcpu: 1
