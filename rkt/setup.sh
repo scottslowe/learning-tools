@@ -18,10 +18,10 @@ sudo usermod -G rkt -a vagrant
 
 # Set up directories for rkt
 sudo mkdir -p /var/lib/rkt
-sudo chown -R root:rkt /var/lib/rkt
+sudo chown -R rkt:rkt /var/lib/rkt
 sudo chmod -R 0775 /var/lib/rkt
-sudo chmod g+s /var/lib/rkt
+sudo chmod -R g+s /var/lib/rkt
 sudo mkdir -p /etc/rkt
-sudo chown -R root:rkt /etc/rkt
+sudo chown -R rkt:rkt /etc/rkt
 sudo chmod -R 0775 /etc/rkt
-sudo chmod g+s /etc/rkt
+sudo chmod -R g+s /etc/rkt
