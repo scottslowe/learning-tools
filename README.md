@@ -16,6 +16,8 @@ This repository contains a variety of files and tools for learning new technolog
 
 **photon**: This folder contains the files to spin up an instance of the VMware Photon Technical Preview using Vagrant.
 
+**ubuntu-generic**: This folder contains a Vagrant environment for spinning up a generic 64-bit Ubuntu 14.04 VM. _Note there's nothing special going on here---just a plain, generic, Ubuntu VM._
+
 **vagrant-docker**: In this folder you'll find `Vagrantfiles` and supporting documents for using the Docker provider in Vagrant to turn up Docker containers.
 
 **vagrant-docker-yaml**: This folder is an extension of "vagrant-docker" in that it provides the ability to specify the list of Docker containers that Vagrant will create in a separate YAML file.
