@@ -1,0 +1,24 @@
+heat_template_version: 2013-05-23
+description: >
+  Heat template to deploy Docker containers to an existing Docker Swarm cluster
+parameters:
+  swarm_endpoint:
+    type: string
+    label: First node IP address
+    description: IP address assigned to first Docker Swarm node
+    default: tcp://172.16.6.21:8333
+resources:
+  nginx-01:
+    type: DockerInc::Docker::Container
+    properties:
+      image: nginx
+      docker_endpoint: { get_param: swarm_endpoint }
+      port_bindings:
+        80: 80
+  nginx-02:
+    type: DockerInc::Docker::Container
+    properties:
+      image: nginx
+      docker_endpoint: { get_param: swarm_endpoint }
+      port_bindings:
+        80: 80

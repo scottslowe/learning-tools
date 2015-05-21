@@ -1,0 +1,68 @@
+heat_template_version: 2013-05-23
+description: >
+  A simple Heat template to deploy Ubuntu 14.04 instances for Consul.
+parameters:
+  network_id:
+    type: string
+    label: Network ID
+    description: ID of existing Neutron network to use ("infra-net")
+    default: fd14ddbd-4720-400d-9811-0be84e71f153
+  image_id:
+    type: string
+    label: Glance Image ID
+    description: ID of existing Glance image to use ("Ubuntu 14.04 LTS")
+    default: 6a71dffa-a369-42f5-b3c1-c0bd67bf0c20
+  secgroup_id:
+    type: string
+    label: Security group ID
+    description: ID of existing security group ("all")
+    default: b6499308-f409-401a-a170-c887b10cf5f2
+resources:
+  consul-01_port0:
+    type: OS::Neutron::Port
+    properties:
+      admin_state_up: true
+      network_id: { get_param: network_id }
+      security_groups:
+        - { get_param: secgroup_id }
+  consul-02_port0:
+    type: OS::Neutron::Port
+    properties:
+      admin_state_up: true
+      network_id: { get_param: network_id }
+      security_groups:
+        - { get_param: secgroup_id }
+  consul-03_port0:
+    type: OS::Neutron::Port
+    properties:
+      admin_state_up: true
+      network_id: { get_param: network_id }
+      security_groups:
+        - { get_param: secgroup_id }
+  consul-01:
+    type: OS::Nova::Server
+    properties:
+      name: consul-01
+      image: { get_param: image_id }
+      flavor: m1.small
+      networks:
+        - port: { get_resource: consul-01_port0 }
+      key_name: lab
+  consul-02:
+    type: OS::Nova::Server
+    properties:
+      name: consul-02
+      image: { get_param: image_id }
+      flavor: m1.small
+      networks:
+        - port: { get_resource: consul-02_port0 }
+      key_name: lab
+  consul-03:
+    type: OS::Nova::Server
+    properties:
+      name: consul-03
+      image: { get_param: image_id }
+      flavor: m1.small
+      networks:
+        - port: { get_resource: consul-03_port0 }
+      key_name: lab

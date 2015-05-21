@@ -1,0 +1,143 @@
+heat_template_version: 2013-05-23
+description: >
+  A simple Heat template to deploy a new CoreOS cluster.
+parameters:
+  network_id:
+    type: string
+    label: Network ID
+    description: ID of existing Neutron network to use ("infra-net")
+    default: e6da808c-f832-4a70-81a7-8c090824e494
+  image_id:
+    type: string
+    label: Glance Image ID
+    description: ID of existing Glance image to use ("CoreOS 522.6.0 Stable")
+    default: f9cc4dfc-2864-4ddb-a27c-3095d1dd0e09
+  secgroup_id:
+    type: string
+    label: Security group ID
+    description: ID of existing security group ("all")
+    default: 74518432-12ba-4bdb-8d22-09c616b158b0
+resources:
+  coreos_init:
+    type: OS::Heat::CloudConfig
+    properties:
+      cloud_config:
+        coreos:
+          etcd:
+            discovery: https://discovery.etcd.io/bf3853e90678038d4f6e26d3788729d1
+            addr: $private_ipv4:4001
+            peer-addr: $private_ipv4:7001
+          units:
+            - name: etcd.service
+              command: start
+            - name: fleet.service
+              command: start
+            - name: docker-tcp.socket
+              command: start
+              enable: true
+              content: |
+                [Unit]
+                Description=Docker Socket for the API
+
+                [Socket]
+                ListenStream=2375
+                BindIPv6Only=both
+                Service=docker.service
+
+                [Install]
+                WantedBy=sockets.target
+  instance0_port0:
+    type: OS::Neutron::Port
+    properties:
+      admin_state_up: true
+      network_id: { get_param: network_id }
+      security_groups:
+        - { get_param: secgroup_id }
+  instance1_port0:
+    type: OS::Neutron::Port
+    properties:
+      admin_state_up: true
+      network_id: { get_param: network_id }
+      security_groups:
+        - { get_param: secgroup_id }
+  instance2_port0:
+    type: OS::Neutron::Port
+    properties:
+      admin_state_up: true
+      network_id: { get_param: network_id }
+      security_groups:
+        - { get_param: secgroup_id }
+  instance3_port0:
+    type: OS::Neutron::Port
+    properties:
+      admin_state_up: true
+      network_id: { get_param: network_id }
+      security_groups:
+        - { get_param: secgroup_id }
+  instance4_port0:
+    type: OS::Neutron::Port
+    properties:
+      admin_state_up: true
+      network_id: { get_param: network_id }
+      security_groups:
+        - { get_param: secgroup_id }
+  instance0:
+    type: OS::Nova::Server
+    properties:
+      name: coreos-node-01
+      image: { get_param: image_id }
+      flavor: m1.small
+      networks:
+        - port: { get_resource: instance0_port0 }
+      key_name: lab
+      user_data_format: RAW
+      user_data:
+        get_resource: coreos_init
+  instance1:
+    type: OS::Nova::Server
+    properties:
+      name: coreos-node-02
+      image: { get_param: image_id }
+      flavor: m1.small
+      networks:
+        - port: { get_resource: instance1_port0 }
+      key_name: lab
+      user_data_format: RAW
+      user_data:
+        get_resource: coreos_init
+  instance2:
+    type: OS::Nova::Server
+    properties:
+      name: coreos-node-03
+      image: { get_param: image_id }
+      flavor: m1.small
+      networks:
+        - port: { get_resource: instance2_port0 }
+      key_name: lab
+      user_data_format: RAW
+      user_data:
+        get_resource: coreos_init
+  instance3:
+    type: OS::Nova::Server
+    properties:
+      name: coreos-node-04
+      image: { get_param: image_id }
+      flavor: m1.small
+      networks:
+        - port: { get_resource: instance3_port0 }
+      key_name: lab
+      user_data_format: RAW
+      user_data:
+        get_resource: coreos_init
+  instance4:
+    type: OS::Nova::Server
+    properties:
+      name: coreos-node-05
+      image: { get_param: image_id }
+      flavor: m1.small
+      networks:
+        - port: { get_resource: instance4_port0 }
+      key_name: lab
+      user_data_format: RAW
+      user_data:
+        get_resource: coreos_init

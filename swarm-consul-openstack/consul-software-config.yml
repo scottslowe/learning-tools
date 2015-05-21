@@ -1,0 +1,50 @@
+consul_config:
+  type: OS::Heat::SoftwareConfig
+  properties:
+    group: script
+    config: |
+      #!/bin/bash -ex
+      apt-get update
+      apt-get -y install unzip
+      wget https://dl.bintray.com/mitchellh/consul/0.5.0_linux_amd64.zip
+      unzip 0.5.0_linux_amd64.zip
+      rm 0.5.0_linux_amd64.zip
+      mv consul /usr/local/bin/
+      mv consul.conf /etc/init/
+      mkdir /var/consul
+      useradd -M -d /var/consul -r -s /usr/bin/nologin consul
+      chown -R consul:consul /var/consul
+      mkdir -p /etc/consul.d/server
+      cat > /etc/consul.d/server/config.json <<EOF
+      {
+      "bootstrap_expect": 3,
+      "server": true,
+      "datacenter": "dc1",
+      "data_dir": "/var/consul",
+      "log_level": "INFO",
+      "enable_syslog": false,
+      "retry_join": ["192.168.1.101", "192.168.1.102", "192.168.1.103"],
+      "client_addr": "0.0.0.0"
+      }
+      EOF
+      cat > /etc/init/consul.conf <<EOF
+      description "Consul server process"
+
+      start on runlevel [2345]
+      stop on runlevel [!2345]
+
+      respawn
+
+      script
+        if [ -f "/etc/service/consul" ]; then
+          . /etc/service/consul
+        fi
+
+      export GOMAXPROCS=`nproc`
+
+      exec /usr/local/bin/consul agent \
+        -config-dir="/etc/consul.d/server" \
+        \${CONSUL_FLAGS} \
+        >>/var/log/consul.log 2>&1
+      end script
+      EOF

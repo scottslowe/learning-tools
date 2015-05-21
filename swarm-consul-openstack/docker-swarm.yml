@@ -1,0 +1,18 @@
+heat_template_version: 2013-05-23
+description: >
+  Heat template to deploy Docker containers to an existing host
+parameters:
+  node-01:
+    type: string
+    label: First node IP address
+    description: IP address assigned to first Docker Swarm node
+    default: 172.16.6.21
+resources:
+  swarm-coreos-01:
+    type: DockerInc::Docker::Container
+    properties:
+      image: swarm
+      hostname: coreos-01
+      name: swarm-coreos-01
+      docker_endpoint: "tcp://172.16.6.21:2375"
+      cmd: [ 'join', '--addr=172.16.6.21:2375', 'etcd://172.16.6.21:4001/swarm-test']
