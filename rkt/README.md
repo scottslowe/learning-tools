@@ -2,6 +2,8 @@
 
 These files were created to allow users to use Vagrant ([http://www.vagrantup.com](http://www.vagrantup.com)) quickly and relatively easily experiment with using `rkt` (pronounced "rock-it"), the CoreOS implementation of the App Container (appc) specification. The configuration was tested using Vagrant 1.7.2, VMware Fusion 6.0.5, and the Vagrant VMware plugin.
 
+**WARNING:** These files are not yet fully functional!
+
 ## Contents
 
 * **README.md**: This file you're currently reading.
@@ -14,6 +16,8 @@ These files were created to allow users to use Vagrant ([http://www.vagrantup.co
 
 ## Instructions
 
-These instructions assume you've already installed VMware Fusion, Vagrant, and the Vagrant VMware plugin. Please refer to the documentation for those products for more information on installation or configuration.
+[NOT YET FUNCTIONAL]
 
-**[NOT YET COMPLETE]**
+## License
+
+This material is licensed under the MIT License.

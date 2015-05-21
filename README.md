@@ -16,6 +16,8 @@ This repository contains a variety of files and tools for learning new technolog
 
 **photon**: This folder contains the files to spin up an instance of the VMware Photon Technical Preview using Vagrant.
 
+**rkt**: This folder contains the files to work with `rkt`, the CoreOS implementation of the App Container (appc) specification, on Ubuntu 14.04. _THIS ENVIRONMENT IS NOT YET FULLY FUNCTIONAL._
+
 **swarm-consul-openstack**: This folder contains files to create a Consul-backed Docker Swarm cluster on OpenStack. _THIS ENVIRONMENT IS NOT YET FULLY FUNCTIONAL._
 
 **ubuntu-generic**: This folder contains a Vagrant environment for spinning up a generic 64-bit Ubuntu 14.04 VM. _Note there's nothing special going on here---just a plain, generic, Ubuntu VM._
