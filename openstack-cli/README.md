@@ -1,6 +1,6 @@
 # Working with the OpenStack CLI
 
-These files were created to allow users to use Vagrant ([http://www.vagrantup.com](http://www.vagrantup.com)) quickly and relatively easily spin up a command-line interface (CLI) client to an existing OpenStack installation. _A separate OpenStack installation is required._ The configuration was tested using Vagrant 1.7.2, VMware Fusion 6.0.5, and the Vagrant VMware plugin.
+These files were created to allow users to use Vagrant ([http://www.vagrantup.com](http://www.vagrantup.com)) to quickly and relatively easily spin up a command-line interface (CLI) client to an existing OpenStack installation. _A separate OpenStack installation is required._ The configuration was tested using Vagrant 1.7.2, VMware Fusion 6.0.5, and the Vagrant VMware plugin.
 
 ## Contents
 
