@@ -1,0 +1,5 @@
+---
+- name: lxd-01
+  box: slowe/ubuntu-1404-x64-ovs
+  ram: 512
+  vcpu: 1
