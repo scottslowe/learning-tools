@@ -1,0 +1,5 @@
+---
+- name: generic
+  box: kikitux/jessie
+  ram: 1024
+  vcpu: 1
