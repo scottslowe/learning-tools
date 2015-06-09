@@ -20,6 +20,8 @@ This repository contains a variety of files and tools for learning new technolog
 
 **openstack-cli**: This folder contains the files for a Vagrant environment that spins up an Ubuntu box with all the OpenStack CLI clients pre-installed.
 
+**photon-cloudinit**: This folder contains the files to spin up VMs, using Vagrant and customized via `cloud-init`, running the VMware Photon Technical Preview.
+
 **photon**: This folder contains the files to spin up an instance of the VMware Photon Technical Preview using Vagrant.
 
 **rkt**: This folder contains the files to work with `rkt`, the CoreOS implementation of the App Container (appc) specification, on Ubuntu 14.04. _THIS ENVIRONMENT IS NOT YET FULLY FUNCTIONAL._
