@@ -1,9 +1,10 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# Specify Vagrant version and Vagrant API version
+# Specify Vagrant version, Vagrant API version, and Vagrant clone location
 Vagrant.require_version ">= 1.6.0"
 VAGRANTFILE_API_VERSION = "2"
+ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
 
 # Require 'yaml' and 'fileutils' modules
 require 'yaml'
