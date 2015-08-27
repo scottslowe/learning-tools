@@ -2,9 +2,12 @@
 # vi: set ft=ruby :
 
 # Specify Vagrant version, Vagrant API version, and Vagrant clone location
+# Adjust commented lines to specify provider
 Vagrant.require_version ">= 1.6.0"
 VAGRANTFILE_API_VERSION = "2"
-ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
+#ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_fusion'
+#ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
+ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
 
 # Require 'yaml' module
 require 'yaml'
@@ -45,8 +48,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       srv.vm.provider :vmware_fusion do |vmw|
         vmw.vmx["memsize"] = servers["ram"]
         vmw.vmx["numvcpus"] = servers["vcpu"]
-      end # srv.vm.provider
-    
+      end # srv.vm.provider vmware_fusion
+
+      # Configure VirtualBox VMs CPU & RAM per settings in servers.yml
+      srv.vm.provider :virtualbox do |vb|
+        vb.memory = servers["ram"]
+        vb.cpus = servers["vcpu"]
+      end # srv.vm.provider virtualbox
+
       # Configure Photon boxes to use cloud-init
       if srv.vm.box == "vmware/photon"
         srv.vm.provision "file", source: "#{USER_DATA}", destination: "/home/vagrant/user-data"
