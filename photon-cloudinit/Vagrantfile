@@ -7,7 +7,8 @@ Vagrant.require_version ">= 1.6.0"
 VAGRANTFILE_API_VERSION = "2"
 #ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_fusion'
 #ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
-ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
+#ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
+ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_appcatalyst'
 
 # Require 'yaml' module
 require 'yaml'
@@ -44,13 +45,19 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       # Disable default synced folder (not supported with Photon)
       srv.vm.synced_folder ".", "/vagrant", disabled: true
 
-      # Configure VMs with RAM and CPUs per settings in servers.yml
+      # Configure VMs with RAM and CPUs per servers.yml (Fusion)
       srv.vm.provider :vmware_fusion do |vmw|
         vmw.vmx["memsize"] = servers["ram"]
         vmw.vmx["numvcpus"] = servers["vcpu"]
       end # srv.vm.provider vmware_fusion
 
-      # Configure VirtualBox VMs CPU & RAM per settings in servers.yml
+      # Configure VMs with RAM and CPUs per servers.yml (AppCatalyst)
+      srv.vm.provider :vmware_appcatalyst do |vmw|
+        vmw.vmx["memsize"] = servers["ram"]
+        vmw.vmx["numvcpus"] = servers["vcpu"]
+      end # srv.vm.provider vmware_appcatalyst
+
+      # Configure VMs with RAM and CPUs per servers.yml (VirtualBox)
       srv.vm.provider :virtualbox do |vb|
         vb.memory = servers["ram"]
         vb.cpus = servers["vcpu"]
