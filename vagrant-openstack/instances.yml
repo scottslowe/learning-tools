@@ -1,0 +1,8 @@
+---
+name: "test-01"
+flavor: "m1.small"
+image: "Ubuntu 14.04.3 LTS x64"
+ip_pool: "ext-net-1"
+networks: "test-01"
+keypair: "keypair-name"
+ssh_user: "ubuntu"

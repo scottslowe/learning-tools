@@ -1,0 +1,49 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Require the OpenStack provider plugin and YAML module
+require 'vagrant-openstack-provider'
+require 'yaml'
+
+# Read YAML file with OpenStack credentials
+creds = YAML.load_file('credentials.yml')
+instances = YAML.load_file('instances.yml')
+
+# Specify Vagrant version and Vagrant API version
+Vagrant.require_version '>= 1.6.0'
+VAGRANTFILE_API_VERSION = '2'
+ENV['VAGRANT_DEFAULT_PROVIDER'] = 'openstack'
+
+# Create and configure the OpenStack instance(s)
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  # No Vagrant box needed with OpenStack
+  # config.vm.box = "dummy"
+
+  # Specify OpenStack authentication information
+  config.vm.provider 'openstack' do |os|
+    # Edit the following line with your correct information
+    os.openstack_auth_url = 'http://controller:5000/v2.0'
+    os.username = creds['username']
+    os.password = creds['password']
+    os.tenant_name = creds['tenant']
+  end # config.vm.provider 'openstack'
+
+  # Specify SSH username and path to private key
+  config.ssh.username = instances['ssh_user']
+  # Edit the following line with your correct information
+  config.ssh.private_key_path = '~/.ssh/keypair.pem'
+
+  # Configure the OpenStack instance information
+  config.vm.provider 'openstack' do |os|
+    os.server_name = instances['name']
+    os.flavor = instances['flavor']
+    os.image = instances['image']
+    os.floating_ip_pool = instances['ip_pool']
+    os.networks = instances['networks']
+    os.keypair_name = instances['keypair']
+    # Edit the following line with your correct information
+    os.security_groups = ['default','basic-services']
+    os.sync_method = 'none'
+  end # config.vm.provider 'openstack'
+end # Vagrant.configure
