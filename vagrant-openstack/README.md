@@ -1,6 +1,6 @@
-# Using Vagrant with OpenStack
+# Using Vagrant with OpenStack (Single Instance)
 
-These files were created to allow users to use Vagrant ([http://www.vagrantup.com](http://www.vagrantup.com)) to automate the provisioning and de-provisioning of OpenStack instances. This configuration was tested using Vagrant 1.7.4, version 0.7.0 of [the vagrant-openstack-provider plugin](https://github.com/ggiamarchi/vagrant-openstack-provider), and OpenStack "Juno".
+These files were created to allow users to use Vagrant ([http://www.vagrantup.com](http://www.vagrantup.com)) with OpenStack, where the VMs managed by Vagrant are actually instances in an OpenStack cloud. Using these files, Vagrant can only operate against a single instance at a time. This configuration was tested using Vagrant 1.7.4, version 0.7.0 of [the vagrant-openstack-provider plugin](https://github.com/ggiamarchi/vagrant-openstack-provider), and OpenStack "Juno".
 
 ## Contents
 
@@ -34,7 +34,6 @@ Note that you'll need a working OpenStack installation in order to use these fil
 
 Enjoy!
 
-## Planned Enhancements
+## Additional Notes
 
-* Changing the `Vagrantfile` to allow for multi-instance configurations
-* Removing all user-specific parameters from the `Vagrantfile` so that no edits are required
+This environment will only create a single instance on OpenStack using Vagrant. If you wish to use Vagrant to create/manage multiple instances, please see the "vagrant-openstack-multi" directory in this repository instead.

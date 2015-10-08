@@ -1,0 +1,64 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Require the OpenStack provider plugin and YAML module
+require 'vagrant-openstack-provider'
+require 'yaml'
+
+# Read YAML file with OpenStack credentials
+creds = YAML.load_file('credentials.yml')
+
+# Read YAML file with instance information
+instances = YAML.load_file('instances.yml')
+
+# Specify Vagrant version, Vagrant API version, and Vagrant provider
+Vagrant.require_version '>= 1.6.0'
+VAGRANTFILE_API_VERSION = '2'
+ENV['VAGRANT_DEFAULT_PROVIDER'] = 'openstack'
+
+# Specify OpenStack authentication URL
+# Edit the following line with your correct information
+ENV['OS_AUTH_URL'] = 'http://controller:5000/v2.0'
+
+# Create and configure the OpenStack instance(s)
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  # No Vagrant box needed with OpenStack
+  # config.vm.box = "dummy"
+
+  # Specify path to SSH private key
+  # Edit the following line with your correct information
+  config.ssh.private_key_path = '~/.ssh/keypair.pem'
+
+  # Configure the base information for the OpenStack provider
+  config.vm.provider 'openstack' do |os|
+    os.openstack_auth_url = ENV['OS_AUTH_URL']
+    os.username = creds['username']
+    os.password = creds['password']
+    os.tenant_name = creds['tenant']
+    os.server_name = 'default'
+    os.flavor = 'm1.small'
+    os.image = 'default'
+    os.floating_ip_pool = 'default'
+    os.networks = 'default'
+    os.keypair_name = 'default'
+    # Edit the following line with your correct information
+    os.security_groups = ['default']
+    os.sync_method = 'none'
+  end # config.vm.provider 'openstack'
+
+  # Loop through YAML file and set per-instance information
+  instances.each do |instance|
+    config.vm.define instance['name'] do |srv|
+      srv.vm.provider 'openstack' do |os, override|
+        os.server_name = instance['name']
+        os.flavor = instance['flavor']
+        os.image = instance['image']
+        os.floating_ip_pool = instance['ip_pool']
+        os.networks = instance['networks']
+        os.keypair_name = instance['keypair']
+        override.ssh.username = instance['ssh_user']
+      end # srv.vm.provider
+    end # config.vm.define
+  end # instances.each
+end # Vagrant.configure
