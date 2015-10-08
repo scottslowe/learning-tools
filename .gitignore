@@ -6,3 +6,4 @@
 .bundle/
 .vagrant
 real-adminrc
+*.taskpaper
