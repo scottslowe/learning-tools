@@ -38,6 +38,10 @@ This repository contains a variety of files and tools for learning new technolog
 
 **vagrant-docker-yaml**: This folder is an extension of "vagrant-docker" in that it provides the ability to specify the list of Docker containers that Vagrant will create in a separate YAML file.
 
+**vagrant-openstack**: This folder contains a `Vagrantfile` and supporting files for using Vagrant with the OpenStack provider. This allows you to use Vagrant to provision and destroy an instance in an OpenStack cloud.
+
+**vagrant-openstack-multi**: This folder is similar to `vagrant-openstack`, but supports Vagrant operations on multiple instances. (PENDING)
+
 ## License
 
 This content is licensed under the MIT License.
