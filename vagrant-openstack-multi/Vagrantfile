@@ -7,16 +7,18 @@ require 'yaml'
 
 # Read YAML file with OpenStack credentials
 creds = YAML.load_file('credentials.yml')
+
+# Read YAML file with instance information
 instances = YAML.load_file('instances.yml')
 
-# Specify Vagrant version and Vagrant API version
+# Specify Vagrant version, Vagrant API version, and Vagrant provider
 Vagrant.require_version '>= 1.6.0'
 VAGRANTFILE_API_VERSION = '2'
 ENV['VAGRANT_DEFAULT_PROVIDER'] = 'openstack'
 
 # Specify OpenStack authentication URL
 # Edit the following line with your correct information
-ENV['OS_AUTH_URL'] = 'http://cloud.lowehome.net:5000/v2.0'
+ENV['OS_AUTH_URL'] = 'http://controller:5000/v2.0'
 
 # Create and configure the OpenStack instance(s)
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
@@ -25,7 +27,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # config.vm.box = "dummy"
 
   # Specify path to SSH private key
-  config.ssh.private_key_path = '~/.ssh/homelab.pem'
+  # Edit the following line with your correct information
+  config.ssh.private_key_path = '~/.ssh/keypair.pem'
 
   # Configure the base information for the OpenStack provider
   config.vm.provider 'openstack' do |os|
@@ -39,6 +42,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     os.floating_ip_pool = 'default'
     os.networks = 'default'
     os.keypair_name = 'default'
+    # Edit the following line with your correct information
     os.security_groups = ['default']
     os.sync_method = 'none'
   end # config.vm.provider 'openstack'

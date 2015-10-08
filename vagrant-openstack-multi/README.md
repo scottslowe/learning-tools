@@ -10,14 +10,20 @@ These files were created to allow users to use Vagrant ([http://www.vagrantup.co
 
 * **README.md**: The file you're currently reading.
 
-* **Vagrantfile**: This file is used by Vagrant to spin up the OpenStack instance.
+* **Vagrantfile**: This file is used by Vagrant to spin up the OpenStack instance. You **must** edit this file to specify the correct URL for use with your OpenStack installation.
 
 ## Instructions
 
 Please note that you'll need a working OpenStack installation in order to use these files.
 
 1. Edit `credentials.yml` to supply a valid username, password, and tenant name for your particular OpenStack installation.
-2. Edit `instances.yml`. The fields in this YAML file is fairly straightforward, but here's a quick breakdown:
+
+2. Edit `Vagrantfile` and look for comments stating "Edit the following line with your correct information". There are **three** changes you must make in the `Vagrantfile`:
+    * You must set the correct URL for use with your OpenStack installation (see line 21 of `Vagrantfile`).
+    * You must set the correct path and filename for the SSH private key to use with the OpenStack instances (see line 31 of `Vagrantfile`)
+    * You must verify the names of the security groups specified for use with the OpenStack instances (see line 46 of `Vagrantfile`).
+
+3. Edit `instances.yml`. The fields in this YAML file is fairly straightforward, but here's a quick breakdown:
     * A display name for the instance ("name")
     * The name of an OpenStack flavor ("flavor"), which you can obtain using `nova flavor-list`
     * The name of an OpenStack image ("image"), obtainable via the `glance image-list` command
@@ -25,16 +31,11 @@ Please note that you'll need a working OpenStack installation in order to use th
     * The name of the tenant network to which the new instance should be attached ("networks")
     * The SSH keypair that OpenStack should inject into the instance ("keypair")
     * The username Vagrant can use to log into the instance ("ssh_user"); this will vary from image to image
-3. Edit `Vagrantfile` and look for comments stating "Edit the following line with your correct information". There are **three** changes you must make in the `Vagrantfile`:
-    * You must specify the correct URL for authenticating with OpenStack
-    * You must provide the correct path for the private key that matches the keypair specified in `instances.yml`
-    * You must supply the list of security groups that OpenStack should apply to the new instance
-4. Ensure that the system running Vagrant has connectivity to the authentication URL for OpenStack.
-5. Run `vagrant up` to have Vagrant authenticate to OpenStack and create the desired instance for you. Once the instance is created, you can use `vagrant ssh` to connect to the instance, and `vagrant destroy` will terminate (destroy) the OpenStack instance for you.
+
+4. If you wish to spin up additional instances, add stanzas to the `instances.yml` file, making sure to observe the correct YAML syntax.
+
+5. Ensure that the system running Vagrant has connectivity to the authentication URL for OpenStack.
+
+6. Run `vagrant up` to have Vagrant authenticate to OpenStack and create the desired instance for you. Once the instance is created, you can use `vagrant ssh` to connect to the instance, and `vagrant destroy` will terminate (destroy) the OpenStack instance for you.
 
 Enjoy!
-
-## Planned Enhancements
-
-* Changing the `Vagrantfile` to allow for multi-instance configurations
-* Removing all user-specific parameters from the `Vagrantfile` so that no edits are required
