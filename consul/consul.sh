@@ -1,11 +1,17 @@
 #!/bin/bash
 
 # Update list of packages
+export DEBIAN_FRONTEND=noninteractive
 sudo apt-get update
 
-# Install unzip package, needed to decompress Consul download
-export DEBIAN_FRONTEND=noninteractive
-sudo apt-get -y install unzip
+# Install packages as needed
+if [[ ! -e /usr/bin/curl ]]; then
+  apt-get -yqq install curl
+fi
+
+if [[ ! -e /usr/bin/unzip ]]; then
+  apt-get -yqq install unzip
+fi
 
 # Download and install Consul binary, if needed
 if [[ ! -e /usr/local/bin/consul ]];then
@@ -21,8 +27,12 @@ if [[ ! -e /usr/local/bin/consul ]];then
   sudo mv consul /usr/local/bin/
 fi
 
-# Create consul user
-useradd -M -d /var/consul -r -s /usr/bin/nologin consul
+# Create consul user, if it doesn't already exist
+if [ -z "$(getent passwd consul)" ]; then
+  useradd -M -d /var/consul -r -s /usr/bin/nologin consul
+ else
+   echo "Consul user already created."
+ fi
 
 # Create and configure Consul working directory
 sudo mkdir -p /var/consul
