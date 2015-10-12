@@ -1,0 +1,61 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Specify Vagrant version, Vagrant API version, and Vagrant clone location
+Vagrant.require_version '>= 1.6.0'
+VAGRANTFILE_API_VERSION = '2'
+ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
+ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_fusion'
+#ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_appcatalyst'
+
+# Require 'yaml' module
+require 'yaml'
+
+# Read YAML file with VM details (box, CPU, RAM, IP addresses)
+# Be sure to edit servers.yml to provide correct IP addresses
+servers = YAML.load_file('servers.yml')
+
+# Create and configure the VMs
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  # Always use Vagrant's default insecure key
+  config.ssh.insert_key = false
+
+  # Iterate through entries in YAML file to create VMs
+  servers.each do |server|
+    config.vm.define server['name'] do |srv|
+
+      # Don't check for box updates
+      srv.vm.box_check_update = false
+
+      # Specify hostname and Vagrant box
+      srv.vm.hostname = server['name']
+      srv.vm.box = server['box']
+
+      # Assign an additional static private network
+      srv.vm.network 'private_network', ip: server['priv_ip']
+
+      # Specify default synced folder; requires VMware Tools
+      srv.vm.synced_folder '.', '/vagrant', disabled: true
+
+      # Copy in the Consul configuration files
+      srv.vm.provision 'file', source: 'server.json', destination: '/home/vagrant/config.json'
+      srv.vm.provision 'file', source: 'consul.conf', destination: '/home/vagrant/consul.conf'
+
+      # Provision consul to the VMs
+      srv.vm.provision 'shell', path: 'consul.sh'
+
+      # Configure VMs with RAM and CPUs per settings in servers.yml
+      srv.vm.provider :vmware_fusion do |vmw|
+        vmw.vmx['memsize'] = server['ram']
+        vmw.vmx['numvcpus'] = server['vcpu']
+      end # srv.vm.provider vmware_fusion
+
+      # Configure VMs with RAM and CPUs per settings in servers.yml
+      srv.vm.provider :vmware_appcatalyst do |vmw|
+        vmw.vmx['memsize'] = server['ram']
+        vmw.vmx['numvcpus'] = server['vcpu']
+      end # srv.vm.provider vmware_appcatalyst
+    end # config.vm.define
+  end # servers.each
+end # Vagrant.configure

@@ -1,0 +1,9 @@
+{
+	"bootstrap": false,
+	"server": true,
+	"datacenter": "dc1",
+	"data_dir": "/tmp",
+	"log_level": "INFO",
+	"enable_syslog": true,
+	"start_join": ["192.168.100.101", "192.168.100.102", "192.168.100.103"]
+}
