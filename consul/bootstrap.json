@@ -1,8 +1,0 @@
-{
-	"bootstrap": true,
-	"server": true,
-	"datacenter": "dc1",
-	"data_dir": "/tmp",
-	"log_level": "INFO",
-	"enable_syslog": true
-}
