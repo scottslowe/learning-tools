@@ -1,0 +1,95 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Specify Vagrant version, Vagrant API version, and Vagrant clone location
+Vagrant.require_version ">= 1.6.0"
+VAGRANTFILE_API_VERSION = "2"
+ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
+#ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
+#ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_appcatalyst'
+
+# Require 'yaml' module
+require 'yaml'
+
+# Read YAML file with VM details (box, CPU, and RAM)
+servers = YAML.load_file('servers.yml')
+
+# Create and configure the VMs
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  # Always use Vagrant's default insecure key
+  config.ssh.insert_key = false
+
+  # Iterate through entries in YAML file to create VMs
+  servers.each do |servers|
+    config.vm.define servers["name"] do |srv|
+
+      # Don't check for box updates
+      srv.vm.box_check_update = false
+      srv.vm.hostname = servers["name"]
+      srv.vm.box = servers["box"]
+
+      # Configure default synced folder (disable by default)
+      if servers["sync_disabled"] != nil
+        srv.vm.synced_folder ".", "/vagrant", disabled: servers["sync_disabled"]
+      else
+        srv.vm.synced_folder ".", "/vagrant", disabled: true
+      end #if servers["sync_disabled"]
+
+      # Assign additional private network, if specified in servers.yml
+      if servers["ip_addr"] != nil
+        srv.vm.network "private_network", ip: servers["ip_addr"]
+      end # if servers["ip_addr"]
+
+      # Configure CPU & RAM per settings in servers.yml (Fusion)
+      srv.vm.provider :vmware_fusion do |vmw|
+        vmw.vmx["memsize"] = servers["ram"]
+        vmw.vmx["numvcpus"] = servers["vcpu"]
+        if servers["nested"] == true
+          vmw.vmx["vhv.enable"] = "TRUE"
+        end #if servers["nested"]
+      end # srv.vm.provider vmware_fusion
+
+      # Configure CPU & RAM per settings in servers.yml (AppCatalyst)
+      srv.vm.provider :vmware_appcatalyst do |vmw|
+        vmw.vmx["memsize"] = servers["ram"]
+        vmw.vmx["numvcpus"] = servers["vcpu"]
+        #vmw.vmx['guestos'] = "other3xlinux-64"
+        if servers["nested"] == true
+          vmw.vmx["vhv.enable"] = "TRUE"
+        end #if servers["nested"]
+      end # srv.vm.provider vmware_appcatalyst
+
+      # Configure CPU & RAM per settings in servers.yml (VirtualBox)
+      srv.vm.provider :virtualbox do |vb|
+        vb.memory = servers["ram"]
+        vb.cpus = servers["vcpu"]
+      end # srv.vm.provider virtualbox
+
+      # Provision key pairs according to VM name
+      if servers["name"] == "outer"
+        srv.vm.provision "file", source: "bastion_rsa", 
+          destination: "/home/vagrant/.ssh/bastion_rsa"
+        srv.vm.provision "file", source: "bastion_rsa.pub", 
+          destination: "/home/vagrant/.ssh/bastion_rsa.pub"
+        srv.vm.provision "file", source: "remote_rsa", 
+          destination: "/home/vagrant/.ssh/remote_rsa"
+        srv.vm.provision "file", source: "remote_rsa.pub", 
+          destination: "/home/vagrant/.ssh/remote_rsa.pub"
+      end # if "outer"
+      if servers["name"] == "bastion"
+        srv.vm.provision "file", source: "bastion_rsa.pub", 
+          destination: "/home/vagrant/bastion_rsa.pub"
+        srv.vm.provision "shell", 
+          inline: "cat /home/vagrant/bastion_rsa.pub >> /home/vagrant/.ssh/authorized_keys"
+        srv.vm.provision "shell", inline: "rm /home/vagrant/bastion_rsa.pub"
+      end # if "bastion"
+      if servers["name"] == "remote1"
+        srv.vm.provision "file", source: "remote_rsa.pub", destination: "~/.ssh/authorized_keys"
+      end # if "remote1"
+      if servers["name"] == "remote2"
+        srv.vm.provision "file", source: "remote_rsa.pub", destination: "~/.ssh/authorized_keys"
+      end # if "remote2"
+    end # config.vm.define
+  end # servers.each
+end # Vagrant.configure
