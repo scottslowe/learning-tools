@@ -23,6 +23,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "slowe/ubuntu-trusty-x64"
   config.vm.provision "docker"
 
+  # Kill SSH connection to Docker Host
+  # Workaround for Vagrant issue #3998 related to group memberships
+  config.vm.provision "shell", inline: "ps aux | grep 'sshd:' | awk '{print $2}' | xargs kill"
+
   # Disable synced folders (prevents an NFS error on "vagrant up")
   config.vm.synced_folder ".", "/vagrant", disabled: true
 end
