@@ -32,6 +32,8 @@ This repository contains a variety of files and tools for learning new technolog
 
 **swarm-etcd2-photon:** This folder contains a Vagrant environment and associated support files to turn up an etcd-backed Docker Swarm cluster where the Docker Engine instances are running on VMware Photon. _THIS ENVIRONMENT IS NOT YET FULLY FUNCTIONAL._
 
+**terraform:** This directory provides an example Terraform configuration (in both Terraform format as well as JSON format) designed to work with OpenStack.
+
 **ubuntu-generic**: This folder contains a Vagrant environment for spinning up a generic 64-bit Ubuntu 14.04 VM. Note there's nothing special going on here---just a plain, generic, Ubuntu VM.
 
 **vagrant-docker**: In this folder you'll find `Vagrantfiles` and supporting documents for using the Docker provider in Vagrant to turn up Docker containers.
