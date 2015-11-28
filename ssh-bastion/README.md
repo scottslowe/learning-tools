@@ -6,6 +6,10 @@ These files were created to allow users to use Vagrant ([http://www.vagrantup.co
 
 * **bastion\_rsa** and **bastion\_rsa.pub**: Private/public key pair for accessing the SSH bastion host. The password for this key pair is `password` (all lowercase). These files are automatically installed by Vagrant into the correct VMs.
 
+* **bastion-hosts**: This snippet of an `/etc/hosts` file contains IP addresses for the remote SSH destinations. It is added to `/etc/hosts` on the bastion host automatically by Vagrant during provisioning.
+
+* **client-ssh-config**: This is an SSH configuration file that sets up the SSH bastion host configuration. This file is installed automatically by Vagrant into the client VM, but must be edited to properly reflect the IP address assigned to the bastion host (see the instructions below).
+
 * **README.md**: This file you're currently reading.
 
 * **remote\_rsa** and **remote\_rsa.pub**: Private/public key pair for accessing the remote SSH nodes behind the bastion host. The password for this key pair is `secure` (all lowercase). The `Vagrantfile` will automatically place these files in the correct locations on the appropriate VMs.
@@ -20,10 +24,22 @@ These files were created to allow users to use Vagrant ([http://www.vagrantup.co
 
 These instructions assume you've already installed VMware Fusion, Vagrant, and the Vagrant VMware plugin. Please refer to the documentation for those products for more information on installation or configuration.
 
-1. Use `vagrant box add` to add a 64-bit Ubuntu 14.04 ("Trusty Tahr") base box to be used by this `Vagrantfile`. You'll need to specify a box that provides support for the `vmware_desktop` provider (it should work with either VMware Workstation or VMware Fusion).
+1. Use `vagrant box add` to add a 64-bit Ubuntu 14.04 ("Trusty Tahr") base box to be used by this `Vagrantfile`. You'll need to specify a box that provides support for the `vmware_desktop` provider (it should work with either VMware Workstation or VMware Fusion). If you'd like, you can use my base box ("slowe/ubuntu-trusty-x64").
 
-2. Edit the `servers.yml` file to ensure the box you downloaded in step 1 is specified on the "box:" line of this file for each VM. (By default, there are three VMs, so make sure to specify the correct box name for all three VMs.)
+2. Edit the `servers.yml` file to ensure the box you downloaded in step 1 is specified on the "box:" line of this file for each VM. (By default, there are four VMs, so make sure to specify the correct box name for all four VMs.)
 
-3. Run `vagrant up`, and when the VM is up use `vagrant ssh` to access the generic Debian VM.
+3. Run `vagrant up`, and when the VMs are finished provisioning run `vagrant ssh-config bastion`. Make note of the IP address provided for this VM; you'll need it in the next step.
+
+4. Run `vagrant ssh client` to access the SSH client VM.
+
+5. Use the editor of your choice to edit `~/.ssh/config` on the client VM to specify the correct address for the bastion host (look for the `Hostname` line). Save the changes to this file.
+
+6. In the client VM, load the SSH agent via this command:
+
+        eval `ssh-agent -s`
+
+7. Use `ssh-add` to add the bastion\_rsa and remote\_rsa keys. (The passphrase for `bastion_rsa` is "password"; for `remote_rsa` the passphrase is "secure".)
+
+8. Use `ssh remote1` or `ssh remote2` to establish an SSH session _through_ the bastion host, as specified by the `ProxyCommand` in the SSH configuration file.
 
 Enjoy!

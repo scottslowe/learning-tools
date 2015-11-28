@@ -1,0 +1,9 @@
+Host bastion
+  Hostname 192.168.60.161
+  IdentityFile ~/.ssh/bastion_rsa
+  User vagrant
+  ForwardAgent yes
+
+Host private*
+  IdentityFile ~/.ssh/remote_rsa
+  ProxyCommand ssh bastion -W %h:%p

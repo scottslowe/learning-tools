@@ -67,7 +67,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       end # srv.vm.provider virtualbox
 
       # Provision key pairs according to VM name
-      if servers["name"] == "outer"
+      # If "client" VM, copy in all keys
+      if servers["name"] == "client"
         srv.vm.provision "file", source: "bastion_rsa", 
           destination: "/home/vagrant/.ssh/bastion_rsa"
         srv.vm.provision "file", source: "bastion_rsa.pub", 
@@ -76,19 +77,40 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           destination: "/home/vagrant/.ssh/remote_rsa"
         srv.vm.provision "file", source: "remote_rsa.pub", 
           destination: "/home/vagrant/.ssh/remote_rsa.pub"
-      end # if "outer"
+        srv.vm.provision "file", source: "client-ssh-config",
+          destination: "/home/vagrant/.ssh/config"
+      end # if "client"
+
+      # If "bastion" VM, echo bastion_rsa.pub to authorized_keys
       if servers["name"] == "bastion"
         srv.vm.provision "file", source: "bastion_rsa.pub", 
           destination: "/home/vagrant/bastion_rsa.pub"
         srv.vm.provision "shell", 
           inline: "cat /home/vagrant/bastion_rsa.pub >> /home/vagrant/.ssh/authorized_keys"
         srv.vm.provision "shell", inline: "rm /home/vagrant/bastion_rsa.pub"
+        srv.vm.provision "file", source: "bastion-hosts",
+          destination: "/home/vagrant/bastion-hosts"
+        srv.vm.provision "shell",
+          inline: "cat /home/vagrant/bastion-hosts >> /etc/hosts", privileged: "true"
+        srv.vm.provision "shell", inline: "rm /home/vagrant/bastion-hosts"
       end # if "bastion"
+
+      # If "remote1" VM, echo remote_rsa.pub to authorized_keys
       if servers["name"] == "remote1"
-        srv.vm.provision "file", source: "remote_rsa.pub", destination: "~/.ssh/authorized_keys"
+        srv.vm.provision "file", source: "remote_rsa.pub", 
+          destination: "/home/vagrant/remote_rsa.pub"
+        srv.vm.provision "shell", 
+          inline: "cat /home/vagrant/remote_rsa.pub >> /home/vagrant/.ssh/authorized_keys"
+        srv.vm.provision "shell", inline: "rm /home/vagrant/remote_rsa.pub"
       end # if "remote1"
+
+      # If "remote2" VM, echo remote_rsa.pub to authorized_keys
       if servers["name"] == "remote2"
-        srv.vm.provision "file", source: "remote_rsa.pub", destination: "~/.ssh/authorized_keys"
+        srv.vm.provision "file", source: "remote_rsa.pub", 
+          destination: "/home/vagrant/remote_rsa.pub"
+        srv.vm.provision "shell", 
+          inline: "cat /home/vagrant/remote_rsa.pub >> /home/vagrant/.ssh/authorized_keys"
+        srv.vm.provision "shell", inline: "rm /home/vagrant/remote_rsa.pub"
       end # if "remote2"
     end # config.vm.define
   end # servers.each
