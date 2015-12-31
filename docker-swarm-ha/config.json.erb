@@ -1,0 +1,11 @@
+{
+	"bootstrap_expect": 3,
+	"client_addr": "0.0.0.0",
+	"advertise_addr": "<%= server['priv_ip'] %>",
+	"server": true,
+	"datacenter": "dc1",
+	"data_dir": "/var/consul",
+	"log_level": "INFO",
+	"enable_syslog": true,
+	"start_join": [<%= cluster_list.join(',') %>]
+}
