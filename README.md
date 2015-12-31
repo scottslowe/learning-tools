@@ -12,6 +12,8 @@ This repository contains a variety of files and tools for learning new technolog
 
 **docker-swarm-etcd**: In this folder is a `Vagrantfile` and supporting files for turning up an etcd 2.0-backed Docker Swarm cluster.
 
+**docker-swarm-ha**: This folder holds a `Vagrantfile`, supporting files, and instructions for turning up a Consul-backed Docker Swarm cluster with multiple Swarm managers for high availability.
+
 **etcd-2.0**: Use the `Vagrantfile` and other files in this directory to turn up an etcd 2.0.9 cluster running on Ubuntu 14.04.
 
 **lxd**: In this folder you'll find a `Vagrantfile`, instructions, and other files to help work with LXD (pronounced "lex-dee"), a new daemon and CLI for working with LXC-based OS containers.
