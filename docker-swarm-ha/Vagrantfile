@@ -8,12 +8,35 @@ ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
 ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_fusion'
 #ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_appcatalyst'
 
-# Require 'yaml' module
+# Require 'yaml', 'fileutils', and 'erb' modules
 require 'yaml'
+require 'fileutils'
+require 'erb'
 
 # Read YAML file with VM details (box, CPU, RAM, IP addresses)
 # Be sure to edit servers.yml to provide correct IP addresses
 servers = YAML.load_file('servers.yml')
+
+# Use template to create server-specific configuration files
+template = File.join(File.dirname(__FILE__), 'config.json.erb')
+content = ERB.new File.new(template).read
+
+# Populate cluster list
+cluster_list = []
+servers.each do |server|
+  if server['role'] == 'consul'
+    cluster_list << "\"#{server['priv_ip']}\""
+  end # if server['role']
+end # servers.each
+
+# Write out server-specific configuration files
+servers.each do |server|
+  if server['role'] == 'consul'
+    ip = server['priv_ip']
+    target = File.join(File.dirname(__FILE__), "#{server['name']}.config.json")
+    File.open(target, 'w') { |f| f.write(content.result(binding)) }
+  end # if server['role']
+end # servers.each
 
 # Create and configure the VMs
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
@@ -38,12 +61,21 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       # Specify default synced folder; requires VMware Tools
       srv.vm.synced_folder '.', '/vagrant', disabled: true
 
-      # Copy in the Consul configuration files
-      srv.vm.provision 'file', source: 'server.json', destination: '/home/vagrant/config.json'
-      srv.vm.provision 'file', source: 'consul.conf', destination: '/home/vagrant/consul.conf'
+      # Configure VM based on "role" value from servers.yml
+      if server['role'] == 'consul'
+        # Copy Consul configuration files
+        srv.vm.provision 'file', source: "#{server['name']}.config.json", destination: '/home/vagrant/config.json'
+        srv.vm.provision 'file', source: 'consul.conf', destination: '/home/vagrant/consul.conf'
 
-      # Provision consul to the VMs
-      srv.vm.provision 'shell', path: 'consul.sh'
+        # Provision consul to the VMs
+        srv.vm.provision 'shell', path: 'consul.sh'
+      end # if server['role']
+
+      if server['role'] == 'docker'
+        srv.vm.provision 'docker', images: ['swarm']
+        srv.vm.provision 'shell', inline: 'echo DOCKER_OPTS=\"-H unix:///var/run/docker.sock -H tcp://0.0.0.0:2375\" >> /etc/default/docker', privileged: true
+        srv.vm.provision 'shell', inline: 'service docker restart', privileged: true
+      end
 
       # Configure VMs with RAM and CPUs per settings in servers.yml
       srv.vm.provider :vmware_fusion do |vmw|

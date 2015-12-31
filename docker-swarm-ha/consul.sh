@@ -51,3 +51,6 @@ sudo mv /home/vagrant/consul.conf /etc/init/consul.conf
 sudo chown root:root /etc/init/consul.conf
 sudo mv /home/vagrant/config.json /etc/consul.d/server/config.json
 sudo chown root:consul /etc/consul.d/server/config.json
+
+# Start Consul
+sudo service consul start
