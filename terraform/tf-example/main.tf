@@ -22,7 +22,7 @@ resource "openstack_networking_router_interface_v2" "tf-router-interface" {
 	subnet_id = "${openstack_networking_subnet_v2.tf-subnet.id}"
 }
 
-resource "openstack_compute_floatingip_v2" "tf-fip" {
+resource "openstack_networking_floatingip_v2" "tf-fip" {
 	pool = "${var.pool}"
 	depends_on = ["openstack_networking_router_interface_v2.tf-router-interface"]
 }
@@ -33,7 +33,7 @@ resource "openstack_compute_instance_v2" "tf-instance" {
 	flavor_name = "${var.flavor}"
 	key_pair = "${var.key_pair}"
 	security_groups = ["default"]
-	floating_ip = "${openstack_compute_floatingip_v2.tf-fip.address}"
+	floating_ip = "${openstack_networking_floatingip_v2.tf-fip.address}"
 	network {
 		uuid = "${openstack_networking_network_v2.tf-net.id}"
 	}
