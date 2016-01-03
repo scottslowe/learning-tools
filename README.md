@@ -46,13 +46,17 @@ This repository contains a variety of files and tools for learning new technolog
 
 **vagrant-openstack-multi**: This folder is similar to `vagrant-openstack`, but supports Vagrant operations on multiple instances.
 
-##Other Useful Projects
+## Other Useful Projects
 
-**Kubernetes-CoreOS-Fleet-Flannel** : https://github.com/kelseyhightower/kubernetes-fleet-tutorial
+Here are some other projects that you may also find useful:
 
-**coreos-kubernetes-digitalocean** : https://github.com/bketelsen/coreos-kubernetes-digitalocean
+**Kubernetes-CoreOS-Fleet-Flannel**: https://github.com/kelseyhightower/kubernetes-fleet-tutorial
 
-**Docker-CoreOS-Fleet-Flannel-Etcd-Confd-Nginx** : https://github.com/willrstern/production-docker-ha-architecture
+**coreos-kubernetes-digitalocean**: https://github.com/bketelsen/coreos-kubernetes-digitalocean
+
+**Docker-CoreOS-Fleet-Flannel-Etcd-Confd-Nginx**: https://github.com/willrstern/production-docker-ha-architecture
+
+If there are additional projects you feel should be added to this list, please submit a pull request. Thanks!
 
 ## License
 
