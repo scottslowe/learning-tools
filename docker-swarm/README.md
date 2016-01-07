@@ -50,7 +50,7 @@ These instructions assume you've already installed VMware Fusion, Vagrant, and t
 
 8. While still logged into the first CoreOS system, launch an instance of Registrator:
 
-		docker run -d --name reg-coreos-01 -h coreos-01 -v /var/run/docker.sock:/tmp/docker.sock progrium/registrator consul://192.168.1.104:8500
+		docker run -d --name reg-coreos-01 -h coreos-01 -v /var/run/docker.sock:/tmp/docker.sock gliderlabs/registrator consul://192.168.1.104:8500
 
 	The IP address in this command must correspond to the IP address assigned to the CoreOS node as specified in `servers.yml`.
 
