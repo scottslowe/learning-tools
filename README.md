@@ -16,6 +16,8 @@ This repository contains a variety of files and tools for learning new technolog
 
 **etcd-2.0**: Use the `Vagrantfile` and other files in this directory to turn up an etcd 2.0.9 cluster running on Ubuntu 14.04.
 
+**lxc**: This folder holds a `Vagrantfile` and supporting files to create an environment for working with LXC (pronounced "lex-see"). LXC is a set of tools for working with OS containers.
+
 **lxd**: In this folder you'll find a `Vagrantfile`, instructions, and other files to help work with LXD (pronounced "lex-dee"), a new daemon and CLI for working with LXC-based OS containers.
 
 **lxd-ovs**: Use the `Vagrantfile` and other files in this directory to work with LXD and Open vSwitch (OVS) 2.3.1 on Ubuntu 14.04. Use the instructions from the `lxd` directory to set up containers and container images.
