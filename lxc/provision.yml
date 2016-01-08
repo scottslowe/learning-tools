@@ -1,0 +1,15 @@
+---
+- hosts: "all"
+  sudo: "yes"
+  remote_user: "vagrant"
+
+  tasks:
+  - name: "Install LXC"
+    apt:
+      state: "present"
+      update_cache: "yes"
+      name: "{{ item }}"
+    with_items:
+      - lxc
+      - lxc-templates
+      - lxctl
