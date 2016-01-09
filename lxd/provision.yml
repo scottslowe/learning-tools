@@ -1,0 +1,18 @@
+---
+- hosts: "all"
+  sudo: "yes"
+  remote_user: "vagrant"
+
+  tasks:
+  - name: "Add LXD repository"
+    apt_repository:
+      repo: "ppa:ubuntu-lxc/lxd-stable"
+      state: "present"
+
+  - name: "Install LXD"
+    apt:
+      state: "present"
+      update_cache: "yes"
+      name: "{{ item }}"
+    with_items:
+      - lxd
