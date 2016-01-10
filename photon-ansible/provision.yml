@@ -1,0 +1,37 @@
+---
+- hosts: "all"
+  sudo: "yes"
+  remote_user: "vagrant"
+
+  tasks:
+  - name: "Copy Docker TCP socket file"
+    copy:
+      src: "docker-tcp.socket"
+      dest: "/etc/systemd/system/docker-tcp.socket"
+      owner: "root"
+      group: "root"
+      mode: "0644"
+  - name: "Copy Docker socket file"
+    copy:
+      src: "docker.socket"
+      dest: "/lib/systemd/system/docker.socket"
+      owner: "root"
+      group: "root"
+      mode: "0644"
+  - name: "Copy Docker TCP socket file"
+    copy:
+      src: "docker.service"
+      dest: "/lib/systemd/system/docker.service"
+      owner: "root"
+      group: "root"
+      mode: "0644"
+  - name: "Enable Docker TCP socket"
+    service:
+      name: "docker-tcp.socket"
+      enabled: "yes"
+      state: "started"
+  - name: "Enable Docker socket"
+    service:
+      name: "docker.socket"
+      enabled: "yes"
+      state: "started"

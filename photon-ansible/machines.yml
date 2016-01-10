@@ -1,0 +1,5 @@
+---
+- name: "photon"
+  box: "vmware/photon"
+  ram: "512"
+  vcpu: "1"
