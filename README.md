@@ -26,6 +26,8 @@ This repository contains a variety of files and tools for learning new technolog
 
 **photon**: This folder contains the files to spin up an instance of the VMware Photon Technical Preview using Vagrant.
 
+**photon-ansible**: In this folder is a Vagrant environment for using Ansible with VMware Photon; specifically, for using Ansible to configure Photon's pre-installed Docker daemon to listen over a network socket.
+
 **photon-cloudinit**: This folder contains the files to spin up VMs, using Vagrant and customized via `cloud-init`, running the VMware Photon Technical Preview.
 
 **README.md**: This document that you're currently reading.
