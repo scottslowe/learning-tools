@@ -6,10 +6,10 @@ require 'vagrant-openstack-provider'
 require 'yaml'
 
 # Read YAML file with OpenStack credentials
-creds = YAML.load_file('credentials.yml')
+creds = YAML.load_file(File.join(File.dirname(__FILE__), 'credentials.yml'))
 
 # Read YAML file with instance information
-instances = YAML.load_file('instances.yml')
+instances = YAML.load_file(File.join(File.dirname(__FILE__), 'instances.yml'))
 
 # Specify Vagrant version, Vagrant API version, and Vagrant provider
 Vagrant.require_version '>= 1.6.0'

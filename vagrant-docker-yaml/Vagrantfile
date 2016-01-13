@@ -12,7 +12,7 @@ require 'yaml'
 
 # Read details of containers to be created from YAML file
 # Be sure to edit 'containers.yml' to provide container details
-containers = YAML.load_file('containers.yml')
+containers = YAML.load_file(File.join(File.dirname(__FILE__), 'containers.yml'))
 
 # Create and configure the Docker container(s)
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
@@ -22,7 +22,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # to use default boot2docker box
   config.vm.provider "docker" do |docker|
     docker.vagrant_vagrantfile = "host/Vagrantfile"
-  end
+  end # config.vm.provider
 
   # Iterate through the entries in the YAML file
   containers.each do |container|
@@ -44,7 +44,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
         # Specify a friendly name for the Docker container, pull from YAML file
         docker.name = container["name"]
-      end
-    end
-  end
-end
+      end # contnr.vm.provider
+    end # config.vm.define
+  end # containers.each
+end # Vagrant.configure
