@@ -12,7 +12,7 @@ ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
 require 'yaml'
 
 # Read YAML file with VM details (box, CPU, and RAM)
-servers = YAML.load_file('servers.yml')
+servers = YAML.load_file(File.join(File.dirname(__FILE__), 'servers.yml'))
 
 # Create and configure the VMs
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
