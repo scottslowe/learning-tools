@@ -30,5 +30,5 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     # Specify a friendly name for the Docker container
     docker.name = 'nginx-container'
-  end
-end
+  end # config.vm.provider
+end # Vagrant.configure

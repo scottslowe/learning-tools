@@ -15,7 +15,7 @@ require 'yaml'
 
 # Read YAML file to get VM configuration information
 # Edit servers.yml to change VM configuration details
-servers = YAML.load_file('servers.yml')
+servers = YAML.load_file(File.join(File.dirname(__FILE__), 'servers.yml'))
 
 # Look for user-data and meta-data files in same directory
 USER_DATA = File.join(File.dirname(__FILE__), "user-data")

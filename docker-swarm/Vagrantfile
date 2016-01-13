@@ -16,7 +16,7 @@ USER_DATA = File.join(File.dirname(__FILE__), "user-data")
 
 # Read YAML file with VM details (box, CPU, RAM, IP addresses)
 # Be sure to edit servers.yml to provide correct IP addresses
-servers = YAML.load_file('servers.yml')
+servers = YAML.load_file(File.join(File.dirname(__FILE__), 'servers.yml'))
 
 # Create and configure the VMs
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
