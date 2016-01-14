@@ -8,31 +8,35 @@ This repository contains a variety of files and tools for learning new technolog
 
 **debian-generic**: This folder has a Vagrant environment for spinning up a generic, 64-bit Debian 8.0 ("Jessie") VM. Note there's nothing special here---just a plain, generic Debian VM.
 
-**docker-swarm**: This folder contains a `Vagrantfile` and supporting files to run a Consul-backed Docker Swarm cluster under Vagrant on your local system.
-
 **docker-swarm-etcd**: In this folder is a `Vagrantfile` and supporting files for turning up an etcd 2.0-backed Docker Swarm cluster.
 
 **docker-swarm-ha**: This folder holds a `Vagrantfile`, supporting files, and instructions for turning up a Consul-backed Docker Swarm cluster with multiple Swarm managers for high availability.
 
+**docker-swarm**: This folder contains a `Vagrantfile` and supporting files to run a Consul-backed Docker Swarm cluster under Vagrant on your local system.
+
 **etcd-2.0**: Use the `Vagrantfile` and other files in this directory to turn up an etcd 2.0.9 cluster running on Ubuntu 14.04.
+
+**kvm**: The files in this folder allow you to create a learning environment for working with KVM and Libvirt on Ubuntu 14.04.
 
 **lxc**: This folder holds a `Vagrantfile` and supporting files to create an environment for working with LXC (pronounced "lex-see"). LXC is a set of tools for working with OS containers.
 
-**lxd**: In this folder you'll find a `Vagrantfile`, instructions, and other files to help work with LXD (pronounced "lex-dee"), a new daemon and CLI for working with LXC-based OS containers.
-
 **lxd-ovs**: Use the `Vagrantfile` and other files in this directory to work with LXD and Open vSwitch (OVS) 2.3.1 on Ubuntu 14.04. Use the instructions from the `lxd` directory to set up containers and container images.
 
-**openstack-cli**: This folder contains the files for a Vagrant environment that spins up an Ubuntu box with all the OpenStack CLI clients pre-installed.
+**lxd**: In this folder you'll find a `Vagrantfile`, instructions, and other files to help work with LXD (pronounced "lex-dee"), a new daemon and CLI for working with LXC-based OS containers.
 
-**photon**: This folder contains the files to spin up an instance of the VMware Photon Technical Preview using Vagrant.
+**openstack-cli**: This folder contains the files for a Vagrant environment that spins up an Ubuntu box with all the OpenStack CLI clients pre-installed.
 
 **photon-ansible**: In this folder is a Vagrant environment for using Ansible with VMware Photon; specifically, for using Ansible to configure Photon's pre-installed Docker daemon to listen over a network socket.
 
 **photon-cloudinit**: This folder contains the files to spin up VMs, using Vagrant and customized via `cloud-init`, running the VMware Photon Technical Preview.
 
+**photon**: This folder contains the files to spin up an instance of the VMware Photon Technical Preview using Vagrant.
+
 **README.md**: This document that you're currently reading.
 
 **rkt**: This folder contains the files to work with `rkt`, the CoreOS implementation of the App Container (appc) specification, on Ubuntu 14.04. _THIS ENVIRONMENT IS NOT YET FULLY FUNCTIONAL._
+
+**ssh-bastion**: In this folder is a Vagrant environment, leveraging multiple VMs, that allow you to work with SSH multiplexing via an SSH bastion host.
 
 **swarm-consul-openstack**: This folder contains files to create a Consul-backed Docker Swarm cluster on OpenStack. _THIS ENVIRONMENT IS NOT YET FULLY FUNCTIONAL._
 
@@ -42,13 +46,13 @@ This repository contains a variety of files and tools for learning new technolog
 
 **ubuntu-generic**: This folder contains a Vagrant environment for spinning up a generic 64-bit Ubuntu 14.04 VM. Note there's nothing special going on here---just a plain, generic, Ubuntu VM.
 
-**vagrant-docker**: In this folder you'll find `Vagrantfiles` and supporting documents for using the Docker provider in Vagrant to turn up Docker containers.
-
 **vagrant-docker-yaml**: This folder is an extension of "vagrant-docker" in that it provides the ability to specify the list of Docker containers that Vagrant will create in a separate YAML file.
 
-**vagrant-openstack**: This folder contains a `Vagrantfile` and supporting files for using Vagrant with the OpenStack provider. This allows you to use Vagrant to provision and destroy an instance in an OpenStack cloud.
+**vagrant-docker**: In this folder you'll find `Vagrantfiles` and supporting documents for using the Docker provider in Vagrant to turn up Docker containers.
 
 **vagrant-openstack-multi**: This folder is similar to `vagrant-openstack`, but supports Vagrant operations on multiple instances.
+
+**vagrant-openstack**: This folder contains a `Vagrantfile` and supporting files for using Vagrant with the OpenStack provider. This allows you to use Vagrant to provision and destroy an instance in an OpenStack cloud.
 
 ## Other Useful Projects
 
