@@ -1,0 +1,73 @@
+---
+- hosts: "all"
+  sudo: "yes"
+  remote_user: "vagrant"
+
+  tasks:
+  - name: Remove i386 architecture to eliminate apt-get errors
+    command: "/usr/bin/dpkg --remove-architecture i386"
+
+  - name: Install unzip package
+    apt:
+      pkg: "unzip"
+      state: "latest"
+      update_cache: "yes"
+
+  - name: Create consul group
+    group:
+      name: "consul"
+      state: "present"
+
+  - name: Create user for Consul
+    user:
+      name: "consul"
+      group: "consul"
+      comment: "Consul daemon user"
+      shell: "/usr/sbin/nologin"
+      state: "present"
+      home: "/var/consul"
+      system: "yes"
+      createhome: "no"
+
+  - name: Create Consul data and configuration directories
+    file:
+      path: "{{ item }}"
+      state: "directory"
+      owner: "consul"
+      group: "consul"
+    with_items:
+      - "/var/consul"
+      - "/etc/consul.d/server"
+
+  - name: Download Consul package
+    get_url:
+      url: "https://releases.hashicorp.com/consul/0.6.0/consul_0.6.0_linux_amd64.zip"
+      dest: "/tmp/consul_0.6.0_linux_amd64.zip"
+
+  - name: Unzip downloaded Consul file
+    unarchive:
+      copy: "no"
+      src: "/tmp/consul_0.6.0_linux_amd64.zip"
+      dest: "/usr/local/bin/"
+      creates: "/usr/local/bin/consul"
+
+  - name: Install Upstart script for Consul
+    copy:
+      src: "consul.conf"
+      dest: "/etc/init/consul.conf"
+      owner: "root"
+      group: "root"
+      mode: "0644"
+
+  - name: Install Consul configuration file
+    template:
+      src: "config.json.j2"
+      dest: "/etc/consul.d/server/config.json"
+      owner: "consul"
+      group: "consul"
+      mode: "0644"
+
+  - name: Start Consul service
+    service:
+      name: "consul"
+      state: "started"
