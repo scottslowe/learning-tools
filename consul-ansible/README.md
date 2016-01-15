@@ -1,6 +1,6 @@
-# Running a Consul Cluster in Vagrant
+# Running a Consul Cluster in Vagrant (with Ansible)
 
-These files were created to allow users to use Vagrant ([http://www.vagrantup.com](http://www.vagrantup.com)) quickly and relatively easily spin up a Consul ([http://www.consul.io](http://www.consul.io)) cluster. The configuration was tested using Vagrant 1.7.2, VMware Fusion 6.0.5, and the Vagrant VMware plugin.
+These files were created to allow users to use Vagrant ([http://www.vagrantup.com](http://www.vagrantup.com)) and Ansible ([http://www.ansible.com](http://www.ansible.com)) to quickly and relatively easily spin up a three-node Consul ([http://www.consul.io](http://www.consul.io)) cluster. The configuration was tested using Vagrant 1.8.1, VMware Fusion 8.1.0, the Vagrant VMware plugin, and Ansible 1.9.1. Other versions of these components may work, but have not been tested.
 
 ## Contents
 
@@ -22,7 +22,7 @@ These files were created to allow users to use Vagrant ([http://www.vagrantup.co
 
 ## Instructions
 
-These instructions assume you've already installed VMware Fusion, Vagrant, and the Vagrant VMware plugin. Please refer to the documentation for those products for more information on installation or configuration.
+These instructions assume you've already installed VMware Fusion, Vagrant, the Vagrant VMware plugin, and Ansible. Please refer to the documentation for those products for more information on installation or configuration.
 
 1. Use `vagrant box add` to install an Ubuntu 14.04 x64 box for the vmware_fusion provider. I have a base box you can use for this purpose; to use my Ubuntu 14.04 x64 base box, add the box with `vagrant box add slowe/ubuntu-trusty-x64`.
 
