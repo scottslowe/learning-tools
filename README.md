@@ -52,6 +52,8 @@ This repository contains a variety of files and tools for learning new technolog
 
 **vagrant-docker**: In this folder you'll find `Vagrantfiles` and supporting documents for using the Docker provider in Vagrant to turn up Docker containers. The provisioning is handled by Vagrant's built-in Docker provisioner.
 
+**vagrant-json**: The files in this folder illustrate the use of an external JSON data file to drive Vagrant.
+
 **vagrant-openstack-multi**: This folder is similar to `vagrant-openstack`, but supports Vagrant operations on multiple instances.
 
 **vagrant-openstack**: This folder contains a `Vagrantfile` and supporting files for using Vagrant with the OpenStack provider. This allows you to use Vagrant to provision and destroy an instance in an OpenStack cloud.
