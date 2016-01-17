@@ -1,0 +1,27 @@
+[
+	{
+		"name": "jessie",
+		"box": "slowe/debian-81-x64",
+		"ram": 512,
+		"vcpu": 1,
+		"ip_addr": "192.168.100.101",
+		"nested": false
+	},
+
+	{
+		"name": "trusty",
+		"box": "slowe/ubuntu-trusty-x64",
+		"ram": 512,
+		"vcpu": 1,
+		"ip_addr": "192.168.100.102",
+		"nested": true
+	},
+
+	{
+		"name": "precise",
+		"box": "slowe/ubuntu-precise-x64",
+		"ram": 512,
+		"vcpu": 1,
+		"ip_addr": "192.168.100.103"
+	}
+]
