@@ -1,0 +1,43 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Specify Vagrant version, Vagrant API version, and Vagrant clone location
+Vagrant.require_version ">= 1.6.0"
+VAGRANTFILE_API_VERSION = "2"
+ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
+
+# Require 'yaml' module
+require 'yaml'
+
+# Read YAML file with VM details (box, CPU, and RAM)
+servers = YAML.load_file('servers.yml')
+
+# Create and configure the VMs
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  # Always use Vagrant's default insecure key
+  config.ssh.insert_key = false
+
+  # Iterate through entries in YAML file to create VMs
+  servers.each do |servers|
+    config.vm.define servers["name"] do |srv|
+
+      # Don't check for box updates
+      srv.vm.box_check_update = false
+      srv.vm.hostname = servers["name"]
+      srv.vm.box = servers["box"]
+
+      # Enable default synced folder
+      srv.vm.synced_folder ".", "/vagrant"
+
+      # Perform final provisioning activities
+      srv.vm.provision "shell", path: "setup.sh", privileged: true
+
+      # Configure VMs with RAM and CPUs per settings in servers.yml
+      srv.vm.provider :vmware_fusion do |vmw|
+        vmw.vmx["memsize"] = servers["ram"]
+        vmw.vmx["numvcpus"] = servers["vcpu"]
+      end # srv.vm.provider
+    end # config.vm.define
+  end # servers.each
+end # Vagrant.configure
