@@ -18,6 +18,8 @@ This repository contains a variety of files and tools for learning new technolog
 
 **etcd-2.0**: Use the `Vagrantfile` and other files in this directory to turn up an etcd 2.0.9 cluster running on Ubuntu 14.04. The provisioning is handled via shell scripts.
 
+**kvm-macvtap**: This learning environment has a `Vagrantfile` and supporting files for working with KVM and macvtap interfaces on Ubuntu 14.04. The provisioning is handled via Ansible (pre-2.0) installed on the Vagrant host.
+
 **kvm**: The files in this folder allow you to create a learning environment for working with KVM and Libvirt on Ubuntu 14.04. The provisioning is handled via Ansible (pre-2.0) installed on the Vagrant host.
 
 **lxc**: This folder holds a `Vagrantfile` and supporting files to create an environment for working with LXC (pronounced "lex-see"). LXC is a set of tools for working with OS containers. The provisioning is handled via Ansible (pre-2.0) installed on the Vagrant host.
