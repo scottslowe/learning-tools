@@ -6,7 +6,6 @@ Vagrant.require_version '>= 1.6.0'
 VAGRANTFILE_API_VERSION = '2'
 ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_fusion'
 ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
-#ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
 #ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_appcatalyst'
 
 # Require 'yaml' module
@@ -61,20 +60,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         end #if machine['nested']
       end # srv.vm.provider vmware_appcatalyst
 
-      # Configure CPU & RAM per settings in machines.yml (VirtualBox)
-      srv.vm.provider :virtualbox do |vb|
-        vb.memory = machine['ram']
-        vb.cpus = machine['vcpu']
-      end # srv.vm.provider virtualbox
-    end # config.vm.define
-
-    # Provision the VM with Ansible if enabled in machines.yml
-    config.vm.provision 'ansible' do |ansible|
+      # Provision the VM with Ansible if enabled in machines.yml
       if machine['provision'] != nil
-        ansible.playbook = machine['provision']
-      else
-        ansible.playbook = 'noop.yml'
+        srv.vm.provision 'ansible' do |ansible|
+          ansible.playbook = machine['provision']
+        end # srv.vm.provision
       end # if machine['provision']
-    end # config.vm.provision
+    end # config.vm.define
   end # machines.each
 end # Vagrant.configure

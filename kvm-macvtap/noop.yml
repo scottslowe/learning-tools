@@ -1,4 +1,0 @@
----
-- hosts: "all"
-  sudo: "yes"
-  remote_user: "vagrant"
