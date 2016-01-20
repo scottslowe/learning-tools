@@ -1,0 +1,32 @@
+---
+- hosts: "all"
+  sudo: "yes"
+  remote_user: "vagrant"
+
+  tasks:
+  - name: "Install KVM and Libvirt"
+    apt:
+      state: "present"
+      update_cache: "yes"
+      name: "{{ item }}"
+    with_items:
+      - qemu-kvm
+      - libvirt-bin
+      - virtinst
+  - name: Download Cirros image
+    get_url:
+      url: https://download.cirros-cloud.net/0.3.2/cirros-0.3.2-x86_64-disk.img
+      dest: /home/vagrant/cirros-0.3.2-x86_64-disk.img
+      validate_certs: no
+  - name: Set file permissions
+    file:
+      path: /home/vagrant/cirros-0.3.2-x86_64-disk.img
+      owner: vagrant
+      group: vagrant
+      mode: 0644
+  - name: Copy Libvirt network definition
+    copy:
+      src: macvtap.xml
+      dest: /home/vagrant/macvtap.xml
+      owner: vagrant
+      group: vagrant
