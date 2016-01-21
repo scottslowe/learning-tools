@@ -2,21 +2,40 @@
 # vi: set ft=ruby :
 
 # Specify Vagrant version, Vagrant API version, and Vagrant clone location
-Vagrant.require_version ">= 1.6.0"
-VAGRANTFILE_API_VERSION = "2"
+Vagrant.require_version '>= 1.6.0'
+VAGRANTFILE_API_VERSION = '2'
 ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
 
-# Require 'yaml' and 'fileutils' modules
+# Require 'yaml', 'fileutils', and 'erb' modules
 require 'yaml'
 require 'fileutils'
+require 'erb'
 
 # Look for user-data file to configure/customize CoreOS boxes
 # No changes should need to be made to this file
-USER_DATA = File.join(File.dirname(__FILE__), "user-data")
+USER_DATA = File.join(File.dirname(__FILE__), 'user-data')
 
 # Read YAML file with VM details (box, CPU, RAM, IP addresses)
 # Be sure to edit servers.yml to provide correct IP addresses
 servers = YAML.load_file(File.join(File.dirname(__FILE__), 'servers.yml'))
+
+# Build array of IP addresses for Consul cluster
+consul_cluster_list = []
+servers.each do |server|
+  if server['box'] == 'slowe/ubuntu-trusty-x64'
+    consul_cluster_list << "\"#{server['priv_ip']}\""
+  end # if server['box']
+end # servers.each
+
+# Build a Consul configuration file from ERB template
+template = File.join(File.dirname(__FILE__), 'server.json.erb')
+content = ERB.new File.new(template).read
+servers.each do |server|
+  if server['box'] == 'slowe/ubuntu-trusty-x64'
+    target = File.join(File.dirname(__FILE__), "#{server['name']}.json")
+    File.open(target, 'w') { |f| f.write(content.result(binding)) }
+  end # if server['box']
+end # servers.each
 
 # Create and configure the VMs
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
@@ -25,38 +44,41 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.ssh.insert_key = false
 
   # Iterate through entries in YAML file to create VMs
-  servers.each do |servers|
-    config.vm.define servers["name"] do |srv|
+  servers.each do |server|
+    config.vm.define server['name'] do |srv|
       # Don't check for box updates
       srv.vm.box_check_update = false
-      srv.vm.hostname = servers["name"]
-      srv.vm.box = servers["box"]
+      srv.vm.hostname = server['name']
+      srv.vm.box = server['box']
       # Assign an additional static private network
-      srv.vm.network "private_network", ip: servers["priv_ip"]
+      srv.vm.network 'private_network', ip: server['priv_ip']
+
       # Configure VMs based on CoreOS box
-      if srv.vm.box == "coreos-stable"
+      if srv.vm.box == 'coreos-stable'
         # Disable default synced folder for CoreOS VMs
-        srv.vm.synced_folder ".", "/vagrant", disabled: true
+        srv.vm.synced_folder '.', '/vagrant', disabled: true
         # Copy user_data file into CoreOS VM
-        srv.vm.provision "file", source: "#{USER_DATA}", destination: "/tmp/vagrantfile-user-data"
+        srv.vm.provision 'file', source: "#{USER_DATA}", destination: '/tmp/vagrantfile-user-data'
         # Move user_data to correct location to be processed by cloud-init
-        srv.vm.provision "shell", inline: "mv /tmp/vagrantfile-user-data /var/lib/coreos-vagrant/", privileged: true
-      end
+        srv.vm.provision 'shell', inline: 'mv /tmp/vagrantfile-user-data /var/lib/coreos-vagrant/', privileged: true
+      end # srv.vm.box == 'coreos-stable'
+
       # Configure VMs based on Ubuntu box
-      if srv.vm.box == "slowe/ubuntu-trusty-x64"
+      if srv.vm.box == 'slowe/ubuntu-trusty-x64'
         # Enable default synced folder
-        srv.vm.synced_folder ".", "/vagrant"
+        srv.vm.synced_folder '.', '/vagrant'
         # Copy files into the VM
-        srv.vm.provision "file", source: "server.json", destination: "/home/vagrant/config.json"
-        srv.vm.provision "file", source: "consul.conf", destination: "/home/vagrant/consul.conf"
+        srv.vm.provision 'file', source: "#{server['name']}.json", destination: '/home/vagrant/config.json'
+        srv.vm.provision 'file', source: 'consul.conf', destination: '/home/vagrant/consul.conf'
         # Run final provisioning script
-        srv.vm.provision "shell", path: "consul.sh"
-      end
+        srv.vm.provision 'shell', path: 'consul.sh'
+      end # srv.vm.box == 'ubuntu-trusty-x64'
+
       # Configure VMs with RAM and CPUs per settings in servers.yml
       srv.vm.provider :vmware_fusion do |vmw|
-        vmw.vmx["memsize"] = servers["ram"]
-        vmw.vmx["numvcpus"] = servers["vcpu"]
-      end
-    end
-  end
-end
+        vmw.vmx['memsize'] = server['ram']
+        vmw.vmx['numvcpus'] = server['vcpu']
+      end # srv.vm.provider
+    end # config.vm.define
+  end # servers.each
+end # Vagrant.configure

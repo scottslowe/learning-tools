@@ -1,30 +1,50 @@
 #!/bin/bash
 
 # Update list of packages
+export DEBIAN_FRONTEND=noninteractive
 sudo apt-get update
 
-# Install unzip package needed to decompress Consul download
-export DEBIAN_FRONTEND=noninteractive
-sudo apt-get -y install unzip
+# Install packages as needed
+if [[ ! -e /usr/bin/curl ]]; then
+  apt-get -yqq install curl
+fi
 
-# Get Consul download
-wget https://dl.bintray.com/mitchellh/consul/0.5.0_linux_amd64.zip
+if [[ ! -e /usr/bin/unzip ]]; then
+  apt-get -yqq install unzip
+fi
 
-# Decompress and remove Consul download
-unzip 0.5.0_linux_amd64.zip
-rm 0.5.0_linux_amd64.zip
+# Download and install Consul binary, if needed
+if [[ ! -e /usr/local/bin/consul ]];then
 
-# Move Consul binary to location in path
-sudo mv consul /usr/local/bin/
+  # Download Consul
+  curl -kLO https://releases.hashicorp.com/consul/0.6.3/consul_0.6.3_linux_amd64.zip
 
-# Create consul user
-useradd -M -d /var/consul -r -s /usr/bin/nologin consul
+  # Decompress and remove Consul download
+  unzip consul_0.6.3_linux_amd64.zip
+  rm consul_0.6.3_linux_amd64.zip
 
-# Create directories needed by Consul
-sudo mkdir /var/consul
-sudo chown -R consul:consul /var/consul
+  # Move Consul binary to location in path
+  sudo mv consul /usr/local/bin/
+fi
+
+# Create consul user, if it doesn't already exist
+if [ -z "$(getent passwd consul)" ]; then
+  useradd -M -d /var/consul -r -s /usr/bin/nologin consul
+ else
+   echo "Consul user already created."
+ fi
+
+# Create and configure Consul working directory
+sudo mkdir -p /var/consul
+if [ -d /var/consul ]; then
+  sudo chown -R consul:consul /var/consul
+fi
+
+# Create and configure Consul configuration directories
 sudo mkdir -p /etc/consul.d/server
-sudo chown -R root:consul /etc/consul.d
+if [ -d /etc/consul.d ]; then
+  sudo chown -R root:consul /etc/consul.d
+fi
 
 # Move files into the correct locations
 sudo mv /home/vagrant/consul.conf /etc/init/consul.conf

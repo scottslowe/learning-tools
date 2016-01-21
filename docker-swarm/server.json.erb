@@ -5,6 +5,7 @@
 	"data_dir": "/var/consul",
 	"log_level": "INFO",
 	"enable_syslog": false,
-	"retry_join": ["192.168.1.101", "192.168.1.102", "192.168.1.103"],
-	"client_addr": "0.0.0.0"
+	"retry_join": [<%= consul_cluster_list.join(',') %>],
+	"client_addr": "0.0.0.0",
+	"advertise_addr": "<%= server['priv_ip'] %>"
 }
