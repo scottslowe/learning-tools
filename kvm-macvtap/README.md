@@ -45,7 +45,7 @@ Note that you'll also need a VNC client to connect the console of the nested KVM
 8. Now launch a KVM VM using this command line (the CirrOS disk image was downloaded already by Ansible):
 
         sudo virt-install --name=cirros --ram=256 --vcpus=1 \
-        disk path=./cirros-0.3.2-x86_64-disk.img,format=qcow2 \
+        --disk path=./cirros-0.3.2-x86_64-disk.img,format=qcow2 \
         --import --network network:macvtap-net --vnc
 
 9. Determine the VNC display allocated to the new VM with this command (it should be `127.0.0.1:0`):
