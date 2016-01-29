@@ -1,0 +1,6 @@
+<network>
+  <name>vxlan-net</name>
+  <forward mode="bridge"/>
+  <bridge name="br-int"/>
+  <virtualport type="openvswitch"/>
+</network>
