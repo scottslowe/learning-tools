@@ -4,15 +4,21 @@
   remote_user: "vagrant"
 
   tasks:
-  - name: "Add LXD repository"
+  - name: "Ensure Trusty backports repos are enabled"
     apt_repository:
-      repo: "ppa:ubuntu-lxc/lxd-stable"
+      repo: "{{ item }}"
       state: "present"
+    with_items:
+      - "deb http://us.archive.ubuntu.com/ubuntu/ trusty-backports main restricted universe multiverse"
+      - "deb-src http://us.archive.ubuntu.com/ubuntu/ trusty-backports main restricted universe multiverse"
 
   - name: "Install LXD"
     apt:
       state: "present"
       update_cache: "yes"
       name: "{{ item }}"
+      default_release: "trusty-backports"
     with_items:
       - lxd
+      - lxd-client
+      - lxd-tools
