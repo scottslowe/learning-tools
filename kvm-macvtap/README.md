@@ -36,6 +36,10 @@ Note that you'll also need a VNC client to connect the console of the nested KVM
 
         sudo virsh net-define macvtap.xml
 
+    Then start the Libvirt network with this command:
+
+        sudo virsh net-start macvtap-net
+
 7. **This step is very important!** Set the interface that will be used by this Libvirt network to promiscuous mode:
 
         sudo ip link set eth1 promisc on
