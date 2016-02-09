@@ -16,3 +16,6 @@
       - autoconf
       - libtool
       - virtinst
+      - linux-headers-3.19.0-49-generic
+      - linux-image-3.19.0-49-generic
+      - linux-image-extra-3.19.0-49-generic
