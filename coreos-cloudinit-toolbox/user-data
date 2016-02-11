@@ -1,0 +1,16 @@
+#cloud-config
+
+write_files:
+  - path: /home/core/.toolboxrc
+    owner: core
+    content: |
+        TOOLBOX_DOCKER_IMAGE=python
+        TOOLBOX_DOCKER_TAG=2.7.11-alpine
+        TOOLBOX_USER=root
+  - path: /opt/bin/python
+    owner: root:root
+    permissions: '0755'
+    content: |
+        #!/bin/bash
+
+        toolbox --bind=/home:/home python "$@"
