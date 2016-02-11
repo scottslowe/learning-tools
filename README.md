@@ -10,6 +10,10 @@ This repository contains a variety of files and tools for learning new technolog
 
 **debian-generic**: This folder has a Vagrant environment for spinning up a generic, 64-bit Debian 8.0 ("Jessie") VM. Note there's nothing special here---just a plain, generic Debian VM. No custom provisioning is provided in this environment.
 
+**docker-ipvlan**: This folder has files to create a learning environment for using ipvlan interfaces with Docker containers. _THIS ENVIRONMENT IS NOT YET FULLY FUNCTIONAL._
+
+**docker-macvlan**: This folder has files to create a learning environment for using macvlan interfaces with Docker containers.
+
 **docker-swarm-etcd**: In this folder is a `Vagrantfile` and supporting files for turning up an etcd 2.0-backed Docker Swarm cluster. The provisioning is handled via shell scripts.
 
 **docker-swarm-ha**: This folder holds a `Vagrantfile`, supporting files, and instructions for turning up a Consul-backed Docker Swarm cluster with multiple Swarm managers for high availability. The provisioning is handled via shell scripts.
@@ -51,6 +55,8 @@ This repository contains a variety of files and tools for learning new technolog
 **terraform:** This directory provides an example Terraform configuration (in both Terraform format as well as JSON format) designed to work with OpenStack.
 
 **ubuntu-generic**: This folder contains a Vagrant environment for spinning up a generic 64-bit Ubuntu 14.04 VM. Note there's nothing special going on here---just a plain, generic, Ubuntu VM. No custom provisioning is provided in this environment.
+
+**vagrant-docker-json**: Like `vagrant-docker-yaml`', this folder is an extension of "vagrant-docker" in that it provides the ability to specify, in an external JSON file, a list of Docker containers to be instantiated by Vagrant. The provisioning is handled by Vagrant's built-in Docker provisioner.
 
 **vagrant-docker-yaml**: This folder is an extension of "vagrant-docker" in that it provides the ability to specify the list of Docker containers that Vagrant will create in a separate YAML file. The provisioning is handled by Vagrant's built-in Docker provisioner.
 
