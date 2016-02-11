@@ -8,6 +8,8 @@ This repository contains a variety of files and tools for learning new technolog
 
 **consul**: In this folder you'll find a `Vagrantfile` and supporting documents to run a Consul cluster under Vagrant on your local laptop. The  provisioning is handled via shell scripts.
 
+**coreos-cloudinit-toolbox**: This folder contains files for using cloud-init to customize the CoreOS toolbox. This learning environment can be used with local Vagrant VMs, with OpenStack instances, or with AWS instances.
+
 **debian-generic**: This folder has a Vagrant environment for spinning up a generic, 64-bit Debian 8.0 ("Jessie") VM. Note there's nothing special here---just a plain, generic Debian VM. No custom provisioning is provided in this environment.
 
 **docker-ipvlan**: This folder has files to create a learning environment for using ipvlan interfaces with Docker containers. _THIS ENVIRONMENT IS NOT YET FULLY FUNCTIONAL._
