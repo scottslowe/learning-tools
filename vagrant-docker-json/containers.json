@@ -1,0 +1,13 @@
+[
+	{
+		"name": "nginx-01",
+		"image": "nginx",
+		"ports": ["80:80", "443:443"]
+	},
+
+	{
+		"name": "redis-01",
+		"image": "redis",
+		"ports": ["6379:6379"]
+	}
+]
