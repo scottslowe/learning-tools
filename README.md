@@ -58,6 +58,8 @@ This repository contains a variety of files and tools for learning new technolog
 
 **ubuntu-generic**: This folder contains a Vagrant environment for spinning up a generic 64-bit Ubuntu 14.04 VM. Note there's nothing special going on here---just a plain, generic, Ubuntu VM. No custom provisioning is provided in this environment.
 
+**vagrant-aws**: This folder contains a `Vagrantfile` and supporting files for using Vagrant to spin up an instance on AWS. This allows you to use Vagrant to spin up and destroy an instance on AWS.
+
 **vagrant-docker-json**: Like `vagrant-docker-yaml`', this folder is an extension of "vagrant-docker" in that it provides the ability to specify, in an external JSON file, a list of Docker containers to be instantiated by Vagrant. The provisioning is handled by Vagrant's built-in Docker provisioner.
 
 **vagrant-docker-yaml**: This folder is an extension of "vagrant-docker" in that it provides the ability to specify the list of Docker containers that Vagrant will create in a separate YAML file. The provisioning is handled by Vagrant's built-in Docker provisioner.
