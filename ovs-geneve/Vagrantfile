@@ -1,0 +1,76 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Specify Vagrant version, Vagrant API version, and desired clone location
+Vagrant.require_version '>= 1.6.0'
+VAGRANTFILE_API_VERSION = '2'
+ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_fusion'
+ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
+#ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
+#ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_appcatalyst'
+
+# Require 'yaml' module
+require 'yaml'
+
+# Read YAML file with VM details (box, CPU, and RAM)
+machines = YAML.load_file(File.join(File.dirname(__FILE__), 'machines.yml'))
+
+# Create and configure the VMs
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  # Always use Vagrant's default insecure key
+  config.ssh.insert_key = false
+
+  # Iterate through entries in YAML file to create VMs
+  machines.each do |machine|
+    config.vm.define machine['name'] do |srv|
+
+      # Don't check for box updates
+      srv.vm.box_check_update = false
+      srv.vm.hostname = machine['name']
+      srv.vm.box = machine['box']
+
+      # Configure default synced folder (disable by default)
+      if machine['sync_disabled'] != nil
+        srv.vm.synced_folder '.', '/vagrant', disabled: machine['sync_disabled']
+      else
+        srv.vm.synced_folder '.', '/vagrant', disabled: true
+      end #if machine['sync_disabled']
+
+      # Assign additional private network
+      if machine['ip_addr'] != nil
+        srv.vm.network 'private_network', ip: machine['ip_addr']
+      end # if machine['ip_addr']
+
+      # Configure CPU & RAM per settings in machines.yml (Fusion)
+      srv.vm.provider :vmware_fusion do |vmw|
+        vmw.vmx['memsize'] = machine['ram']
+        vmw.vmx['numvcpus'] = machine['vcpu']
+        if machine['nested'] == true
+          vmw.vmx['vhv.enable'] = 'TRUE'
+        end #if machine['nested']
+      end # srv.vm.provider vmware_fusion
+
+      # Configure CPU & RAM per settings in machines.yml (AppCatalyst)
+      srv.vm.provider :vmware_appcatalyst do |vmw|
+        vmw.vmx['memsize'] = machine['ram']
+        vmw.vmx['numvcpus'] = machine['vcpu']
+        #vmw.vmx['guestos'] = 'other3xlinux-64'
+        if machine['nested'] == true
+          vmw.vmx['vhv.enable'] = 'TRUE'
+        end #if machine['nested']
+      end # srv.vm.provider vmware_appcatalyst
+
+      # Configure CPU & RAM per settings in machines.yml (VirtualBox)
+      srv.vm.provider :virtualbox do |vb|
+        vb.memory = machine['ram']
+        vb.cpus = machine['vcpu']
+      end # srv.vm.provider virtualbox
+    end # config.vm.define
+  end # machines.each
+
+  # Provision the VM with Ansible
+  config.vm.provision 'ansible' do |ansible|
+    ansible.playbook = 'provision.yml'
+  end # config.vm.provision
+end # Vagrant.configure

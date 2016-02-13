@@ -1,0 +1,37 @@
+---
+- hosts: "all"
+  sudo: "yes"
+  remote_user: "vagrant"
+
+  tasks:
+  - name: "Install necessary packages"
+    apt:
+      state: "present"
+      update_cache: "yes"
+      name: "{{ item }}"
+    with_items:
+      - qemu-kvm
+      - libvirt-bin
+      - git
+      - autoconf
+      - libtool
+      - virtinst
+      - linux-headers-3.19.0-49-generic
+      - linux-image-3.19.0-49-generic
+      - linux-image-extra-3.19.0-49-generic
+
+  - name: "Clone OVS repository"
+    sudo: "no"
+    git:
+      repo: "https://github.com/openvswitch/ovs.git"
+      dest: "~/ovs"
+      update: "no"
+
+  - name: "Copy in setup script"
+    sudo: "no"
+    copy:
+      src: "setup.sh"
+      dest: "/home/vagrant/setup.sh"
+      owner: "vagrant"
+      group: "vagrant"
+      mode: "0755"

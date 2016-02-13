@@ -1,0 +1,13 @@
+---
+- name: kvm-01
+  box: slowe/ubuntu-trusty-x64
+  ram: 1024
+  vcpu: 1
+  ip_addr: 192.168.100.100
+  nested: true
+- name: kvm-02
+  box: slowe/ubuntu-trusty-x64
+  ram: 1024
+  vcpu: 1
+  ip_addr: 192.168.100.101
+  nested: true
