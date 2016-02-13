@@ -1,6 +1,0 @@
-<network>
-  <name>geneve-net</name>
-  <forward mode="bridge"/>
-  <bridge name="br-int"/>
-  <virtualport type="openvswitch"/>
-</network>
