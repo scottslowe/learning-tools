@@ -38,6 +38,8 @@ This repository contains a variety of files and tools for learning new technolog
 
 **openstack-cli**: This folder contains the files for a Vagrant environment that spins up an Ubuntu box with all the OpenStack CLI clients pre-installed. The provisioning is handled via shell scripts.
 
+**ovs-geneve**: This folder contains a Vagrant environment and supporting files for compiling Open vSwitch (OVS) from source and using Geneve tunneling to connect network namespaces on two different VMs.
+
 **photon-ansible**: In this folder is a Vagrant environment for using Ansible with VMware Photon; specifically, for using Ansible to configure Photon's pre-installed Docker daemon to listen over a network socket. Naturally, the provisioning is handled via Ansible (pre-2.0) installed on the Vagrant host.
 
 **photon-cloudinit**: This folder contains the files to spin up VMs, using Vagrant and customized via `cloud-init`, running the VMware Photon Technical Preview. The provisioning is handled via shell scripts.
