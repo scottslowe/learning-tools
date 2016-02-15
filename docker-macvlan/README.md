@@ -2,6 +2,8 @@
 
 These files were created to allow users to use Vagrant ([http://www.vagrantup.com](http://www.vagrantup.com)) to build an environment for working with Docker containers using macvlan interfaces. This configuration was tested using Vagrant 1.8.1, VMware Fusion 8.1.0, and version 4.0.5 of the Vagrant VMware plugin.
 
+**NOTE**: As of 2016-02-15, commits to the GitHub repository listed below for the Docker macvlan plugin have rendered the plugin unusable. To continue to use a working version of the plugin as described below, download and unzip this ZIP archive: [https://github.com/nerdalert/macvlan-docker-plugin/archive/ec37a6515cdffd9c341c7685c5c08df6dc68f20d.zip](https://github.com/nerdalert/macvlan-docker-plugin/archive/ec37a6515cdffd9c341c7685c5c08df6dc68f20d.zip). You'll then need to adjust paths listed below accordingly, but all other commands remain unchanged.
+
 ## Contents
 
 * **machines.yml**: This is a YAML file containing the configuration data used by Vagrant when creating and provisioning VMs. This particular Vagrant environment requires six (6) values in this file for each VM: `name` (name to be assigned to the box as well as used for hostname), `box` (the name of the Vagrant box), `ram` (desired RAM), `vcpu` (number of virtual CPUs), `ip_addr` (the private IP address to be assigned to the second network interface; also controls whether a second interface is provisioned), and `docker` (set to "true" or "false"; controls whether Vagrant provisions Docker onto the VM).
