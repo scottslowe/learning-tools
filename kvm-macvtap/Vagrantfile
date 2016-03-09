@@ -2,11 +2,11 @@
 # vi: set ft=ruby :
 
 # Specify Vagrant version, Vagrant API version, and desired clone location
+# VirtualBox is not included here because it does not support nested virt
 Vagrant.require_version '>= 1.6.0'
 VAGRANTFILE_API_VERSION = '2'
 ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_fusion'
 ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
-#ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_appcatalyst'
 
 # Require 'yaml' module
 require 'yaml'
@@ -49,16 +49,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
           vmw.vmx['vhv.enable'] = 'TRUE'
         end #if machine['nested']
       end # srv.vm.provider vmware_fusion
-
-      # Configure CPU & RAM per settings in machines.yml (AppCatalyst)
-      srv.vm.provider :vmware_appcatalyst do |vmw|
-        vmw.vmx['memsize'] = machine['ram']
-        vmw.vmx['numvcpus'] = machine['vcpu']
-        #vmw.vmx['guestos'] = 'other3xlinux-64'
-        if machine['nested'] == true
-          vmw.vmx['vhv.enable'] = 'TRUE'
-        end #if machine['nested']
-      end # srv.vm.provider vmware_appcatalyst
 
       # Provision the VM with Ansible if enabled in machines.yml
       if machine['provision'] != nil

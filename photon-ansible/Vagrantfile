@@ -7,7 +7,6 @@ VAGRANTFILE_API_VERSION = '2'
 ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_fusion'
 ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
 #ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
-#ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_appcatalyst'
 
 # Require 'yaml' module
 require 'yaml'
@@ -48,14 +47,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         vmw.vmx['memsize'] = machine['ram']
         vmw.vmx['numvcpus'] = machine['vcpu']
       end # srv.vm.provider vmware_fusion
-
-      # Configure CPU & RAM per settings in machines.yml (AppCatalyst)
-      # Nested virt not included because not supported with Photon
-      srv.vm.provider :vmware_appcatalyst do |vmw|
-        vmw.vmx['memsize'] = machine['ram']
-        vmw.vmx['numvcpus'] = machine['vcpu']
-        #vmw.vmx['guestos'] = 'other3xlinux-64'
-      end # srv.vm.provider vmware_appcatalyst
 
       # Configure CPU & RAM per settings in machines.yml (VirtualBox)
       srv.vm.provider :virtualbox do |vb|
