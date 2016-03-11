@@ -5,6 +5,8 @@
 Vagrant.require_version ">= 1.6.0"
 VAGRANTFILE_API_VERSION = "2"
 ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
+ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_fusion'
+#ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
 
 # Require 'yaml', 'fileutils', and 'erb' modules
 require 'yaml'
@@ -52,6 +54,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       srv.vm.box = servers["box"]
       # Assign an additional static private network
       srv.vm.network "private_network", ip: servers["priv_ip"]
+
       # Configure VMs based on CoreOS box
       if srv.vm.box == "coreos-stable"
         # Disable default synced folder for CoreOS VMs
@@ -60,7 +63,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         srv.vm.provision "file", source: "#{USER_DATA}", destination: "/tmp/vagrantfile-user-data"
         # Move user_data to correct location to be processed by cloud-init
         srv.vm.provision "shell", inline: "mv /tmp/vagrantfile-user-data /var/lib/coreos-vagrant/", privileged: true
-      end
+      end # if srv.vm.box
+
       # Configure VMs based on Ubuntu box
       if srv.vm.box == "slowe/ubuntu-trusty-x64"
         # Enable default synced folder (needed for provisioning)
@@ -68,12 +72,19 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         # Run final provisioning script
         # Note that default shared folder is needed for script to work
         srv.vm.provision "shell", path: "provision.sh", privileged: true
-      end
-      # Configure VMs with RAM and CPUs per settings in servers.yml
+      end # if srv.vm.box
+
+      # Configure VMs with RAM and CPUs per settings in servers.yml (Fusion)
       srv.vm.provider :vmware_fusion do |vmw|
         vmw.vmx["memsize"] = servers["ram"]
         vmw.vmx["numvcpus"] = servers["vcpu"]
-      end
-    end
-  end
-end
+      end # srv.vm.provider vmware_fusion
+
+      # Configure VMs with RAM and CPUs per settings in servers.yml (VirtualBox)
+      srv.vm.provider :virtualbox do |vb|
+        vb.memory = servers["ram"]
+        vb.cpus = servers["vcpu"]
+      end # srv.vm.provider virtualbox
+    end # config.vm.define
+  end # servers.each
+end # Vagrant.configure

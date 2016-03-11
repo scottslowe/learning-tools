@@ -5,6 +5,8 @@
 Vagrant.require_version ">= 1.6.0"
 VAGRANTFILE_API_VERSION = "2"
 ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
+ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_fusion'
+#ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
 
 # Require 'yaml' module
 require 'yaml'
@@ -39,22 +41,33 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Iterate through entries in YAML file to create VMs
   servers.each do |servers|
     config.vm.define servers["name"] do |srv|
+
       # Don't check for box updates
       srv.vm.box_check_update = false
       srv.vm.hostname = servers["name"]
       srv.vm.box = servers["box"]
+
       # Assign an additional static private network
       srv.vm.network "private_network", ip: servers["priv_ip"]
+
       # Specify default synced folder; requires VMware Tools
       # Note shared folders are REQUIRED for the shell provisioning to work
       srv.vm.synced_folder ".", "/vagrant"
+
       # Provision etcd to the VMs
       srv.vm.provision "shell", path: "provision.sh", privileged: true
-      # Configure VMs with RAM and CPUs per settings in servers.yml
+
+      # Configure VMs with RAM and CPUs per settings in servers.yml (Fusion)
       srv.vm.provider :vmware_fusion do |vmw|
         vmw.vmx["memsize"] = servers["ram"]
         vmw.vmx["numvcpus"] = servers["vcpu"]
-      end
-    end
-  end
-end
+      end # srv.vm.provider vmware_fusion
+
+      # Configure VMs with RAM and CPUs per settings in servers.yml (VirtualBox)
+      srv.vm.provider :virtualbox do |vb|
+        vb.memory = servers["ram"]
+        vb.cpus = servers["vcpu"]
+      end # srv.vm.provider virtualbox
+    end # config.vm.define
+  end # servers.each
+end # Vagrant.configure
