@@ -1,13 +1,13 @@
 ---
 - name: docker-01
-  box: bento/ubuntu-15.04
+  box: slowe/ubuntu-15.10-server-amd64
   ram: 1024
   vcpu: 1
-  ip_addr: 192.168.100.100
+  priv_ip: true
   docker: true
 - name: remote-01
   box: slowe/ubuntu-trusty-x64
   ram: 512
   vcpu: 1
-  ip_addr: 192.168.100.101
+  priv_ip: true
   docker: false
