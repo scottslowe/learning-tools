@@ -36,9 +36,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         srv.vm.synced_folder '.', '/vagrant', disabled: true
       end #if machine['sync_disabled']
 
-      # Assign additional private network
-      if machine['ip_addr'] != nil
-        srv.vm.network 'private_network', ip: machine['ip_addr']
+      # Assign additional private network per settings in machines.yml
+      if machine['priv_ip'] == true
+        srv.vm.network 'private_network', auto_config: false
       end # if machine['ip_addr']
 
       # Configure CPU & RAM per settings in machines.yml (Fusion)
@@ -56,10 +56,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         vb.cpus = machine['vcpu']
       end # srv.vm.provider virtualbox
 
-      # Provision Docker on appropriate VMs
-      if machine['docker'] == true
-          srv.vm.provision 'docker'
-      end # if machine['docker']
+      # Provision 'docker-01'
+      if machine['name'] == 'docker-01'
+        srv.vm.provision 'docker'
+        srv.vm.provision 'shell', path: 'docker-provision.sh'
+      end # if machine['name']
+
+      # Provision 'remote-01'
+      if machine['name'] == 'remote-01'
+        srv.vm.provision 'shell', path: 'remote-provision.sh'
+      end # if machine['name']
     end # config.vm.define
   end # machines.each
 end # Vagrant.configure
