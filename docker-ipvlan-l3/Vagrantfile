@@ -1,0 +1,66 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Specify Vagrant version, Vagrant API version, and desired clone location
+Vagrant.require_version '>= 1.6.0'
+VAGRANTFILE_API_VERSION = '2'
+ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_fusion'
+ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
+#ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
+
+# Require 'yaml' module
+require 'yaml'
+
+# Read YAML file with VM details (box, CPU, RAM, IP addresses)
+machines = YAML.load_file(File.join(File.dirname(__FILE__), 'machines.yml'))
+
+# Create and configure the VMs
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  # Always use Vagrant's default insecure key
+  config.ssh.insert_key = false
+
+  # Iterate through entries in YAML file to create VMs
+  machines.each do |machine|
+    config.vm.define machine['name'] do |srv|
+
+      # Don't check for box updates
+      srv.vm.box_check_update = false
+      srv.vm.hostname = machine['name']
+      srv.vm.box = machine['box']
+
+      # Disable default synced folder
+      srv.vm.synced_folder '.', '/vagrant', disabled: true
+
+      # Assign additional private network, but don't auto-configure
+      srv.vm.network 'private_network', auto_config: false
+
+      # Configure CPU & RAM per settings in machines.yml (Fusion)
+      srv.vm.provider :vmware_fusion do |vmw|
+        vmw.vmx['memsize'] = machine['ram']
+        vmw.vmx['numvcpus'] = machine['vcpu']
+        if machine['nested'] == true
+          vmw.vmx['vhv.enable'] = 'TRUE'
+        end #if machine['nested']
+      end # srv.vm.provider vmware_fusion
+
+      # Configure CPU & RAM per settings in machines.yml (VirtualBox)
+      srv.vm.provider :virtualbox do |vb|
+        vb.memory = machine['ram']
+        vb.cpus = machine['vcpu']
+      end # srv.vm.provider virtualbox
+
+      # Provision 'docker-01'
+      if machine['name'] == 'docker-01'
+        srv.vm.provision 'docker'
+        srv.vm.provision 'shell', path: 'docker-01-setup.sh'
+      end # if machine['name']
+
+      # Provision 'docker-02'
+      if machine['name'] == 'docker-02'
+        srv.vm.provision 'docker'
+        srv.vm.provision 'shell', path: 'docker-02-setup.sh'
+      end # if machine['name']
+    end # config.vm.define
+  end # machines.each
+end # Vagrant.configure
