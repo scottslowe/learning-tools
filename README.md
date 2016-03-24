@@ -12,7 +12,7 @@ This repository contains a variety of files and tools for learning new technolog
 
 **debian-generic**: This folder has a Vagrant environment for spinning up a generic, 64-bit Debian 8.0 ("Jessie") VM. Note there's nothing special here---just a plain, generic Debian VM. No custom provisioning is provided in this environment.
 
-**docker-ipvlan**: This folder has files to create a learning environment for using ipvlan interfaces with Docker containers. _THIS ENVIRONMENT IS NOT YET FULLY FUNCTIONAL._
+**docker-ipvlan**: This folder has files to create a learning environment for using ipvlan interfaces with Docker containers.
 
 **docker-macvlan**: This folder has files to create a learning environment for using macvlan interfaces with Docker containers.
 
