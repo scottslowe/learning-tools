@@ -1,0 +1,6 @@
+---
+- name: runc-01
+  box: slowe/ubuntu-15.10-server-amd64
+  ram: 1024
+  vcpu: 1
+  provision: containerd-runc.yml
