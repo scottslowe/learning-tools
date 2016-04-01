@@ -1,0 +1,6 @@
+---
+- name: jessie
+  vmw_box: slowe/debian-81-x64
+  vb_box: debian/jessie64
+  ram: 512
+  vcpu: 1

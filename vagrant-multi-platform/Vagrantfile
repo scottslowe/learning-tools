@@ -1,0 +1,53 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Specify Vagrant version and Vagrant API version
+Vagrant.require_version '>= 1.6.0'
+VAGRANTFILE_API_VERSION = '2'
+
+# Require 'yaml' module
+require 'yaml'
+
+# Read YAML file with VM details (box, CPU, and RAM)
+machines = YAML.load_file(File.join(File.dirname(__FILE__), 'machines.yml'))
+
+# Create and configure the VMs
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  # Always use Vagrant's default insecure key
+  config.ssh.insert_key = false
+
+  # Iterate through entries in YAML file to create VMs
+  machines.each do |machine|
+    config.vm.define machine['name'] do |srv|
+
+      # Don't check for box updates
+      srv.vm.box_check_update = false
+      srv.vm.hostname = machine['name']
+
+      # Specify box based on default provider environment variable
+      if ENV['VAGRANT_DEFAULT_PROVIDER'] == 'vmware_fusion'
+        srv.vm.box = machine['vmw_box']
+      elsif ENV['VAGRANT_DEFAULT_PROVIDER'] == 'virtualbox'
+        srv.vm.box = machine['vb_box']
+      else
+      	srv.vm.box = nil
+      end # if ENV['VAGRANT_DEFAULT_PROVIDER']
+
+      # Disable default synced folder
+      srv.vm.synced_folder '.', '/vagrant', disabled: true
+
+      # Configure VMs with RAM and CPUs per machines.yml (Fusion)
+      srv.vm.provider 'vmware_fusion' do |vmw|
+        vmw.vmx['memsize'] = machine['ram']
+        vmw.vmx['numvcpus'] = machine['vcpu']
+      end # srv.vm.provider vmware_fusion
+
+      # Configure the VM with RAM and CPUs per machines.yml (VirtualBox)
+      srv.vm.provider 'virtualbox' do |vb|
+        vb.memory = machine['ram']
+        vb.cpus = machine['vcpu']
+      end # srv.vm.provider virtualbox
+    end # config.vm.define
+  end # machines.each
+end # Vagrant.configure
