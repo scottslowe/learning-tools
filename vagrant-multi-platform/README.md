@@ -13,10 +13,6 @@ These files were created to test a method of providing a single Vagrant ([http:/
 
 * **Vagrantfile**: This file is used by Vagrant to spin up the virtual machines. This file is fairly extensively commented to help explain what's happening. You should be able to use this file unchanged; all the VM configuration options are stored outside this file.
 
-* **vbrc**: This file simply sets the "DEFAULT_VAGRANT_PROVIDER" environment variable to "virtualbox". Use the `source` command to pull in this definition on systems running VirtualBox **before** using any Vagrant commands.
-
-* **vmwrc**: This file simply sets the "DEFAULT_VAGRANT_PROVIDER" environment variable to "vmware_fusion". Use the `source` command to pull in this definition on systems running VMware Fusion **before** using any Vagrant commands.
-
 ## Instructions
 
 These instructions assume you've already installed Vagrant, the necessary back-end virtualization provider(s) (only VirtualBox and VMware Fusion are supported by this testing environment), and any necessary plugins. Please refer to the documentation for those products for more information on installation or configuration.
@@ -25,10 +21,8 @@ These instructions assume you've already installed Vagrant, the necessary back-e
 
 2. Edit the `machines.yml` file to ensure the box(es) you downloaded in step 1 is/are specified in this file. Place the name of the VirtualBox box as the value for "vb_box"; supply the name of the VMware Fusion box as the value for "vmw_box".
 
-3. Run `source vbrc` (to use VirtualBox) or `source vmwrc` (to use VMware Fusion).
+3. Run `vagrant up`. Vagrant will create the VM using the box specified in `machines.yml`, selecting the appropriate box based on the provider in use.
 
-4. Run `vagrant up`. Vagrant will create the VM using the box specified in `machines.yml`, selecting the appropriate box based on the value of the environment variable.
-
-5. For ideal results, test this environment on different systems with different providers (i.e., a Linux system running VirtualBox and an OS X system running VMware Fusion). You'll see that, aside from the environment variables, no changes are required to either `Vagrantfile` or `machines.yml`.
+5. For ideal results, test this environment on different systems with different providers (i.e., a Linux system running VirtualBox and an OS X system running VMware Fusion). No changes should be required to either `Vagrantfile` or `machines.yml` as you switch back and forth between systems.
 
 Enjoy!
