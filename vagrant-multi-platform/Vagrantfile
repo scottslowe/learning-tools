@@ -25,14 +25,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       srv.vm.box_check_update = false
       srv.vm.hostname = machine['name']
 
-      # Specify box based on default provider environment variable
-      if ENV['VAGRANT_DEFAULT_PROVIDER'] == 'vmware_fusion'
-        srv.vm.box = machine['vmw_box']
-      elsif ENV['VAGRANT_DEFAULT_PROVIDER'] == 'virtualbox'
-        srv.vm.box = machine['vb_box']
-      else
-      	srv.vm.box = nil
-      end # if ENV['VAGRANT_DEFAULT_PROVIDER']
+      # Set box to VMware Fusion box by default
+      srv.vm.box = machine['vmw_box']
 
       # Disable default synced folder
       srv.vm.synced_folder '.', '/vagrant', disabled: true
@@ -44,9 +38,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       end # srv.vm.provider vmware_fusion
 
       # Configure the VM with RAM and CPUs per machines.yml (VirtualBox)
-      srv.vm.provider 'virtualbox' do |vb|
+      srv.vm.provider 'virtualbox' do |vb, override|
         vb.memory = machine['ram']
         vb.cpus = machine['vcpu']
+        override.vm.box = machine['vb_box']
       end # srv.vm.provider virtualbox
     end # config.vm.define
   end # machines.each
