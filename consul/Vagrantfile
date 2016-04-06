@@ -5,8 +5,6 @@
 Vagrant.require_version '>= 1.6.0'
 VAGRANTFILE_API_VERSION = '2'
 ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
-ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_fusion'
-#ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
 
 # Require 'yaml' module
 require 'yaml'
@@ -30,7 +28,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
       # Specify hostname and Vagrant box
       srv.vm.hostname = server['name']
-      srv.vm.box = server['box']
+      srv.vm.box = server['vmw_box']
 
       # Assign an additional static private network
       srv.vm.network 'private_network', ip: server['priv_ip']
@@ -46,15 +44,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       srv.vm.provision 'shell', path: 'consul.sh'
 
       # Configure VMs with RAM and CPUs per settings in servers.yml (Fusion)
-      srv.vm.provider :vmware_fusion do |vmw|
+      srv.vm.provider 'vmware_fusion' do |vmw|
         vmw.vmx['memsize'] = server['ram']
         vmw.vmx['numvcpus'] = server['vcpu']
       end # srv.vm.provider vmware_fusion
 
       # Configure VMs with RAM and CPUs per settings in servers.yml (VirtualBox)
-      srv.vm.provider :virtualbox do |vb|
+      srv.vm.provider 'virtualbox' do |vb, override|
         vb.memory = server['ram']
         vb.cpus = server['vcpu']
+        override.vm.box = server['vb_box']
       end # srv.vm.provider virtualbox
     end # config.vm.define
   end # servers.each

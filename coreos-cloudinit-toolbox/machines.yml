@@ -1,6 +1,7 @@
 ---
 - name: "coreos-01"
-  box: "coreos-stable"
+  vmw_box: "coreos-stable"
+  vb_box: "coreos-stable"
   ram: "512"
   vcpu: "1"
   ip_addr: 192.168.100.100

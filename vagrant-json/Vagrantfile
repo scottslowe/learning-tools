@@ -4,9 +4,7 @@
 # Specify Vagrant version, Vagrant API version, and desired clone location
 Vagrant.require_version '>= 1.6.0'
 VAGRANTFILE_API_VERSION = '2'
-ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_fusion'
 ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
-#ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
 
 # Require 'json' module
 require 'json'
@@ -27,7 +25,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       # Don't check for box updates
       srv.vm.box_check_update = false
       srv.vm.hostname = machine['name']
-      srv.vm.box = machine['box']
+      srv.vm.box = machine['vmw_box']
 
       # Configure default synced folder (disable by default)
       if machine['sync_disabled'] != nil
@@ -42,7 +40,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       end # if machine['ip_addr']
 
       # Configure CPU & RAM per settings in machines.yml (Fusion)
-      srv.vm.provider :vmware_fusion do |vmw|
+      srv.vm.provider 'vmware_fusion' do |vmw|
         vmw.vmx['memsize'] = machine['ram']
         vmw.vmx['numvcpus'] = machine['vcpu']
         if machine['nested'] == true
@@ -51,9 +49,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       end # srv.vm.provider vmware_fusion
 
       # Configure CPU & RAM per settings in machines.yml (VirtualBox)
-      srv.vm.provider :virtualbox do |vb|
+      srv.vm.provider 'virtualbox' do |vb, override|
         vb.memory = machine['ram']
         vb.cpus = machine['vcpu']
+        override.vm.box = machine['vb_box']
       end # srv.vm.provider virtualbox
     end # config.vm.define
   end # machines.each
