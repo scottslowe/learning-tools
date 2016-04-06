@@ -1,12 +1,14 @@
 ---
 - name: docker-01
-  box: slowe/ubuntu-15.10-server-amd64
+  vmw_box: slowe/ubuntu-15.10-server-amd64
+  vb_box: ubuntu/wily64
   ram: 1024
   vcpu: 1
   priv_ip: true
   docker: true
 - name: remote-01
-  box: slowe/ubuntu-trusty-x64
+  vmw_box: slowe/ubuntu-trusty-x64
+  vb_box: ubuntu/trusty64
   ram: 512
   vcpu: 1
   priv_ip: true

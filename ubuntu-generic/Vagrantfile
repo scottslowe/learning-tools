@@ -2,11 +2,9 @@
 # vi: set ft=ruby :
 
 # Specify Vagrant version, Vagrant API version, and Vagrant clone location
-Vagrant.require_version ">= 1.6.0"
-VAGRANTFILE_API_VERSION = "2"
-ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_fusion'
+Vagrant.require_version '>= 1.6.0'
+VAGRANTFILE_API_VERSION = '2'
 ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
-#ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
 
 # Require 'yaml' module
 require 'yaml'
@@ -22,26 +20,27 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Iterate through entries in YAML file to create VMs
   servers.each do |servers|
-    config.vm.define servers["name"] do |srv|
+    config.vm.define servers['name'] do |srv|
 
       # Don't check for box updates
       srv.vm.box_check_update = false
-      srv.vm.hostname = servers["name"]
-      srv.vm.box = servers["box"]
+      srv.vm.hostname = servers['name']
+      srv.vm.box = servers['vmw_box']
 
       # Disable default synced folder
-      srv.vm.synced_folder ".", "/vagrant", disabled: true
+      srv.vm.synced_folder '.', '/vagrant', disabled: true
 
       # Configure VMs with RAM and CPUs per settings in servers.yml (Fusion)
-      srv.vm.provider :vmware_fusion do |vmw|
-        vmw.vmx["memsize"] = servers["ram"]
-        vmw.vmx["numvcpus"] = servers["vcpu"]
+      srv.vm.provider 'vmware_fusion' do |vmw|
+        vmw.vmx['memsize'] = servers['ram']
+        vmw.vmx['numvcpus'] = servers['vcpu']
       end # srv.vm.provider vmware_fusion
 
       # Configure VMs with RAM and CPUs per settings in servers.yml (VirtualBox)
-      srv.vm.provider :virtualbox do |vb|
-        vb.memory = servers["ram"]
-        vb.cpus = servers["vcpu"]
+      srv.vm.provider 'virtualbox' do |vb, override|
+        vb.memory = servers['ram']
+        vb.cpus = servers['vcpu']
+        override.vm.box = servers['vb_box']
       end # srv.vm.provider virtualbox
     end # config.vm.define
   end # servers.each

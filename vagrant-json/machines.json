@@ -1,7 +1,8 @@
 [
 	{
 		"name": "jessie",
-		"box": "slowe/debian-81-x64",
+		"vmw_box": "slowe/debian-81-x64",
+		"vb_box": "debian/jessie64",
 		"ram": 512,
 		"vcpu": 1,
 		"ip_addr": "192.168.100.101",
@@ -10,7 +11,8 @@
 
 	{
 		"name": "trusty",
-		"box": "slowe/ubuntu-trusty-x64",
+		"vmw_box": "slowe/ubuntu-trusty-x64",
+		"vb_box": "ubuntu/trusty64",
 		"ram": 512,
 		"vcpu": 1,
 		"ip_addr": "192.168.100.102",
@@ -19,7 +21,8 @@
 
 	{
 		"name": "precise",
-		"box": "slowe/ubuntu-precise-x64",
+		"vmw_box": "slowe/ubuntu-precise-x64",
+		"vb_box": "ubuntu/precise64",
 		"ram": 512,
 		"vcpu": 1,
 		"ip_addr": "192.168.100.103"

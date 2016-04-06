@@ -1,20 +1,24 @@
 ---
 - name: client
-  box: slowe/ubuntu-trusty-x64
+  vmw_box: slowe/ubuntu-trusty-x64
+  vb_box: ubuntu/trusty64
   ram: 512
   vcpu: 1
 - name: bastion
-  box: slowe/ubuntu-trusty-x64
+  vmw_box: slowe/ubuntu-trusty-x64
+  vb_box: ubuntu/trusty64
   ram: 512
   vcpu: 1
   ip_addr: 10.100.60.1
 - name: remote1
-  box: slowe/ubuntu-trusty-x64
+  vmw_box: slowe/ubuntu-trusty-x64
+  vb_box: ubuntu/trusty64
   ram: 512
   vcpu: 1
   ip_addr: 10.100.60.2
 - name: remote2
-  box: slowe/ubuntu-trusty-x64
+  vmw_box: slowe/ubuntu-trusty-x64
+  vb_box: ubuntu/trusty64
   ram: 512
   vcpu: 1
   ip_addr: 10.100.60.3
