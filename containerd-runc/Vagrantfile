@@ -51,10 +51,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         vb.cpus = machine['vcpu']
       end # srv.vm.provider virtualbox
 
-      # Provision Docker on appropriate VMs
-      if machine['provision'] != nil
-          srv.vm.provision 'ansible', playbook: machine['provision']
-      end # if machine['provision']
+      # Provision the VMs
+      srv.vm.provision 'shell', path: 'provision.sh', privileged: true
     end # config.vm.define
   end # machines.each
 end # Vagrant.configure
