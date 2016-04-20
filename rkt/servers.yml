@@ -1,5 +1,0 @@
----
-- name: rkt-01
-  box: slowe/ubuntu-trusty-x64
-  ram: 512
-  vcpu: 1
