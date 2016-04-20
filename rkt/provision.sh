@@ -33,6 +33,12 @@ if [[ ! -e /usr/local/bin/rkt ]]; then
   sudo mv stage1-fly.aci /usr/local/bin/
   sudo mv stage1-kvm.aci /usr/local/bin/
 
+  # Create working directory for rkt
+  sudo mkdir -p /var/lib/rkt
+
+  # Create rkt group if it doesn't already exist
+  [ $(getent group rkt) ] || sudo groupadd rkt
+  
   # Remove directory created by unpacking tarball
   # Leave tarball in place (indicates provisioned system)
   cd ..
