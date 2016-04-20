@@ -48,7 +48,7 @@ This repository contains a variety of files and tools for learning new technolog
 
 **README.md**: This document that you're currently reading.
 
-**rkt**: This folder contains the files to work with `rkt`, the CoreOS implementation of the App Container (appc) specification, on Ubuntu 14.04. _THIS ENVIRONMENT IS NOT YET FULLY FUNCTIONAL._
+**rkt**: This folder contains the files to work with `rkt` (version 1.4.0), the CoreOS implementation of the App Container (appc) specification, on Ubuntu 14.04. Provisioning is handled by Vagrant's file and shell provisioners.
 
 **ssh-bastion**: In this folder is a Vagrant environment, leveraging multiple VMs, that allow you to work with SSH multiplexing via an SSH bastion host. The provisioning is handled by Vagrant's file and shell provisioners.
 
