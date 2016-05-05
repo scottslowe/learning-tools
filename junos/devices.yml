@@ -1,0 +1,6 @@
+---
+- name: junos-01
+  vmw_box: "juniper/ffp-12.1X47-D15.4-packetmode"
+  vb_box: "juniper/ffp-12.1X47-D15.4-packetmode"
+  ram: "1024"
+  vcpu: "1"

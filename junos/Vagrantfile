@@ -1,0 +1,66 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Specify Vagrant version, Vagrant API version, and desired clone location
+Vagrant.require_version '>= 1.6.0'
+VAGRANTFILE_API_VERSION = '2'
+ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
+
+# Require 'yaml' module
+require 'yaml'
+
+# Read YAML file with VM details (box, CPU, and RAM)
+devices = YAML.load_file(File.join(File.dirname(__FILE__), 'devices.yml'))
+
+# Create and configure the VMs
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  # Always use Vagrant's default insecure key
+  config.ssh.insert_key = false
+
+  # Iterate through entries in YAML file to create VMs
+  devices.each do |device|
+    config.vm.define device['name'] do |dvc|
+
+      # Don't check for box updates
+      dvc.vm.box_check_update = false
+
+      # Set device hostname
+      #dvc.vm.hostname = device['name']
+
+      # Set box to VMware Fusion box by default
+      dvc.vm.box = device['vmw_box']
+
+      # Disable default synced folder
+      #dvc.vm.synced_folder '.', '/vagrant', disabled: true
+
+      # Configure first private (inter-device) network
+      #if device['net_1_addr'] != nil
+      #  dvc.vm.network 'private_network', ip: device['net_1_addr']
+      #end # if device['net_1_addr']
+
+      # Configure second private (inter-device) network
+      #if device['net_2_addr'] != nil
+      #  dvc.vm.network 'private_network', ip: device['net_2_addr']
+      #end # if device['net_2_addr']
+
+      # Configure CPU & RAM per settings in devices.yml (Fusion)
+      # No inclusion of nested virtualization support in this Vagrantfile
+      # Disable host/guest file system (shared folders)
+      dvc.vm.provider 'vmware_fusion' do |vmw|
+        vmw.vmx['memsize'] = device['ram']
+        vmw.vmx['numvcpus'] = device['vcpu']
+        vmw.functional_hgfs = false
+      end # dvc.vm.provider vmware_fusion
+
+      # Configure CPU & RAM per settings in devices.yml (VirtualBox)
+      # Disable host/guest shared folders
+      dvc.vm.provider 'virtualbox' do |vb, override|
+        vb.memory = device['ram']
+        vb.cpus = device['vcpu']
+        vb.functional_vboxsf = false
+        override.vm.box = device['vb_box']
+      end # dvc.vm.provider virtualbox
+    end # config.vm.define
+  end # devices.each
+end # Vagrant.configure
