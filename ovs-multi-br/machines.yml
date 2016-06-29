@@ -1,0 +1,7 @@
+---
+- name: hv-01
+  vmw_box: slowe/ubuntu-trusty-x64
+  vb_box: ubuntu/trusty64
+  ram: 1024
+  vcpu: 1
+  hypervisor: true
