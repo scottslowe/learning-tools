@@ -1,0 +1,66 @@
+---
+- hosts: "all"
+  become: "yes"
+  remote_user: "vagrant"
+
+  tasks:
+  - name: "Install KVM, Libvirt, and OVS"
+    apt:
+      state: "present"
+      update_cache: "yes"
+      name: "{{ item }}"
+    with_items:
+      - "qemu-kvm"
+      - "libvirt-bin"
+      - "openvswitch-common"
+      - "openvswitch-switch"
+      - "virtinst"
+
+  - name: "Configure eth1 interface"
+    command: "ip addr flush dev eth1"
+
+  - name: "Configure eth2 interface"
+    command: "ip addr flush dev eth2"
+
+  - name: "Create OVS bridges"
+    openvswitch_bridge:
+      bridge: "{{ item }}"
+      state: "present"
+    with_items:
+      - "br0"
+      - "br1"
+
+  - name: "Configure OVS bridge br0"
+    openvswitch_port:
+      bridge: "br0"
+      port: "eth1"
+      state: "present"
+
+  - name: "Configure OVS bridge br1"
+    openvswitch_port:
+      bridge: "br1"
+      port: "eth2"
+      state: "present"
+
+  - name: "Download Cirros image"
+    get_url:
+      url: "https://download.cirros-cloud.net/0.3.2/cirros-0.3.2-x86_64-disk.img"
+      dest: "/home/vagrant/cirros-0.3.2-x86_64-disk.img"
+      validate_certs: "no"
+
+  - name: "Set file permissions"
+    file:
+      path: "/home/vagrant/cirros-0.3.2-x86_64-disk.img"
+      owner: "vagrant"
+      group: "vagrant"
+      mode: "0644"
+
+  - name: "Copy libvirt network definitions"
+    copy:
+      src: "{{ item }}"
+      dest: "/home/vagrant/"
+      owner: "vagrant"
+      group: "vagrant"
+    with_items:
+      - "br0.xml"
+      - "br1.xml"
