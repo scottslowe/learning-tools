@@ -8,9 +8,13 @@ This repository contains a variety of files and tools for learning new technolog
 
 **consul**: In this folder you'll find a `Vagrantfile` and supporting documents to run a Consul cluster under Vagrant on your local laptop. The  provisioning is handled via shell scripts.
 
+**containerd-runc**: _This is a placeholder for future work._
+
 **coreos-cloudinit-toolbox**: This folder contains files for using cloud-init to customize the CoreOS toolbox. This learning environment can be used with local Vagrant VMs, with OpenStack instances, or with AWS instances.
 
 **debian-generic**: This folder has a Vagrant environment for spinning up a generic, 64-bit Debian 8.0 ("Jessie") VM. Note there's nothing special here---just a plain, generic Debian VM. No custom provisioning is provided in this environment.
+
+**docker-ipvlan-l3**: This folder has files to create a learning environment for using ipvlan L3 interfaces with Docker containers.
 
 **docker-ipvlan**: This folder has files to create a learning environment for using ipvlan interfaces with Docker containers.
 
@@ -24,7 +28,11 @@ This repository contains a variety of files and tools for learning new technolog
 
 **etcd-2.0**: Use the `Vagrantfile` and other files in this directory to turn up an etcd 2.0.9 cluster running on Ubuntu 14.04. The provisioning is handled via shell scripts.
 
+**ipvs-docker**: Use this learning environment to experiment with using IPVS/LVS for load balancing Docker containers.
+
 **kvm-macvtap**: This learning environment has a `Vagrantfile` and supporting files for working with KVM and macvtap interfaces on Ubuntu 14.04. The provisioning is handled via Ansible (pre-2.0) installed on the Vagrant host.
+
+**junos**: _This is a placeholder for future work._
 
 **kvm**: The files in this folder allow you to create a learning environment for working with KVM and Libvirt on Ubuntu 14.04. The provisioning is handled via Ansible (pre-2.0) installed on the Vagrant host.
 
@@ -39,6 +47,8 @@ This repository contains a variety of files and tools for learning new technolog
 **openstack-cli**: This folder contains the files for a Vagrant environment that spins up an Ubuntu box with all the OpenStack CLI clients pre-installed. The provisioning is handled via shell scripts.
 
 **ovs-geneve**: This folder contains a Vagrant environment and supporting files for compiling Open vSwitch (OVS) from source and using Geneve tunneling to connect network namespaces on two different VMs.
+
+**ovs-multi-br**: In this folder is a Vagrant environment, Ansible playbook, and related data files for experimenting with multiple Open vSwitch (OVS) bridges.
 
 **photon-ansible**: In this folder is a Vagrant environment for using Ansible with VMware Photon; specifically, for using Ansible to configure Photon's pre-installed Docker daemon to listen over a network socket. Naturally, the provisioning is handled via Ansible (pre-2.0) installed on the Vagrant host.
 
@@ -69,6 +79,8 @@ This repository contains a variety of files and tools for learning new technolog
 **vagrant-docker**: In this folder you'll find `Vagrantfiles` and supporting documents for using the Docker provider in Vagrant to turn up Docker containers. The provisioning is handled by Vagrant's built-in Docker provisioner.
 
 **vagrant-json**: The files in this folder illustrate the use of an external JSON data file to drive Vagrant.
+
+**vagrant-multi-platform**: This Vagrant environment demonstrates one possible way to create a `Vagrantfile` that supports multiple virtualization platforms without any edits needed across platforms.
 
 **vagrant-openstack-multi**: This folder is similar to `vagrant-openstack`, but supports Vagrant operations on multiple instances.
 
