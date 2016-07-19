@@ -20,4 +20,52 @@ These files were created to test a method of providing a single Vagrant ([http:/
 
 These instructions assume you've already installed Vagrant, the necessary back-end virtualization provider(s) (only VirtualBox and VMware Fusion are supported by this testing environment), and any necessary plugins. Please refer to the documentation for those products for more information on installation or configuration.
 
-**INSTRUCTIONS NOT YET COMPLETE**
+1. Use `vagrant box add` to install a 64-bit Ubuntu 14.04 Vagrant box. If you are a VMware Fusion user, I have a base box you can use for this purpose; to use my Ubuntu 14.04 x64 base box, add the box with `vagrant box add slowe/ubuntu-trusty-x64`. (In theory you should be able to use this Vagrant environment with VMware Workstation as well, but only VMware Fusion was tested.)
+
+2. Copy the files from the `ovs-multi-br` directory of this repository (the "learning-tools" repository) to a directory on your system. You can clone the entire "learning-tools" repository (using `git clone`), or just download the specific files from the `ovs-multi-br` directory.
+
+3. Edit `machines.yml` to ensure that the box specified in that file matches the Ubuntu 14.04 x64 base box you just installed and will be using. If you are using VMware Fusion (or VMware Workstation), specify the value on the "vmw_box" line. If you are using VirtualBox, specify the value for "vb_box". _I recommend that you do not change any other values in this file unless you know it is necessary._
+
+4. From a terminal window, change into the directory where the files from this directory are stored and run `vagrant up` to bring up the VMs according to the instructions in `machines.yml` and `Vagrantfile`. (By default, it will create and power on a single VMs that will act as a KVM hypervisor.)
+
+5. Run `vagrant ssh` to connect to the VM.
+
+6. In the VM, run `sudo virsh net-create br0.xml` to create a Libvirt-based network that will connect VMs to the OVS bridge named "br0". After that completes, run `sudo virsh net-create br1.xml` to do the same for the OVS "br1" bridge.
+
+7. Make three copies of the `cirros-0.3.2-x86_64-disk.img` file (this file was already downloaded by Ansible), and make note of the names. For these instructions, I'll assume the file names are `cirros1.img`, `cirros2.img`, and `cirros3.img`.
+
+8. Now launch three KVM VMs using this command line:
+
+        sudo virt-install --name=cirros1 --ram=128 --vcpus=1 \
+        --disk path=./cirros1.img,format=qcow2 \
+        --import --network network:br0 --vnc
+
+    Repeat for the second VM:
+
+        sudo virt-install --name=cirros2 --ram=128 --vcpus=1 \
+        --disk path=./cirros2.img,format=qcow2 \
+        --import --network network:br1 --vnc
+
+    And again for the third VM:
+
+        sudo virt-install --name=cirros3 --ram=128 --vcpus=1 \
+        --disk path=./cirros3.img,format=qcow2 \
+        --import --network network:br1 --vnc
+
+9. Determine the VNC display allocated to the new VM with this command (it should be `127.0.0.1:0`):
+
+        sudo virsh vncdisplay cirros1
+
+10. While still logged into the Vagrant guest, enable SSH forwarding to the VM's VNC display by first pressing `~C`, then entering this command (this assumes the VNC display was 0; adjust the command if the output of the previous command was different):
+
+        -L 5910:127.0.0.1:5900
+
+11. On your host system, point your VNC viewer to `127.0.0.1:5910` (or tell it to use display 10 on `127.0.0.1`). This will connect you to the console of the first CirrOS VM.
+
+12. Log into the CirrOS VM using the credentials provided (username `cirros`, password `cubswin:)`, as noted on the screen).
+
+13. Verify that you have received an IP address (typically assigned via DHCP) and that you have connectivity to hosts on the same subnet.
+
+14. Repeat steps 9 through 13 for `cirros2` and `cirros3`, respectively. You should have network connectivity to the respective local subnets from each VM, but no connectivity between subnets.
+
+Enjoy!
