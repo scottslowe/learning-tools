@@ -50,9 +50,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         end #if machine['nested']
       end # srv.vm.provider vmware_fusion
 
-    # Provision the VM with Ansible
-    config.vm.provision 'ansible' do |ansible|
-      ansible.playbook = 'provision.yml'
-    end # config.vm.provision
+      # Provision the VM with Ansible
+      config.vm.provision 'ansible' do |ansible|
+        ansible.playbook = 'provision.yml'
+      end # config.vm.provision
+    end # config.vm.define
   end # machines.each
 end # Vagrant.configure
