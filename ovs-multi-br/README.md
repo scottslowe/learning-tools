@@ -4,7 +4,7 @@ These files were created to test a method of providing a single Vagrant ([http:/
 
 ## Contents
 
-* **ansible.cfg**: This Ansible configuration file instructs Ansible to use the Vagrant-generated inventory file (by default in `./.vagrant/provisioners/inventory/vagrant_ansible_inventory`), to use the default vagrant user (`vagrant`) and default insecure Vagrant SSH private key.
+* **ansible.cfg**: This Ansible configuration file instructs Ansible to use the Vagrant-generated inventory file (by default in `./.vagrant/provisioners/inventory/vagrant_ansible_inventory`), to use the default vagrant user (`vagrant`) and default insecure Vagrant SSH private key. _Please note that Ansible 2.1.1.0 (or later) is required._
 
 * **br0.xml** and **br1.xml**: These XML files are used to define a couple OVS-based Libvirt networks. No edits are necessary to this file.
 
@@ -18,7 +18,7 @@ These files were created to test a method of providing a single Vagrant ([http:/
 
 ## Instructions
 
-These instructions assume you've already installed Vagrant, the necessary back-end virtualization provider(s) (only VirtualBox and VMware Fusion are supported by this testing environment), and any necessary plugins. Please refer to the documentation for those products for more information on installation or configuration.
+These instructions assume you've already installed Vagrant, the necessary back-end virtualization provider(s) (only VirtualBox and VMware Fusion are supported by this testing environment), and any necessary plugins. These instructions also assume that Ansible (version 2.1.1.0 or later) is installed and working properly. Please refer to the documentation for those products for more information on installation or configuration.
 
 1. Use `vagrant box add` to install a 64-bit Ubuntu 14.04 Vagrant box. If you are a VMware Fusion user, I have a base box you can use for this purpose; to use my Ubuntu 14.04 x64 base box, add the box with `vagrant box add slowe/ubuntu-trusty-x64`. (In theory you should be able to use this Vagrant environment with VMware Workstation as well, but only VMware Fusion was tested.)
 
