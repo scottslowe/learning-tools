@@ -1,5 +1,6 @@
 ---
 - name: photon-01
-  box: vmware/photon
+  vmw_box: vmware/photon
+  vb_box: vmware/photon
   ram: 512
   vcpu: 1
