@@ -1,0 +1,6 @@
+---
+- name: openstack-cli
+  vmw_box: slowe/ubuntu-trusty-x64
+  vb_box: ubuntu/trusty64
+  ram: 512
+  vcpu: 1
