@@ -10,7 +10,7 @@ ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
 require 'yaml'
 
 # Read YAML file with VM details (box, CPU, and RAM)
-servers = YAML.load_file(File.join(File.dirname(__FILE__), 'servers.yml'))
+machines = YAML.load_file(File.join(File.dirname(__FILE__), 'machines.yml'))
 
 # Create and configure the VMs
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
@@ -19,29 +19,29 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.ssh.insert_key = false
 
   # Iterate through entries in YAML file to create VMs
-  servers.each do |servers|
-    config.vm.define servers['name'] do |srv|
+  machines.each do |machine|
+    config.vm.define machine['name'] do |srv|
 
       # Don't check for box updates
       srv.vm.box_check_update = false
-      srv.vm.hostname = servers['name']
-      srv.vm.box = servers['vmw_box']
+      srv.vm.hostname = machine['name']
+      srv.vm.box = machine['vmw_box']
 
       # Disable default synced folder
       srv.vm.synced_folder '.', '/vagrant', disabled: true
 
-      # Configure VMs with RAM and CPUs per settings in servers.yml (Fusion)
+      # Configure VMs with RAM and CPUs per settings in machines.yml (Fusion)
       srv.vm.provider 'vmware_fusion' do |vmw|
-        vmw.vmx['memsize'] = servers['ram']
-        vmw.vmx['numvcpus'] = servers['vcpu']
+        vmw.vmx['memsize'] = machine['ram']
+        vmw.vmx['numvcpus'] = machine['vcpu']
       end # srv.vm.provider vmware_fusion
 
-      # Configure VMs with RAM and CPUs per settings in servers.yml (VirtualBox)
+      # Configure VMs with RAM and CPUs per settings in machines.yml (VirtualBox)
       srv.vm.provider 'virtualbox' do |vb, override|
-        vb.memory = servers['ram']
-        vb.cpus = servers['vcpu']
-        override.vm.box = servers['vb_box']
+        vb.memory = machine['ram']
+        vb.cpus = machine['vcpu']
+        override.vm.box = machine['vb_box']
       end # srv.vm.provider virtualbox
     end # config.vm.define
-  end # servers.each
+  end # machines.each
 end # Vagrant.configure
