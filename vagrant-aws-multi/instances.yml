@@ -1,0 +1,9 @@
+---
+- name: "instance-01"
+  type: "m3.medium"
+  ami: "ami-20be7540"
+  user: "ubuntu"
+- name: "instance-02"
+  type: "t2.micro"
+  ami: "ami-746aba14"
+  user: "ubuntu"
