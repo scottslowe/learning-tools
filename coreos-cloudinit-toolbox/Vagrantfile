@@ -1,7 +1,7 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# Specify Vagrant version, Vagrant API version, and Vagrant clone location
+# Specify minimum Vagrant version and Vagrant API version
 Vagrant.require_version '>= 1.6.0'
 VAGRANTFILE_API_VERSION = '2'
 
@@ -15,6 +15,7 @@ require 'erb'
 USER_DATA = File.join(File.dirname(__FILE__), 'user-data')
 
 # Read YAML file with VM details (box, CPU, RAM, IP addresses)
+# Edit machines.yml to change VM configuration details
 machines = YAML.load_file(File.join(File.dirname(__FILE__), 'machines.yml'))
 
 # Create and configure the VMs
@@ -25,11 +26,17 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Iterate through entries in YAML file to create VMs
   machines.each do |machine|
+
+    # Configure the VMs per details in machines.yml
     config.vm.define machine['name'] do |srv|
 
       # Don't check for box updates
       srv.vm.box_check_update = false
+
+      # Specify the hostname of the VM
       srv.vm.hostname = machine['name']
+
+      # Specify the Vagrant box to use (use VMware box by default)
       srv.vm.box = machine['vmw_box']
 
       # Configure default synced folder (disable by default)
@@ -57,14 +64,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         if machine['nested'] == true
           vmw.vmx['vhv.enable'] = 'TRUE'
         end #if machine['nested']
-      end # srv.vm.provider vmware_fusion
+      end # srv.vm.provider 'vmware_fusion'
 
       # Configure CPU & RAM per settings in machines.yml (VirtualBox)
       srv.vm.provider 'virtualbox' do |vb, override|
         vb.memory = machine['ram']
         vb.cpus = machine['vcpu']
         override.vm.box = machine['vb_box']
-      end # srv.vm.provider virtualbox
+      end # srv.vm.provider 'virtualbox'
     end # config.vm.define
   end # machines.each
 end # Vagrant.configure
