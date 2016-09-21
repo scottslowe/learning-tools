@@ -8,7 +8,7 @@ VAGRANTFILE_API_VERSION = '2'
 # Require 'yaml' module
 require 'yaml'
 
-# Read YAML file with VM details (box, CPU, and RAM)
+# Read YAML file with VM details (box, CPU, RAM, IP addresses)
 # Edit machines.yml to change VM configuration details
 machines = YAML.load_file(File.join(File.dirname(__FILE__), 'machines.yml'))
 
@@ -33,13 +33,25 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       # Specify the Vagrant box to use (use VMware box by default)
       srv.vm.box = machine['vmw_box']
 
-      # Disable default synced folder
-      srv.vm.synced_folder '.', '/vagrant', disabled: true
+      # Configure default synced folder (disable by default)
+      if machine['sync_disabled'] != nil
+        srv.vm.synced_folder '.', '/vagrant', disabled: machine['sync_disabled']
+      else
+        srv.vm.synced_folder '.', '/vagrant', disabled: true
+      end #if machine['sync_disabled']
+
+      # Assign additional private network
+      if machine['ip_addr'] != nil
+        srv.vm.network 'private_network', ip: machine['ip_addr']
+      end # if machine['ip_addr']
 
       # Configure CPU & RAM per settings in machines.yml (Fusion)
       srv.vm.provider 'vmware_fusion' do |vmw|
         vmw.vmx['memsize'] = machine['ram']
         vmw.vmx['numvcpus'] = machine['vcpu']
+        if machine['nested'] == true
+          vmw.vmx['vhv.enable'] = 'TRUE'
+        end #if machine['nested']
       end # srv.vm.provider 'vmware_fusion'
 
       # Configure CPU & RAM per settings in machines.yml (VirtualBox)
