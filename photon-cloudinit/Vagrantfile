@@ -1,7 +1,7 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# Specify Vagrant version, Vagrant API version, and Vagrant clone location
+# Specify minimum Vagrant version and Vagrant API version
 Vagrant.require_version '>= 1.6.0'
 VAGRANTFILE_API_VERSION = '2'
 
@@ -9,7 +9,7 @@ VAGRANTFILE_API_VERSION = '2'
 require 'yaml'
 
 # Read YAML file with VM details (box, CPU, and RAM)
-# Edit servers.yml to change VM configuration details
+# Edit machines.yml to change VM configuration details
 machines = YAML.load_file(File.join(File.dirname(__FILE__), 'machines.yml'))
 
 # Look for user-data and meta-data files in same directory
@@ -40,13 +40,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       # Disable default synced folder (not supported with Photon)
       srv.vm.synced_folder '.', '/vagrant', disabled: true
 
-      # Configure VMs with RAM and CPUs per machines.yml (Fusion)
+      # Configure CPU & RAM per settings in machines.yml (Fusion)
+      # Nested virt not included because not supported with Photon
       srv.vm.provider 'vmware_fusion' do |vmw|
         vmw.vmx['memsize'] = machine['ram']
         vmw.vmx['numvcpus'] = machine['vcpu']
       end # srv.vm.provider 'vmware_fusion'
 
-      # Configure VMs with RAM and CPU per machines.yml (VirtualBox)
+      # Configure CPU & RAM per settings in machines.yml (VirtualBox)
       srv.vm.provider 'virtualbox' do |vb, override|
         vb.memory = machine['ram']
         vb.cpus = machine['vcpu']

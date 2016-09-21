@@ -1,17 +1,15 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# Specify Vagrant version, Vagrant API version, and desired clone location
+# Specify minimum Vagrant version and Vagrant API version
 Vagrant.require_version '>= 1.6.0'
 VAGRANTFILE_API_VERSION = '2'
-ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_fusion'
-ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
-#ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
 
 # Require 'yaml' module
 require 'yaml'
 
 # Read YAML file with VM details (box, CPU, and RAM)
+# Edit machines.yml to change VM configuration details
 machines = YAML.load_file(File.join(File.dirname(__FILE__), 'machines.yml'))
 
 # Create and configure the VMs
@@ -22,19 +20,21 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Iterate through entries in YAML file to create VMs
   machines.each do |machine|
+
+    # Configure the VMs per details in machines.yml
     config.vm.define machine['name'] do |srv|
 
       # Don't check for box updates
       srv.vm.box_check_update = false
-      srv.vm.hostname = machine['name']
-      srv.vm.box = machine['box']
 
-      # Configure default synced folder (disable by default)
-      if machine['sync_disabled'] != nil
-        srv.vm.synced_folder '.', '/vagrant', disabled: machine['sync_disabled']
-      else
-        srv.vm.synced_folder '.', '/vagrant', disabled: true
-      end #if machine['sync_disabled']
+      # Specify the hostname of the VM
+      srv.vm.hostname = machine['name']
+
+      # Specify the Vagrant box to use (use VMware box by default)
+      srv.vm.box = machine['vmw_box']
+
+      # Disable default synced folder (not supported with Photon)
+      srv.vm.synced_folder '.', '/vagrant', disabled: true
 
       # Assign additional private network
       if machine['ip_addr'] != nil
@@ -43,16 +43,17 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
       # Configure CPU & RAM per settings in machines.yml (Fusion)
       # Nested virt not included because not supported with Photon
-      srv.vm.provider :vmware_fusion do |vmw|
+      srv.vm.provider 'vmware_fusion' do |vmw|
         vmw.vmx['memsize'] = machine['ram']
         vmw.vmx['numvcpus'] = machine['vcpu']
-      end # srv.vm.provider vmware_fusion
+      end # srv.vm.provider 'vmware_fusion'
 
       # Configure CPU & RAM per settings in machines.yml (VirtualBox)
-      srv.vm.provider :virtualbox do |vb|
+      srv.vm.provider 'virtualbox' do |vb, override|
         vb.memory = machine['ram']
         vb.cpus = machine['vcpu']
-      end # srv.vm.provider virtualbox
+        override.vm.box = machine['vb_box']
+      end # srv.vm.provider 'virtualbox'
     end # config.vm.define
 
     # Provision the VM with Ansible
