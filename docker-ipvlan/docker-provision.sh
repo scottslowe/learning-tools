@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Provision secondary network interface
-sudo ip addr add 192.168.100.100/24 dev ens33
-sudo ip link set ens33 up
+sudo ip addr add 192.168.100.100/24 dev eth1
+sudo ip link set eth1 up
 
 # Install curl if needed
 if [[ ! -e /usr/bin/curl ]]; then
