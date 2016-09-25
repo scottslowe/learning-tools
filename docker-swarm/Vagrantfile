@@ -1,12 +1,9 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# Specify Vagrant version, Vagrant API version, and Vagrant clone location
+# Specify minimum Vagrant version and Vagrant API version
 Vagrant.require_version '>= 1.6.0'
 VAGRANTFILE_API_VERSION = '2'
-ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
-ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_fusion'
-#ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
 
 # Require 'yaml', 'fileutils', and 'erb' modules
 require 'yaml'
@@ -18,26 +15,26 @@ require 'erb'
 USER_DATA = File.join(File.dirname(__FILE__), 'user-data')
 
 # Read YAML file with VM details (box, CPU, RAM, IP addresses)
-# Be sure to edit servers.yml to provide correct IP addresses
-servers = YAML.load_file(File.join(File.dirname(__FILE__), 'servers.yml'))
+# Edit machines.yml to change VM configuration details
+machines = YAML.load_file(File.join(File.dirname(__FILE__), 'machines.yml'))
 
 # Build array of IP addresses for Consul cluster
 consul_cluster_list = []
-servers.each do |server|
-  if server['box'] == 'slowe/ubuntu-trusty-x64'
-    consul_cluster_list << "\"#{server['priv_ip']}\""
-  end # if server['box']
-end # servers.each
+machines.each do |machine|
+  if machine['role'] == 'consul'
+    consul_cluster_list << "\"#{machine['ip_addr']}\""
+  end # if machine['role']
+end # machines.each
 
 # Build a Consul configuration file from ERB template
-template = File.join(File.dirname(__FILE__), 'server.json.erb')
+template = File.join(File.dirname(__FILE__), 'config.json.erb')
 content = ERB.new File.new(template).read
-servers.each do |server|
-  if server['box'] == 'slowe/ubuntu-trusty-x64'
-    target = File.join(File.dirname(__FILE__), "#{server['name']}.json")
+machines.each do |machine|
+  if machine['role'] == 'consul'
+    target = File.join(File.dirname(__FILE__), "#{machine['name']}.json")
     File.open(target, 'w') { |f| f.write(content.result(binding)) }
-  end # if server['box']
-end # servers.each
+  end # if machine['role']
+end # machines.each
 
 # Create and configure the VMs
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
@@ -46,47 +43,68 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.ssh.insert_key = false
 
   # Iterate through entries in YAML file to create VMs
-  servers.each do |server|
-    config.vm.define server['name'] do |srv|
+  machines.each do |machine|
+
+    # Configure the VMs per details in machines.yml
+    config.vm.define machine['name'] do |srv|
+
       # Don't check for box updates
       srv.vm.box_check_update = false
-      srv.vm.hostname = server['name']
-      srv.vm.box = server['box']
-      # Assign an additional static private network
-      srv.vm.network 'private_network', ip: server['priv_ip']
+
+      # Specify the hostname of the VM
+      srv.vm.hostname = machine['name']
+
+      # Specify the Vagrant box to use (use VMware box by default)
+      srv.vm.box = machine['vmw_box']
+
+      # Configure default synced folder (disable by default)
+      if machine['sync_disabled'] != nil
+        srv.vm.synced_folder '.', '/vagrant', disabled: machine['sync_disabled']
+      else
+        srv.vm.synced_folder '.', '/vagrant', disabled: true
+      end #if machine['sync_disabled']
+
+      # Assign additional private network
+      if machine['ip_addr'] != nil
+        srv.vm.network 'private_network', ip: machine['ip_addr']
+      end # if machine['ip_addr']
+
+      # Configure CPU & RAM per settings in machines.yml (Fusion)
+      srv.vm.provider 'vmware_fusion' do |vmw|
+        vmw.vmx['memsize'] = machine['ram']
+        vmw.vmx['numvcpus'] = machine['vcpu']
+        if machine['nested'] == true
+          vmw.vmx['vhv.enable'] = 'TRUE'
+        end #if machine['nested']
+      end # srv.vm.provider 'vmware_fusion'
+
+      # Configure CPU & RAM per settings in machines.yml (VirtualBox)
+      srv.vm.provider 'virtualbox' do |vb, override|
+        vb.memory = machine['ram']
+        vb.cpus = machine['vcpu']
+        override.vm.box = machine['vb_box']
+      end # srv.vm.provider 'virtualbox'
 
       # Configure VMs based on CoreOS box
       if srv.vm.box == 'coreos-stable'
-        # Disable default synced folder for CoreOS VMs
-        srv.vm.synced_folder '.', '/vagrant', disabled: true
+
         # Copy user_data file into CoreOS VM
         srv.vm.provision 'file', source: "#{USER_DATA}", destination: '/tmp/vagrantfile-user-data'
+
         # Move user_data to correct location to be processed by cloud-init
         srv.vm.provision 'shell', inline: 'mv /tmp/vagrantfile-user-data /var/lib/coreos-vagrant/', privileged: true
       end # srv.vm.box == 'coreos-stable'
 
-      # Configure VMs based on Ubuntu box
-      if srv.vm.box == 'slowe/ubuntu-trusty-x64'
-        # Enable default synced folder
-        srv.vm.synced_folder '.', '/vagrant'
+      # Configure VMs with the 'consul' role assigned in machines.yml
+      if machine['role'] == 'consul'
+
         # Copy files into the VM
-        srv.vm.provision 'file', source: "#{server['name']}.json", destination: '/home/vagrant/config.json'
+        srv.vm.provision 'file', source: "#{machine['name']}.json", destination: '/home/vagrant/config.json'
         srv.vm.provision 'file', source: 'consul.conf', destination: '/home/vagrant/consul.conf'
+
         # Run final provisioning script
         srv.vm.provision 'shell', path: 'consul.sh'
-      end # srv.vm.box == 'ubuntu-trusty-x64'
-
-      # Configure VMs with RAM and CPUs per settings in servers.yml (Fusion)
-      srv.vm.provider :vmware_fusion do |vmw|
-        vmw.vmx['memsize'] = server['ram']
-        vmw.vmx['numvcpus'] = server['vcpu']
-      end # srv.vm.provider vmware_fusion
-
-      # Configure VMs with RAM and CPUs per settings in servers.yml (VirtualBox)
-      srv.vm.provider :virtualbox do |vb|
-        vb.memory = server['ram']
-        vb.cpus = server['vcpu']
-      end # srv.vm.provider virtualbox
+      end # machine['role'] == 'consul'
     end # config.vm.define
-  end # servers.each
+  end # machines.each
 end # Vagrant.configure

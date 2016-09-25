@@ -7,5 +7,5 @@
 	"enable_syslog": false,
 	"retry_join": [<%= consul_cluster_list.join(',') %>],
 	"client_addr": "0.0.0.0",
-	"advertise_addr": "<%= server['priv_ip'] %>"
+	"advertise_addr": "<%= machine['ip_addr'] %>"
 }
