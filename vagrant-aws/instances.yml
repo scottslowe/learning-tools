@@ -1,7 +1,7 @@
 ---
-instance_type: "m3.medium"
-region: "us-west-1"
-ami: "ami-842355e4"
+instance_type: "t2.micro"
+region: "us-west-2"
+ami: "ami-746aba14"
 user: "ubuntu"
-security_groups: ["launch-wizard-1"]
+security_groups: ["default"]
 keypair_name: "aws_rsa"

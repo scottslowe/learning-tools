@@ -30,6 +30,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     aws.region = instances['region']
     aws.ami = instances['ami']
     aws.security_groups = instances['security_groups']
+    aws.instance_type = instances['instance_type']
 
     # Specify username and private key path
     override.ssh.username = instances['user']
