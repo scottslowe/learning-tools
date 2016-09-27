@@ -1,11 +1,11 @@
 {
-	"bootstrap_expect": 3,
-	"client_addr": "0.0.0.0",
-	"advertise_addr": "<%= server['priv_ip'] %>",
-	"server": true,
-	"datacenter": "dc1",
-	"data_dir": "/var/consul",
-	"log_level": "INFO",
-	"enable_syslog": true,
-	"start_join": [<%= cluster_list.join(',') %>]
+    "advertise_addr": "<%= machine['ip_addr'] %>",
+    "bootstrap_expect": 3,
+    "client_addr": "0.0.0.0",
+    "datacenter": "dc1",
+    "data_dir": "/var/consul",
+    "enable_syslog": true,
+    "log_level": "INFO",
+    "server": true,
+    "retry_join": [<%= consul_cluster_list.join(',') %>]
 }

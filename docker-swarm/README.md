@@ -32,11 +32,7 @@ These instructions assume you've already installed your virtualization provider 
 
 5. Once you have edited `machines.yml`, use `vagrant up` to bring up the 6 systems. Three VMs will run the Consul cluster; the other 3 VMs will be running CoreOS and will make up the Docker Swarm cluster.
 
-6. Once Vagrant has finished bringing up the VMs, simply use `vagrant ssh consul-01` (where `consul-01` is the value assigned to the first VM from `machines.yml`) to connect to the VM. No password should be required; it should use the default (insecure) SSH key. Once you are logged into the first VM, start the Consul agent with this command:
-
-		sudo service consul start
-
-	Repeat this process with the other two Consul nodes (`consul-02` and `consul-03` if you are using the default values in `machines.yml`). Once Consul has been started on all three nodes, verify Consul is running correctly by running this command:
+6. Once Vagrant has finished bringing up the VMs, simply use `vagrant ssh consul-01` (where `consul-01` is the value assigned to the first VM from `machines.yml`) to connect to the VM. No password should be required; it should use the default (insecure) SSH key. Once you are logged into the first VM, verify Consul is running correctly by running this command:
 
 		consul members list
 
