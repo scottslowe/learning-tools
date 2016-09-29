@@ -3,17 +3,17 @@
 {% set quote = '"' %}
 
 {
+	"advertise_addr": "{{ hostvars[inventory_hostname]['ansible_eth1']['ipv4']['address'] }}",
 	"bootstrap_expect": 3,
-	"server": true,
+	"client_addr": "0.0.0.0",
 	"datacenter": "dc1",
 	"data_dir": "/var/consul",
+	"enable_syslog": true,
 	"log_level": "INFO",
-	"enable_syslog": false,
 	"retry_join": [ {% for host in groups['all'] %}{% if not loop.last %}
 "{{ hostvars[host]['ansible_eth1']['ipv4']['address'] }}", 
       {% else %}
 "{{ hostvars[host]['ansible_eth1']['ipv4']['address'] }}"
       {% endif %}{% endfor %} ],
-	"client_addr": "0.0.0.0",
-	"advertise_addr": "{{ hostvars[inventory_hostname]['ansible_eth1']['ipv4']['address'] }}"
+	"server": true
 }

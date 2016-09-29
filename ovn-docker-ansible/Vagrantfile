@@ -59,6 +59,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         vb.memory = machine['ram']
         vb.cpus = machine['vcpu']
         override.vm.box = machine['vb_box']
+        vb.customize ['modifyvm', :id, '--nictype1', 'virtio']
+        vb.customize ['modifyvm', :id, '--nictype2', 'virtio']
       end # srv.vm.provider 'virtualbox'
     end # config.vm.define
   end # machines.each

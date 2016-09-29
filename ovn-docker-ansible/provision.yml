@@ -100,8 +100,8 @@
 
   - name: Add Docker APT repository key
     apt_key:
-      keyserver: p80.pool.sks-keyservers.net
-      id: 58118E89F3A912897C070ADBF76221572C52609D
+      keyserver: "p80.pool.sks-keyservers.net"
+      id: "58118E89F3A912897C070ADBF76221572C52609D"
       state: "present"
     tags:
       - docker
@@ -166,18 +166,20 @@
       - docker
       - docker-cfg
 
-  - name: Install Python flask module
+  - name: Install Python modules
     pip:
-      name: "Flask"
+      name: "{{ item }}"
+    with_items:
+      - "Flask"
+      - "ovs"
     tags:
       - docker
       - ovn
 
-  - name: Clone OVS repository
+  - name: Download OVS 2.6.0 release tarball
     become: "no"
-    git:
-      repo: "https://github.com/openvswitch/ovs.git"
-      dest: "~/ovs"
-      update: "no"
+    get_url:
+      url: "https://github.com/openvswitch/ovs/archive/v2.6.0.tar.gz"
+      dest: "/home/vagrant/2.6.0.tar.gz"
     tags:
       - ovn
