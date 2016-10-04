@@ -1,0 +1,61 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Specify minimum Vagrant version and Vagrant API version
+Vagrant.require_version '>= 1.6.0'
+VAGRANTFILE_API_VERSION = '2'
+
+# Require 'yaml' module
+require 'yaml'
+
+# Read YAML file with VM details (box, CPU, RAM, IP addresses)
+# Edit host.yml to change VM configuration details
+hostvms = YAML.load_file(File.join(File.dirname(__FILE__), 'hostvms.yml'))
+
+# Create and configure the VM(s)
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  # Always use Vagrant's default insecure key
+  config.ssh.insert_key = false
+
+  # Iterate through entries in YAML file to create VMs
+  hostvms.each do |host|
+
+    # Configure the VMs per details in YAML file
+    config.vm.define host['name'] do |srv|
+
+      # Don't check for box updates
+      srv.vm.box_check_update = false
+
+      # Specify the hostname of the VM
+      srv.vm.hostname = host['name']
+
+      # Specify the Vagrant box to use (use VMware box by default)
+      srv.vm.box = host['vmw_box']
+
+      # Disable synced folders (prevents an NFS error on "vagrant up")
+      srv.vm.synced_folder '.', '/vagrant', disabled: true
+
+      # Assign additional private network
+      if host['ip_addr'] != nil
+        srv.vm.network 'private_network', ip: host['ip_addr']
+      end # if host['ip_addr']
+
+      # Configure CPU & RAM per settings in hostvms.yml (Fusion)
+      srv.vm.provider 'vmware_fusion' do |vmw|
+        vmw.vmx['memsize'] = host['ram']
+        vmw.vmx['numvcpus'] = host['vcpu']
+      end # srv.vm.provider 'vmware_fusion'
+
+      # Configure CPU & RAM per settings in hostvms.yml (VirtualBox)
+      srv.vm.provider 'virtualbox' do |vb, override|
+        vb.memory = host['ram']
+        vb.cpus = host['vcpu']
+        override.vm.box = host['vb_box']
+      end # srv.vm.provider 'virtualbox'
+
+      # Provision the VM with Docker
+      srv.vm.provision 'docker'
+    end # config.vm.define
+  end # hostvsm.each
+end # Vagrant.configure
