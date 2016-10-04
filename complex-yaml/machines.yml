@@ -1,0 +1,12 @@
+---
+- box:
+    vmw: slowe/debian-81-x64
+    vb: debian/jessie64
+  name: jessie
+  nics:
+    - type: "private_network"
+      ip_addr: "192.168.100.101"
+    - type: "public_network"
+      ip_addr: "192.168.1.198"
+  ram: "1024"
+  vcpu: "1"
