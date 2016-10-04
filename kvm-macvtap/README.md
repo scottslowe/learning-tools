@@ -2,6 +2,8 @@
 
 These files were created to allow users to use Vagrant ([http://www.vagrantup.com](http://www.vagrantup.com)) and Ansible ([http://www.ansible.com](http://www.ansible.com)) to quickly and relatively easily experiment with KVM networking using macvtap interfaces on Ubuntu 14.04 LTS. This configuration was tested using Vagrant 1.8.1, VMware Fusion 8.1.0, the Vagrant VMware plugin, and Ansible 1.9.1. Other versions of these products are likely to work, but haven't been tested.
 
+Note that this environment does **not** work with VirtualBox, as it relies on support for nested virtualization (which VirtualBox does not support).
+
 ## Contents
 
 * **ansible.cfg**: This Ansible configuration file instructs Ansible to use the Vagrant-generated inventory file (by default in `./.vagrant/provisioners/inventory/vagrant_ansible_inventory`), to use the default vagrant user (`vagrant`) and default insecure Vagrant SSH private key.
