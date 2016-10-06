@@ -1,0 +1,21 @@
+---
+- name: "instance-01"
+  box:
+    aws: "ami-20be7540"
+    vmw: "slowe/ubuntu-trusty-x64"
+    vb: "ubuntu/trusty64"
+  aws:
+    type: "t2.micro"
+    user: "ubuntu"
+  ram: "1024"
+  vcpu: "1"
+- name: "instance-02"
+  box:
+    aws: "ami-20be7540"
+    vmw: "slowe/ubuntu-trusty-x64"
+    vb: "ubuntu/trusty64"
+  aws:
+    type: "t2.micro"
+    user: "ubuntu"
+  ram: "1024"
+  vcpu: "1"

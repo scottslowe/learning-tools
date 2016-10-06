@@ -1,0 +1,73 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Specify minimum Vagrant version and Vagrant API version
+Vagrant.require_version '>= 1.6.0'
+VAGRANTFILE_API_VERSION = '2'
+
+# Require the AWS provider plugin and YAML module
+require 'vagrant-aws'
+require 'yaml'
+
+# Read YAML file with instance information (box, CPU, RAM, IP addresses)
+# Edit machines.yml to change VM configuration details
+machines = YAML.load_file(File.join(File.dirname(__FILE__), 'machines.yml'))
+
+# Create and configure the specified systems
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+  # Use dummy AWS box (override in provider configuration blocks)
+  config.vm.box = 'aws-dummy'
+
+  # Configure default AWS provider settings
+  config.vm.provider 'aws' do |aws|
+
+    # Specify access/authentication information
+    #aws.access_key_id = ENV['AWS_ACCESS_KEY_ID']
+    #aws.secret_access_key = ENV['AWS_SECRET_ACCESS_KEY']
+
+    # Specify default AWS key pair
+    aws.keypair_name = 'aws_rsa'
+
+    # Specify default region and default AMI ID
+    aws.region = 'us-west-2'
+  end # config.vm.provider 'aws'
+
+  # Loop through YAML file and set per-VM information
+  machines.each do |machine|
+    config.vm.define machine['name'] do |srv|
+
+      # Specify the hostname of the machine
+      srv.vm.hostname = machine['name']
+
+      # Don't check for box updates
+      srv.vm.box_check_update = false
+
+      # Disable default shared folder
+      srv.vm.synced_folder '.', '/vagrant', disabled: true
+
+      # Set per-machine AWS provider configuration/overrides
+      srv.vm.provider 'aws' do |aws, override|
+        override.ssh.private_key_path = '~/.ssh/aws_rsa'
+        override.ssh.username = machine['aws']['user']
+        aws.instance_type = machine['aws']['type']
+        aws.ami = machine['box']['aws']
+        aws.security_groups = ['default']
+      end # srv.vm.provider 'aws'
+
+      # Set per-machine VMware provider configuration/overrides
+      srv.vm.provider 'vmware_fusion' do |vmw, override|
+        override.vm.box = machine['box']['vmw']
+        vmw.vmx['memsize'] = machine['ram']
+        vmw.vmx['numvcpus'] = machine['vcpu']
+      end # srv.vm.provider 'vmware_fusion'
+
+      # Set per-machine VirtualBox provider configuration/overrides
+      srv.vm.provider 'virtualbox' do |vb, override|
+        override.vm.box = machine['box']['vb']
+        vb.memory = machine['ram']
+        vb.cpus = machine['vcpu']
+      end # srv.vm.provider 'virtualbox'
+    end # config.vm.define
+  end # machines.each
+end # Vagrant.configure
