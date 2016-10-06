@@ -1,0 +1,7 @@
+---
+- name: "default"
+  vmw_box: "slowe/ubuntu-trusty-x64"
+  vb_box: "ubuntu/trusty64"
+  ram: "1024"
+  vcpu: "1"
+  ip_addr: "192.168.100.101"
