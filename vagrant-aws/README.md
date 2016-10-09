@@ -8,7 +8,7 @@ These files were created to allow users to use Vagrant ([http://www.vagrantup.co
 
 * **README.md**: The file you're currently reading.
 
-* **Vagrantfile**: This file is used by Vagrant to spin up the OpenStack instance. There are two changes that **must** be made to this file in order for it to function properly: you must specify the correct path to your SSH private key (the private key for the keypair specified in `instances.yml`), and you must supply the correct name to the dummy box installed for use with AWS.
+* **Vagrantfile**: This file is used by Vagrant to spin up the AWS instance. There are two changes that **must** be made to this file in order for it to function properly: you must specify the correct path to your SSH private key (the private key for the keypair specified in `instances.yml`), and you must supply the correct name to the dummy box installed for use with AWS.
 
 ## Instructions
 
