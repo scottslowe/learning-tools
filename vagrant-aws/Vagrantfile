@@ -13,13 +13,13 @@ Vagrant.require_version '>= 1.6.0'
 VAGRANTFILE_API_VERSION = '2'
 ENV['VAGRANT_DEFAULT_PROVIDER'] = 'aws'
 
-# Create and configure the OpenStack instance(s)
+# Create and configure the AWS instance(s)
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Use dummy AWS box
   config.vm.box = 'aws-dummy'
 
-  # Specify OpenStack authentication information
+  # Specify AWS authentication information
   config.vm.provider 'aws' do |aws, override|
     # Specify access/authentication information, keypair
     aws.access_key_id = ENV['AWS_ACCESS_KEY_ID']
