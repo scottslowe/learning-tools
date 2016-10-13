@@ -17,7 +17,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   # Always use Vagrant's default insecure key
   config.ssh.insert_key = false
 
-  # Iterate through entries in YAML file to create VMs
+  # Iterate through entries in JSON file to create VMs
   machines.each do |machine|
     config.vm.define machine['name'] do |srv|
 
