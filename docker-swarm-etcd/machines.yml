@@ -1,0 +1,49 @@
+---
+- name: "etcd-01"
+  box:
+    vmw: "slowe/ubuntu-trusty-x64"
+    vb: "ubuntu/trusty64"
+  ram: "512"
+  vcpu: "1"
+  ip_addr: "192.168.100.101"
+  etcd: true
+- name: "etcd-02"
+  box:
+    vmw: "slowe/ubuntu-trusty-x64"
+    vb: "ubuntu/trusty64"
+  ram: "512"
+  vcpu: "1"
+  ip_addr: "192.168.100.102"
+  etcd: true
+- name: "etcd-03"
+  box:
+    vmw: "slowe/ubuntu-trusty-x64"
+    vb: "ubuntu/trusty64"
+  ram: "512"
+  vcpu: "1"
+  ip_addr: "192.168.100.103"
+  etcd: true
+- name: "coreos-01"
+  box:
+    vmw: "coreos-stable"
+    vb: "coreos-stable"
+  ram: "512"
+  vcpu: "1"
+  ip_addr: "192.168.100.111"
+  etcd: false
+- name: "coreos-02"
+  box:
+    vmw: "coreos-stable"
+    vb: "coreos-stable"
+  ram: "512"
+  vcpu: "1"
+  ip_addr: "192.168.100.112"
+  etcd: false
+- name: "coreos-03"
+  box:
+    vmw: "coreos-stable"
+    vb: "coreos-stable"
+  ram: "512"
+  vcpu: "1"
+  ip_addr: "192.168.100.113"
+  etcd: false

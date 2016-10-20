@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define a couple variables for easier future modifications
-VERS="v2.0.9"
+VERS="v2.3.7"
 BASENAME="etcd-$VERS-linux-amd64"
 FNAME="$BASENAME.tar.gz"
 URL="https://github.com/coreos/etcd/releases/download/$VERS/$FNAME"
@@ -38,8 +38,8 @@ if [[ ! -d /var/etcd ]]; then
 fi
 
 # Copy files into the correct locations; requires shared folders
-sudo cp /vagrant/etcd.conf /etc/init/etcd.conf
-sudo cp /vagrant/$HOSTNAME.defaults /etc/default/etcd
+sudo cp /home/vagrant/etcd.conf /etc/init/etcd.conf
+sudo cp /home/vagrant/$HOSTNAME.defaults /etc/default/etcd
 
 # Restart if already running; otherwise, start etcd.
 sudo initctl status etcd && initctl restart etcd || initctl start etcd
