@@ -1,0 +1,56 @@
+---
+- hosts: "all"
+  become: "yes"
+  remote_user: "vagrant"
+
+  vars:
+    etcd_ver: "v2.3.7"
+    etcd_os: "linux-amd64"
+    etcd_dir: "etcd-{{ etcd_ver }}-{{ etcd_os }}"
+
+  tasks:
+  - name: "Create etcd-related directories"
+    file:
+      path: "{{ item }}"
+      mode: 0755
+      state: "directory"
+    with_items:
+      - "/var/etcd"
+      - "/var/etcd/dl"
+
+  - name: "Get etcd from GitHub and unarchive"
+    unarchive:
+      src: "https://github.com/coreos/etcd/releases/download/{{ etcd_ver }}/{{ etcd_dir }}.tar.gz"
+      dest: "/var/etcd/dl"
+      copy: "no"
+
+  - name: "Move files into place"
+    copy:
+      src: "/var/etcd/dl/{{ etcd_dir }}/{{ item }}"
+      dest: "/usr/local/bin/"
+      remote_src: true
+      mode: 0755
+    with_items:
+      - "etcd"
+      - "etcdctl"
+
+  - name: "Copy etcd Upstart configuration file"
+    copy:
+      src: "etcd.conf"
+      dest: "/etc/init/etcd.conf"
+      owner: "root"
+      group: "root"
+      mode: 0644
+
+  - name: "Copy etcd override file"
+    copy:
+      src: "{{ ansible_hostname }}.defaults"
+      dest: "/etc/default/etcd"
+      owner: "root"
+      group: "root"
+      mode: 0644
+
+  - name: "Ensure etcd service is running"
+    service:
+      name: "etcd"
+      state: "started"

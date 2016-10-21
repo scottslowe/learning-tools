@@ -1,42 +1,34 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# Specify Vagrant version, Vagrant API version, and Vagrant clone location
-# Adjust commented lines to specify provider
-Vagrant.require_version ">= 1.6.0"
-VAGRANTFILE_API_VERSION = "2"
-#ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_fusion'
-ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
-#ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
+# Specify minimum Vagrant version and Vagrant API version
+Vagrant.require_version '>= 1.6.0'
+VAGRANTFILE_API_VERSION = '2'
 
 # Require 'yaml', 'fileutils', and 'erb' modules
 require 'yaml'
 require 'fileutils'
 require 'erb'
 
-# Look for user-data file to configure/customize Photon VMs
-# No changes should need to be made to this file
-USER_DATA = File.join(File.dirname(__FILE__), "user-data")
-META_DATA = File.join(File.dirname(__FILE__), "meta-data")
-
 # Read YAML file with VM details (box, CPU, RAM, IP addresses)
-# Be sure to edit servers.yml to provide correct IP addresses
-servers = YAML.load_file(File.join(File.dirname(__FILE__), 'servers.yml'))
+# Be sure to edit machines.yml to provide correct IP addresses
+machines = YAML.load_file(File.join(File.dirname(__FILE__), 'machines.yml'))
 
 # Use config from YAML file to write out templates for etcd overrides
 template = File.join(File.dirname(__FILE__), 'etcd.defaults.erb')
 content = ERB.new File.new(template).read
 
+# Build etcd override files from ERB template
 etcd_initial_cluster = []
-servers.each do |servers|
-  if servers["etcd"] == "active"
-    etcd_initial_cluster << "#{servers['name']}=http://#{servers['priv_ip']}:2380"
+machines.each do |machine|
+  if machine['etcd'] == true
+    etcd_initial_cluster << "#{machine['name']}=http://#{machine['ip_addr']}:2380"
   end
 end
-servers.each do |servers|
-  if servers["etcd"] == "active"
-    ip = servers['priv_ip']
-    target = File.join(File.dirname(__FILE__), "#{servers['name']}.defaults")
+machines.each do |machine|
+  if machine['etcd'] == true
+    ip = machine['ip_addr']
+    target = File.join(File.dirname(__FILE__), "#{machine['name']}.defaults")
     File.open(target, 'w') { |f| f.write(content.result(binding)) }
   end
 end
@@ -48,64 +40,56 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.ssh.insert_key = false
 
   # Iterate through entries in YAML file to create VMs
-  servers.each do |servers|
-    config.vm.define servers["name"] do |srv|
+  machines.each do |machine|
+
+    # Configure the VMs per details in machines.yml
+    config.vm.define machine['name'] do |srv|
+
       # Don't check for box updates
       srv.vm.box_check_update = false
 
-      # Set VM hostname and box
-      srv.vm.hostname = servers["name"]
-      srv.vm.box = servers["box"]
+      # Specify the hostname of the VM
+      srv.vm.hostname = machine['name']
 
-      # Set the VM name for use later
-      etcdfilename = servers["name"] + ".defaults"
+      # Specify the Vagrant box to use (use VMware box by default)
+      srv.vm.box = machine['box']['vmw']
 
-      # Assign an additional static private network
-      srv.vm.network "private_network", ip: servers["priv_ip"]
+      # Configure default synced folder (disable by default)
+      if machine['sync_disabled'] != nil
+        srv.vm.synced_folder '.', '/vagrant', disabled: machine['sync_disabled']
+      else
+        srv.vm.synced_folder '.', '/vagrant', disabled: true
+      end #if machine['sync_disabled']
 
-      # Disable default synced folder
-      srv.vm.synced_folder ".", "/vagrant", disabled: true
+      # Assign additional private network
+      if machine['ip_addr'] != nil
+        srv.vm.network 'private_network', ip: machine['ip_addr']
+      end # if machine['ip_addr']
 
-      # Configure VMs based on Photon box
-      if srv.vm.box == "vmware/photon"
-        # Make directory on Photon VMs for cloud-init files
-        srv.vm.provision "shell", inline: "mkdir -p /var/lib/cloud/seed/nocloud", privileged: true
+      # Configure CPU & RAM per settings in machines.yml (Fusion)
+      srv.vm.provider 'vmware_fusion' do |vmw|
+        vmw.vmx['memsize'] = machine['ram']
+        vmw.vmx['numvcpus'] = machine['vcpu']
+        if machine['nested'] == true
+          vmw.vmx['vhv.enable'] = 'TRUE'
+        end #if machine['nested']
+      end # srv.vm.provider 'vmware_fusion'
 
-        # Copy user_data file into Photon VMs and more to correct location
-        srv.vm.provision "file", source: "#{USER_DATA}", destination: "/home/vagrant/user-data"
-        srv.vm.provision "shell", inline: "mv /home/vagrant/user-data /var/lib/cloud/seed/nocloud/", privileged: true
+      # Configure CPU & RAM per settings in machines.yml (VirtualBox)
+      srv.vm.provider 'virtualbox' do |vb, override|
+        vb.memory = machine['ram']
+        vb.cpus = machine['vcpu']
+        override.vm.box = machine['box']['vb']
+      end # srv.vm.provider 'virtualbox'
 
-        # Copy meta_data file into Photon VMs and more to correct location
-        srv.vm.provision "file", source: "#{USER_DATA}", destination: "/home/vagrant/meta-data"
-        srv.vm.provision "shell", inline: "mv /home/vagrant/meta-data /var/lib/cloud/seed/nocloud/", privileged: true
-      end # srv.vm.box is vmware/photon
-
-      # Configure VMs based on Ubuntu box
-      if srv.vm.box == "ubuntu/trusty64"
-        # Disable default synced folder
-        srv.vm.synced_folder ".", "/vagrant", disabled: true
-
-        # Copy files into the VMs
-        srv.vm.provision "file", source: "#{etcdfilename}", destination: "/home/vagrant/#{etcdfilename}"
-        srv.vm.provision "shell", inline: "mv /home/vagrant/#{etcdfilename} /etc/default/etcd", privileged: true
-        srv.vm.provision "file", source: "etcd.conf", destination: "/home/vagrant/etcd.conf"
-        srv.vm.provision "shell", inline: "mv /home/vagrant/etcd.conf /etc/init/etcd.conf", privileged: true
-
-        # Run final provisioning script
-        srv.vm.provision "shell", path: "provision.sh", privileged: true
-      end # srv.vm.box is ubuntu/trusty64
-
-      # Configure VMs with RAM and CPUs per settings in servers.yml
-      srv.vm.provider :vmware_fusion do |vmw|
-        vmw.vmx["memsize"] = servers["ram"]
-        vmw.vmx["numvcpus"] = servers["vcpu"]
-      end # srv.vm.provider vmware_fusion
-
-      # Configure VirtualBox VMs CPU & RAM per settings in servers.yml
-      srv.vm.provider :virtualbox do |vb|
-        vb.memory = servers["ram"]
-        vb.cpus = servers["vcpu"]
-      end # srv.vm.provider virtualbox
+      # Provision VMs with Ansible
+      srv.vm.provision 'ansible' do |ansible|
+        if srv.vm.box.include?('ubuntu')
+          ansible.playbook = 'cfg-etcd.yml'
+        elsif srv.vm.box.include?('photon')
+          ansible.playbook = 'cfg-docker.yml'
+        end # if srv.vm.box
+      end # srv.vm.provision
     end # config.vm.define
-  end # servers each
+  end # machines.each
 end # Vagrant.configure

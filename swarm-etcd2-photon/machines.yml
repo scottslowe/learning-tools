@@ -1,0 +1,55 @@
+---
+- name: "etcd-01"
+  box:
+    vmw: "slowe/ubuntu-trusty-x64"
+    vb: "ubuntu/trusty64"
+  ram: "512"
+  vcpu: "1"
+  ip_addr: "192.168.100.101"
+  etcd: true
+  playbook: "cfg-etcd.yml"
+- name: "etcd-02"
+  box:
+    vmw: "slowe/ubuntu-trusty-x64"
+    vb: "ubuntu/trusty64"
+  ram: "512"
+  vcpu: "1"
+  ip_addr: "192.168.100.102"
+  etcd: true
+  playbook: "cfg-etcd.yml"
+- name: "etcd-03"
+  box:
+    vmw: "slowe/ubuntu-trusty-x64"
+    vb: "ubuntu/trusty64"
+  ram: "512"
+  vcpu: "1"
+  ip_addr: "192.168.100.103"
+  etcd: true
+  playbook: "cfg-etcd.yml"
+- name: "photon-01"
+  box:
+    vmw: "vmware/photon"
+    vb: "vmware/photon"
+  ram: "512"
+  vcpu: "1"
+  ip_addr: "192.168.100.111"
+  etcd: false
+  playbook: "cfg-docker.yml"
+- name: "photon-02"
+  box:
+    vmw: "vmware/photon"
+    vb: "vmware/photon"
+  ram: "512"
+  vcpu: "1"
+  ip_addr: "192.168.100.112"
+  etcd: false
+  playbook: "cfg-docker.yml"
+- name: "photon-03"
+  box:
+    vmw: "vmware/photon"
+    vb: "vmware/photon"
+  ram: "512"
+  vcpu: "1"
+  ip_addr: "192.168.100.113"
+  etcd: false
+  playbook: "cfg-docker.yml"

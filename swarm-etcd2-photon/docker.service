@@ -1,0 +1,11 @@
+[Unit]
+Description=Docker Daemon
+
+[Service]
+ExecStart=/usr/bin/docker daemon -H fd:// -s overlay
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=process
+Restart=always
+
+[Install]
+WantedBy=multi-user.target
