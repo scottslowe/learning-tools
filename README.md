@@ -64,7 +64,7 @@ This repository contains a variety of files and tools for learning new technolog
 
 **swarm-consul-openstack**: This folder contains files to create a Consul-backed Docker Swarm cluster on OpenStack. _THIS ENVIRONMENT IS NOT YET FULLY FUNCTIONAL._
 
-**swarm-etcd2-photon:** This folder contains a Vagrant environment and associated support files to turn up an etcd-backed Docker Swarm cluster where the Docker Engine instances are running on VMware Photon. _THIS ENVIRONMENT IS NOT YET FULLY FUNCTIONAL._
+**swarm-etcd2-photon:** This folder contains a Vagrant environment and associated support files to turn up an etcd-backed Docker Swarm cluster where the Docker Engine instances are running on VMware Photon. Provisioning is handled by Ansible 2.x.
 
 **terraform:** This directory provides an example Terraform configuration (in both Terraform format as well as JSON format) designed to work with OpenStack.
 
