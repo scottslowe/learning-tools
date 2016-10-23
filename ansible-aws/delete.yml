@@ -1,0 +1,37 @@
+---
+- hosts: "tag_tool_ansible"
+  connection: "local"
+  gather_facts: false
+  vars:
+    region: "<insert AWS region here>"
+
+  tasks:
+  - name: "Remove tagged EC2 instances from security group"
+    ec2:
+      state: "running"
+      region: "{{ region }}"
+      instance_ids: "{{ ec2_id }}"
+      group_id: ""
+    delegate_to: "localhost"
+      
+  - name: "Terminate tagged EC2 instances"
+    ec2:
+      state: "absent"
+      region: "{{ region }}"
+      instance_ids: "{{ ec2_id }}"
+      wait: true
+    delegate_to: "localhost"
+
+- hosts: "localhost"
+  connection: "local"
+  gather_facts: false
+  vars:
+    region: "<insert AWS region here>"
+
+  tasks:
+  - name: "Remove security group"
+    ec2_group:
+      name: "ansible-sec-group"
+      description: "New SG for Ansible-created instances"
+      region: "{{ region }}"
+      state: "absent"

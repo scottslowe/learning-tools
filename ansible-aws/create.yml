@@ -1,0 +1,41 @@
+---
+- hosts: "localhost"
+  connection: "local"
+  gather_facts: false
+  vars:
+    ami: "<insert AMI ID here>"
+    region: "<insert AWS region here>"
+    type: "t2.micro"
+    sshkey: "<insert SSH keypair name here>"
+    vpcid: "<insert VPC ID here>"
+
+  tasks:
+  - name: "Create a new security group"
+    ec2_group:
+      name: "ansible-sec-group"
+      description: "New SG for Ansible-created instances"
+      region: "{{ region }}"
+      vpc_id: "{{ vpcid }}"
+      rules:
+        - proto: "tcp"
+          from_port: 22
+          to_port: 22
+          cidr_ip: "0.0.0.0/0"
+      rules_egress:
+        - proto: "all"
+          cidr_ip: "0.0.0.0/0"
+    register: secgrp
+
+  - name: "Provision an EC2 instance"
+    ec2:
+      key_name: "{{ sshkey }}"
+      group_id: "{{ secgrp.group_id }}"
+      instance_type: "{{ type }}"
+      ec2_region: "{{ region }}"
+      image: "{{ ami }}"
+      wait: true
+      count: 1
+      instance_tags:
+        tool: "ansible"
+        env: "test"
+    register: ec2instance
