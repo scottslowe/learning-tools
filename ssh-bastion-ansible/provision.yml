@@ -1,0 +1,45 @@
+---
+- hosts: "all"
+  become: "yes"
+  remote_user: "vagrant"
+
+  tasks:
+  - name: "Copy files for client system"
+    copy:
+      src: "{{ item }}"
+      dest: "/home/vagrant/.ssh/"
+      owner: "vagrant"
+      group: "vagrant"
+      mode: "0600"
+    with_items:
+      - "bastion_rsa"
+      - "bastion_rsa.pub"
+      - "remote_rsa"
+      - "remote_rsa.pub"
+      - "config"
+    when: ansible_hostname == "client"
+
+  - name: "Set up authorized keys on bastion host"
+    authorized_key:
+      user: "vagrant"
+      key: "{{ item }}"
+    with_file:
+      - "bastion_rsa.pub"
+    when: ansible_hostname == "bastion"
+
+  - name: "Ensure entries are in /etc/hosts on appropriate systems"
+    lineinfile:
+      dest: "/etc/hosts"
+      line: "{{ item }}"
+    with_items:
+      - "10.100.60.11 remote1"
+      - "10.100.60.12 remote2"
+    when: ansible_hostname == "bastion" or ansible_hostname == "client"
+
+  - name: "Set up authorized keys on remote systems"
+    authorized_key:
+      user: "vagrant"
+      key: "{{ item }}"
+    with_file:
+      - "remote_rsa.pub"
+    when: ansible_hostname == "remote1" or ansible_hostname == "remote2"
