@@ -31,7 +31,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       srv.vm.hostname = machine['name']
 
       # Specify the Vagrant box to use (use VMware box by default)
-      srv.vm.box = machine['vmw_box']
+      srv.vm.box = machine['box']['vmw']
 
       # Configure default synced folder (disable by default)
       if machine['sync_disabled'] != nil
@@ -58,7 +58,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       srv.vm.provider 'virtualbox' do |vb, override|
         vb.memory = machine['ram']
         vb.cpus = machine['vcpu']
-        override.vm.box = machine['vb_box']
+        override.vm.box = machine['box']['vb']
       end # srv.vm.provider 'virtualbox'
     end # config.vm.define
 
