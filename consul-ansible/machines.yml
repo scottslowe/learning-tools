@@ -1,19 +1,22 @@
 ---
 - name: "consul-01"
-  vmw_box: "slowe/ubuntu-trusty-x64"
-  vb_box: "ubuntu/trusty64"
+  box:
+    vmw: "slowe/ubuntu-trusty-x64"
+    vb: "ubuntu/trusty64"
   ram: "512"
   vcpu: "1"
-  ip_addr: 192.168.100.101
+  ip_addr: "192.168.100.101"
 - name: "consul-02"
-  vmw_box: "slowe/ubuntu-trusty-x64"
-  vb_box: "ubuntu/trusty64"
+  box:
+    vmw: "slowe/ubuntu-trusty-x64"
+    vb: "ubuntu/trusty64"
   ram: "512"
   vcpu: "1"
-  ip_addr: 192.168.100.102
+  ip_addr: "192.168.100.102"
 - name: "consul-03"
-  vmw_box: "slowe/ubuntu-trusty-x64"
-  vb_box: "ubuntu/trusty64"
+  box:
+    vmw: "slowe/ubuntu-trusty-x64"
+    vb: "ubuntu/trusty64"
   ram: "512"
   vcpu: "1"
-  ip_addr: 192.168.100.103
+  ip_addr: "192.168.100.103"

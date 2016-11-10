@@ -1,7 +1,8 @@
 ---
-- name: lxd-01
-  vmw_box: slowe/ubuntu-trusty-x64
-  vb_box: ubuntu/trusty64
-  ram: 512
-  vcpu: 1
-  ip_addr: 192.168.100.100
+- name: "lxd-01"
+  box:
+    vmw: "slowe/ubuntu-trusty-x64"
+    vb: "ubuntu/trusty64"
+  ram: "512"
+  vcpu: "1"
+  ip_addr: "192.168.100.100"
