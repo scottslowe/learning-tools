@@ -42,7 +42,11 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
       # Iterate through networks as per settings in machines.yml
       machine['nics'].each do |net|
-        srv.vm.network net['type'], ip: net['ip_addr']
+        if net['ip_addr'] == 'dhcp'
+          srv.vm.network net['type'], type: net['ip_addr']
+        else
+          srv.vm.network net['type'], ip: net['ip_addr']
+        end # if net['ip_addr']
       end # machine['nics'].each
 
       # Configure CPU & RAM per settings in machines.yml (Fusion)
