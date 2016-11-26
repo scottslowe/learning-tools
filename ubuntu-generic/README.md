@@ -16,9 +16,9 @@ These files were created to allow users to use Vagrant ([http://www.vagrantup.co
 
 These instructions assume you've already installed your virtualization provider (VMware Fusion/Workstation or VirtualBox), Vagrant, and any necessary plugins (such as the Vagrant VMware plugin). Please refer to the documentation for those products for more information on installation or configuration.
 
-1. Use `vagrant box add` to add an Ubuntu 14.04 base box to be used by this `Vagrantfile`. If you are using a VMware virtualization provider, you can use my base box ("slowe/ubuntu-trusty-x64"; it should work with either VMware Workstation or VMware Fusion but has only been tested on Fusion).
+1. Use `vagrant box add` to add an Ubuntu 14.04 base box to be used by this `Vagrantfile`. The "bento" box for Ubuntu 14.04 ("bento/ubuntu-14.04") offers support for both VirtualBox and VMware Fusion/Workstation.
 
-2. If you are using a box other than my Ubuntu 14.04 base box, or if you want to change the default amount of RAM or number of vCPUs assigned to the VM, edit the `machines.yml` file and make the desired changes.
+2. Edit the `machines.yml` file to specify the Vagrant box you added in step 1. You can also edit this file to change the amount of RAM allocated or the number of virtual CPUs assigned.
 
 3. Run `vagrant up`, and when the VM is up use `vagrant ssh` to access the generic Ubuntu 14.04 installation.
 

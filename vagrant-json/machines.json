@@ -1,7 +1,7 @@
 [
 	{
 		"name": "jessie",
-		"vmw_box": "slowe/debian-81-x64",
+		"vmw_box": "bento/debian-8.6",
 		"vb_box": "debian/jessie64",
 		"ram": 512,
 		"vcpu": 1,
@@ -11,7 +11,7 @@
 
 	{
 		"name": "trusty",
-		"vmw_box": "slowe/ubuntu-trusty-x64",
+		"vmw_box": "bento/ubuntu-14.04",
 		"vb_box": "ubuntu/trusty64",
 		"ram": 512,
 		"vcpu": 1,
@@ -21,7 +21,7 @@
 
 	{
 		"name": "precise",
-		"vmw_box": "slowe/ubuntu-precise-x64",
+		"vmw_box": "bento/ubuntu-12.04",
 		"vb_box": "ubuntu/precise64",
 		"ram": 512,
 		"vcpu": 1,
