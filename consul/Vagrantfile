@@ -20,6 +20,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Iterate through entries in YAML file to create VMs
   machines.each do |machine|
+
+    # Configure the VMs per details in machines.yml
     config.vm.define machine['name'] do |srv|
 
       # Don't check for box updates
@@ -27,25 +29,27 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
       # Specify hostname and Vagrant box
       srv.vm.hostname = machine['name']
+
+      # Specify the Vagrant box to use (use VMware box by default)
       srv.vm.box = machine['box']['vmw']
+
+      # Configure default synced folder (disable by default)
+      if machine['sync_disabled'] != nil
+        srv.vm.synced_folder '.', '/vagrant', disabled: machine['sync_disabled']
+      else
+        srv.vm.synced_folder '.', '/vagrant', disabled: true
+      end #if machine['sync_disabled']
 
       # Assign an additional static private network
       srv.vm.network 'private_network', ip: machine['priv_ip']
-
-      # Specify default synced folder; requires VMware Tools
-      srv.vm.synced_folder '.', '/vagrant', disabled: true
-
-      # Copy in the Consul configuration files
-      srv.vm.provision 'file', source: 'server.json', destination: '/home/vagrant/config.json'
-      srv.vm.provision 'file', source: 'consul.conf', destination: '/home/vagrant/consul.conf'
-
-      # Provision consul to the VMs
-      srv.vm.provision 'shell', path: 'consul.sh'
 
       # Configure VMs with RAM and CPUs per settings in machines.yml (Fusion)
       srv.vm.provider 'vmware_fusion' do |vmw|
         vmw.vmx['memsize'] = machine['ram']
         vmw.vmx['numvcpus'] = machine['vcpu']
+        if machine['nested'] == true
+          vmw.vmx['vhv.enable'] = 'TRUE'
+        end #if machine['nested']
       end # srv.vm.provider 'vmware_fusion'
 
       # Configure VMs with RAM and CPUs per settings in machines.yml (VirtualBox)
@@ -54,6 +58,13 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         vb.cpus = machine['vcpu']
         override.vm.box = machine['box']['vb']
       end # srv.vm.provider 'virtualbox'
+
+      # Copy in the Consul configuration files
+      srv.vm.provision 'file', source: 'server.json', destination: '/home/vagrant/config.json'
+      srv.vm.provision 'file', source: 'consul.conf', destination: '/home/vagrant/consul.conf'
+
+      # Provision consul to the VMs
+      srv.vm.provision 'shell', path: 'consul.sh'
     end # config.vm.define
   end # machines.each
 end # Vagrant.configure

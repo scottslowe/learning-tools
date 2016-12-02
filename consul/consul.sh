@@ -17,11 +17,11 @@ fi
 if [[ ! -e /usr/local/bin/consul ]];then
 
   # Download Consul
-  curl -kLO https://releases.hashicorp.com/consul/0.5.2/consul_0.5.2_linux_amd64.zip
+  curl -kLO https://releases.hashicorp.com/consul/0.7.1/consul_0.7.1_linux_amd64.zip
 
   # Decompress and remove Consul download
-  unzip consul_0.5.2_linux_amd64.zip
-  rm consul_0.5.2_linux_amd64.zip
+  unzip consul_0.7.1_linux_amd64.zip
+  rm consul_0.7.1_linux_amd64.zip
 
   # Move Consul binary to location in path
   sudo mv consul /usr/local/bin/
