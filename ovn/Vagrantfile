@@ -1,20 +1,16 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# Specify Vagrant version, Vagrant API version, Vagrant clone location,
-# and default Vagrant provider
+# Specify minimum Vagrant version and Vagrant API version
 Vagrant.require_version '>= 1.6.0'
 VAGRANTFILE_API_VERSION = '2'
-ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_fusion'
-ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
-#ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
-#ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_appcatalyst'
 
 # Require 'yaml' module
 require 'yaml'
 
-# Read YAML file with VM details (box, CPU, and RAM)
-servers = YAML.load_file('servers.yml')
+# Read YAML file with VM details (box, CPU, RAM, IP addresses)
+# Edit machines.yml to change VM configuration details
+machines = YAML.load_file(File.join(File.dirname(__FILE__), 'machines.yml'))
 
 # Create and configure the VMs
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
@@ -23,38 +19,51 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.ssh.insert_key = false
 
   # Iterate through entries in YAML file to create VMs
-  servers.each do |server|
-    config.vm.define server['name'] do |srv|
+  machines.each do |machine|
+
+    # Configure the VMs per details in machines.yml
+    config.vm.define machine['name'] do |srv|
 
       # Don't check for box updates
       srv.vm.box_check_update = false
-      srv.vm.hostname = server['name']
-      srv.vm.box = server['box']
+
+      # Specify the hostname of the VM
+      srv.vm.hostname = machine['name']
+
+      # Specify the Vagrant box to use (use VMware box by default)
+      srv.vm.box = machine['box']['vmw']
 
       # Configure default synced folder (disable by default)
-      if server['sync_disabled'] != nil
-        srv.vm.synced_folder '.', '/vagrant', disabled: server['sync_disabled']
+      if machine['sync_disabled'] != nil
+        srv.vm.synced_folder '.', '/vagrant', disabled: machine['sync_disabled']
       else
         srv.vm.synced_folder '.', '/vagrant', disabled: true
-      end #if servers['sync_disabled']
+      end #if machine['sync_disabled']
 
-      # Configure CPU & RAM per settings in servers.yml (Fusion)
-      srv.vm.provider :vmware_fusion do |vmw|
-        vmw.vmx['memsize'] = server['ram']
-        vmw.vmx['numvcpus'] = server['vcpu']
-      end # srv.vm.provider vmware_fusion
+      # Iterate through networks as per settings in machines.yml
+      machine['nics'].each do |net|
+        if net['ip_addr'] == 'dhcp'
+          srv.vm.network net['type'], type: net['ip_addr']
+        else
+          srv.vm.network net['type'], ip: net['ip_addr']
+        end # if net['ip_addr']
+      end # machine['nics'].each
 
-      # Configure CPU & RAM per settings in servers.yml (AppCatalyst)
-      srv.vm.provider :vmware_appcatalyst do |vmw|
-        vmw.vmx['memsize'] = server['ram']
-        vmw.vmx['numvcpus'] = server['vcpu']
-      end # srv.vm.provider vmware_appcatalyst
+      # Configure CPU & RAM per settings in machines.yml (Fusion)
+      srv.vm.provider 'vmware_fusion' do |vmw|
+        vmw.vmx['memsize'] = machine['ram']
+        vmw.vmx['numvcpus'] = machine['vcpu']
+        if machine['nested'] == true
+          vmw.vmx['vhv.enable'] = 'TRUE'
+        end #if machine['nested']
+      end # srv.vm.provider 'vmware_fusion'
 
-      # Configure CPU & RAM per settings in servers.yml (VirtualBox)
-      srv.vm.provider :virtualbox do |vb|
-        vb.memory = server['ram']
-        vb.cpus = server['vcpu']
-      end # srv.vm.provider virtualbox
+      # Configure CPU & RAM per settings in machines.yml (VirtualBox)
+      srv.vm.provider 'virtualbox' do |vb, override|
+        vb.memory = machine['ram']
+        vb.cpus = machine['vcpu']
+        override.vm.box = machine['box']['vb']
+      end # srv.vm.provider 'virtualbox'
     end # config.vm.define
-  end # servers.each
+  end # machines.each
 end # Vagrant.configure
