@@ -1,0 +1,22 @@
+---
+- hosts: "all"
+  become: "yes"
+  remote_user: "vagrant"
+
+  tasks:
+  - name: "Add Ubuntu Cloud Archive repository"
+    apt_repository:
+      repo: "{{ item }}"
+      state: "present"
+    with_items:
+    - "deb http://cloud.archive.ubuntu.com/ubuntu newton main"
+
+  - name: "Install OVS/OVN 2.6.0"
+    apt:
+      state: "present"
+      update_cache: "yes"
+      name: "{{ item }}"
+    with_items:
+    - "openvswitch-switch"
+    - "openvswitch-common"
+    - "ovn-controller"
