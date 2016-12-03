@@ -1,0 +1,45 @@
+---
+- hosts: "all"
+  become: "yes"
+  remote_user: "vagrant"
+
+  tasks:
+  - name: "Install Ubuntu Cloud Keyring package"
+    apt:
+      state: "present"
+      update_cache: "yes"
+      name: "ubuntu-cloud-keyring"
+
+  - name: "Add Ubuntu Cloud Archive repository"
+    apt_repository:
+      repo: "{{ item }}"
+      state: "present"
+      update_cache: "yes"
+    with_items:
+    - "deb http://ubuntu-cloud.archive.canonical.com/ubuntu xenial-updates/newton main"
+
+  - name: "Install OVS/OVN 2.6.0"
+    apt:
+      state: "present"
+      update_cache: "no"
+      name: "{{ item }}"
+    with_items:
+    - "ovn-common"
+    - "ovn-host"
+    - "openvswitch-common"
+    - "openvswitch-switch"
+
+  - name: "Install central OVN components"
+    apt:
+      state: "present"
+      update_cache: "no"
+      name: "ovn-central"
+    when: ansible_hostname == "ovn-01"
+
+  - name: "Install configuration script"
+    template:
+      src: "setup.sh.j2"
+      dest: "/home/vagrant/setup.sh"
+      owner: "vagrant"
+      group: "vagrant"
+      mode: "0755"

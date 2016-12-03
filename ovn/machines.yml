@@ -1,0 +1,28 @@
+---
+- name: "ovn-01"
+  box:
+    vmw: "bento/ubuntu-16.04"
+    vb: "bento/ubuntu-16.04"
+  ram: "512"
+  vcpu: "1"
+  nics:
+    - type: "private_network"
+      ip_addr: "192.168.100.101"
+- name: "ovn-02"
+  box:
+    vmw: "bento/ubuntu-16.04"
+    vb: "bento/ubuntu-16.04"
+  ram: "512"
+  vcpu: "1"
+  nics:
+    - type: "private_network"
+      ip_addr: "192.168.100.102"
+- name: "ovn-03"
+  box:
+    vmw: "bento/ubuntu-16.04"
+    vb: "bento/ubuntu-16.04"
+  ram: "512"
+  vcpu: "1"
+  nics:
+    - type: "private_network"
+      ip_addr: "192.168.100.103"
