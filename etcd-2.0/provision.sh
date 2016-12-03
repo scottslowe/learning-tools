@@ -28,8 +28,8 @@ if [[ ! -e /usr/local/bin/etcd ]]; then
 fi
 
 # Copy files into the correct locations; requires shared folders
-sudo cp /vagrant/etcd.conf /etc/init/etcd.conf
-sudo cp /vagrant/$HOSTNAME.defaults /etc/default/etcd
+sudo cp /home/vagrant/etcd.conf /etc/init/etcd.conf
+sudo cp /home/vagrant/etcd.defaults /etc/default/etcd
 
 # restart if already running, otherwise start.
 initctl status etcd && initctl restart etcd || initctl start etcd

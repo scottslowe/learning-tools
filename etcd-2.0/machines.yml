@@ -1,0 +1,22 @@
+---
+- box:
+    vmw: "bento/ubuntu-14.04"
+    vb: "ubuntu/trusty64"
+  name: "etcd-01"
+  priv_ip: "192.168.101.101"
+  ram: "512"
+  vcpu: "1"
+- box:
+    vmw: "bento/ubuntu-14.04"
+    vb: "ubuntu/trusty64"
+  name: "etcd-02"
+  priv_ip: "192.168.101.102"
+  ram: "512"
+  vcpu: "1"
+- box:
+    vmw: "bento/ubuntu-14.04"
+    vb: "ubuntu/trusty64"
+  name: "etcd-03"
+  priv_ip: "192.168.101.103"
+  ram: "512"
+  vcpu: "1"
