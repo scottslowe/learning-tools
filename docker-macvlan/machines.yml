@@ -1,15 +1,15 @@
 ---
-- name: docker-01
-  vmw_box: slowe/ubuntu-trusty-x64
-  vb_box: ubuntu/trusty64
-  ram: 1024
-  vcpu: 1
-  ip_addr: 192.168.100.100
+- name: "docker-01"
+  vmw_box: "bento/ubuntu-14.04"
+  vb_box: "ubuntu/trusty64"
+  ram: "1024"
+  vcpu: "1"
+  ip_addr: "192.168.100.100"
   docker: true
-- name: remote-01
-  vmw_box: slowe/ubuntu-trusty-x64
-  vb_box: ubuntu/trusty64
-  ram: 512
-  vcpu: 1
-  ip_addr: 192.168.100.101
+- name: "remote-01"
+  vmw_box: "bento/ubuntu-14.04"
+  vb_box: "ubuntu/trusty64"
+  ram: "512"
+  vcpu: "1"
+  ip_addr: "192.168.100.101"
   docker: false

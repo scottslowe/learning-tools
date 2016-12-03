@@ -16,13 +16,13 @@ These files were created to allow users to use Vagrant ([http://www.vagrantup.co
 
 These instructions assume you've already installed Vagrant, your virtualization provider, and any necessary Vagrant plugins. Please refer to the documentation for those products for more information on installation or configuration.
 
-1. Use `vagrant box add` to install an Ubuntu 14.04 x64 box for the vmware_fusion provider. I have a base box you can use for this purpose; to use my Ubuntu 14.04 x64 base box, add the box with `vagrant box add slowe/ubuntu-trusty-x64`.
+1. Use `vagrant box add` to install an Ubuntu 14.04 x64 box. For a VMware-formatted box, the "bento/ubuntu-14.04" box is one good option. For VirtualBox, you can use the "ubuntu/trusty64" box.
 
 2. Place the files from the `rkt` directory of this GitHub repository into a directory on your local system. You can clone the entire "learning-tools" repository (using `git clone`) or just download the specific files from the the `rkt` folder.
 
 3. Verify that the Vagrant box you added in step #1 is the box listed in `machines.yml`. Note there are separate lines for a VMware Fusion-formatted box (on the "vmw_box" line) and a VirtualBox-formatted box (on the "vb_box" line).
 
-4. If you download the `rkt-v1.4.0.tar.gz` release from GitHub (see [https://github.com/coreos/rkt/releases](https://github.com/coreos/rkt/releases)) and place it in the same directory with the `Vagrantfile` and other files, then the Vagrant provisioning script won't download it from the Internet and will use the local copy instead.
+4. If you download the `rkt-v1.20.0.tar.gz` release from GitHub (see [https://github.com/coreos/rkt/releases](https://github.com/coreos/rkt/releases)) and place it in the same directory with the `Vagrantfile` and other files, then the Vagrant provisioning script won't download it from the Internet and will use the local copy instead.
 
 5. Use `vagrant up` to instantiate the learning environment.
 

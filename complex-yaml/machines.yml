@@ -1,8 +1,8 @@
 ---
 - box:
-    vmw: slowe/debian-81-x64
-    vb: debian/jessie64
-  name: jessie
+    vmw: "bento/debian-8.6"
+    vb: "debian/jessie64"
+  name: "jessie"
   nics:
     - type: "private_network"
       ip_addr: "192.168.100.101"

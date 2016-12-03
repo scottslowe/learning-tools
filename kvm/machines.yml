@@ -1,6 +1,6 @@
 ---
 - name: "kvm-01"
-  vmw_box: "slowe/ubuntu-trusty-x64"
+  vmw_box: "bento/ubuntu-14.04"
   ram: "1024"
   vcpu: "1"
   ip_addr: "192.168.100.100"

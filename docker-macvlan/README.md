@@ -16,7 +16,7 @@ These files were created to allow users to use Vagrant ([http://www.vagrantup.co
 
 These instructions assume you've already installed VMware Fusion, Vagrant, and the Vagrant VMware plugin. Please refer to the documentation for those products for more information on installation or configuration. Note that Internet access is required when using `vagrant up` to create this environment.
 
-1. Use `vagrant box add` to install an Ubuntu 14.04 x86_64 Vagrant box. I have a base box you can use for this purpose; to use my Ubuntu 14.04 x64 base box, add the box with `vagrant box add slowe/ubuntu-trusty-x64`.
+1. Use `vagrant box add` to install an Ubuntu 14.04 x86_64 Vagrant box. The "bento/ubuntu-14.04" box is a good option here.
 
 2. Place the files from the `docker-macvlan` directory of this GitHub repository into a directory on your local system. You can clone the entire "learning-tools" repository (using `git clone`) or just download the specific files from the the `docker-macvlan` folder.
 

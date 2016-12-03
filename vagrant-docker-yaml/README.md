@@ -16,7 +16,7 @@ These files were created to allow users to use Vagrant ([http://www.vagrantup.co
 
 ## Instructions
 
-1. Use `vagrant box add` to install an Ubuntu 14.04 base box. If you'd like to use a VMware Fusion-formatted box, you can use my base box ("slowe/ubuntu-trusty-x64").
+1. Use `vagrant box add` to install an Ubuntu 14.04 base box. For a VMware-formatted box, the "bento/ubuntu-14.04" box is a good option; on VirtualBox, you can use the "ubuntu/trusty64" box.
 
 2. Edit `hostvms.yml` to specify the name of the box you added in step #1.
 

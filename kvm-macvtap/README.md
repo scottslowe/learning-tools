@@ -24,7 +24,7 @@ These instructions assume you've already installed VMware Fusion, Vagrant, the V
 
 Note that you'll also need a VNC client to connect the console of the nested KVM VM; these instructions assume you've already installed, configured, and tested a VNC client.
 
-1. Use `vagrant box add` to install an Ubuntu 14.04 x64 box for the "vmware_fusion" provider. I have a base box you can use for this purpose; to use my Ubuntu 14.04 x64 base box, add the box with `vagrant box add slowe/ubuntu-trusty-x64`. (In theory you should be able to use this Vagrant environment with VMware Workstation as well, but only VMware Fusion was tested.)
+1. Use `vagrant box add` to install an Ubuntu 14.04 x64 box for the "vmware_fusion" provider. The "bento/ubuntu-14.04" box is a good option here. (In theory you should be able to use this Vagrant environment with VMware Workstation as well, but only VMware Fusion was tested.)
 
 2. Copy the files from the `kvm-macvtap` directory of this repository (the "learning-tools" repository) to a directory on your system. You can clone the entire "learning-tools" repository (using `git clone`), or just download the specific files from the `kvm-macvtap` directory.
 

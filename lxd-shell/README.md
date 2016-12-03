@@ -1,12 +1,12 @@
 # Running LXC-Based OS Containers with LXD
 
-These files were created to allow users to use Vagrant ([http://www.vagrantup.com](http://www.vagrantup.com)) quickly and relatively easily experiment with LXD (pronounced "lex-dee"), a new daemon and CLI client for working with LXC-based OS containers. The configuration was tested using Vagrant 1.7.2, VMware Fusion 6.0.5, and the Vagrant VMware plugin.
+These files were created to allow users to use Vagrant ([http://www.vagrantup.com](http://www.vagrantup.com)) quickly and relatively easily experiment with LXD (pronounced "lex-dee"), a new daemon and CLI client for working with LXC-based OS containers. The configuration was tested using Vagrant 1.8.x, VMware Fusion 8.1.0, and the Vagrant VMware plugin.
 
 ## Contents
 
 * **README.md**: This file you're currently reading.
 
-* **servers.yml**: This YAML file contains a list of VM definitions and associated configuration data. It is referenced by `Vagrantfile` when Vagrant instantiates the VMs. No changes should be necessary to use this file.
+* **machines.yml**: This YAML file contains a list of VM definitions and associated configuration data. It is referenced by `Vagrantfile` when Vagrant instantiates the VMs. No changes should be necessary to use this file.
 
 * **setup.sh**: This shell script is called by the Vagrant shell provisioner and configures `rkt` inside the VM created by Vagrant. No changes should be needed to this file.
 
@@ -16,13 +16,13 @@ These files were created to allow users to use Vagrant ([http://www.vagrantup.co
 
 These instructions assume you've already installed VMware Fusion, Vagrant, and the Vagrant VMware plugin. Please refer to the documentation for those products for more information on installation or configuration.
 
-1. Use `vagrant box add` to install an Ubuntu 14.04 x64 box for the "vmware_fusion" provider. I have a base box you can use for this purpose; to use my Ubuntu 14.04 x64 base box, add the box with `vagrant box add slowe/ubuntu-trusty-x64`. (In theory you should be able to use this Vagrant environment with VMware Workstation as well, but only VMware Fusion was tested.)
+1. Use `vagrant box add` to install an Ubuntu 14.04 x64 box for the "vmware_fusion" provider. The "bento/ubuntu-14.04" box is a good option for a VMware-formatted box. (In theory you should be able to use this Vagrant environment with VMware Workstation as well, but only VMware Fusion was tested.)
 
-2. Place the files from the `lxd` directory of this GitHub repository (the "lowescott/learning-tools" repository) into a directory on your system. You can clone the entire "learning-tools" repository (using `git clone`), or just download the specific files from the `lxd` directory.
+2. Place the files from the `lxd-shell` directory of this GitHub repository (the "lowescott/learning-tools" repository) into a directory on your system. You can clone the entire "learning-tools" repository (using `git clone`), or just download the specific files from the `lxd-shell` directory.
 
-3. Edit `servers.yml` to ensure that the box specified in that file matches the Ubuntu 14.04 x64 base box you just installed and will be using. _I recommend that you do not change any other values in this file unless you know it is necessary._
+3. Edit `machines.yml` to ensure that the box specified in that file matches the Ubuntu 14.04 x64 base box you just installed and will be using. _I recommend that you do not change any other values in this file unless you know it is necessary._
 
-4. From a terminal window, change into the directory where the files from this directory are stored and run `vagrant up` to bring up the VMs specified in `servers.yml` and `Vagrantfile`. (By default, it will create and power on only a single VM.)
+4. From a terminal window, change into the directory where the files from this directory are stored and run `vagrant up` to bring up the VMs specified in `machines.yml` and `Vagrantfile`. (By default, it will create and power on only a single VM.)
 
 5. Once Vagrant has finished creating, booting, and provisioning the VM (note you'll need Internet access for this step), log into the VM (named "lxd-01" by default) using `vagrant ssh`.
 

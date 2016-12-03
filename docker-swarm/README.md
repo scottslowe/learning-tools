@@ -22,7 +22,7 @@ These files were created to allow users to use Vagrant ([http://www.vagrantup.co
 
 These instructions assume you've already installed your virtualization provider (VMware Fusion/Workstation or VirtualBox), Vagrant, and any necessary plugins (such as the Vagrant VMware plugin). Please refer to the documentation for those products for more information on installation or configuration.
 
-1. Use `vagrant box add` to install an Ubuntu 14.04 x64 box. If you need a base box formatted for the VMware provider, I have a base box you can use for this purpose; to use my VMware-formatted Ubuntu 14.04 x64 base box, add the box with `vagrant box add slowe/ubuntu-trusty-x64`.
+1. Use `vagrant box add` to install an Ubuntu 14.04 x64 box. The "bento/ubuntu-14.04" box is a good option here.
 
 2. Use `vagrant box add` to install a CoreOS base box. The `Vagrantfile` assumes you are using the Stable release of CoreOS (the box named `coreos-stable`). If the box name is different, you'll need to edit the `Vagrantfile` accordingly. You'll need to be sure to use a version of CoreOS that comes with Docker 1.4.0 or later, as Swarm requires Docker => 1.4.0. Note that CoreOS Stable 557.2.0 comes with Docker 1.4.1.
 

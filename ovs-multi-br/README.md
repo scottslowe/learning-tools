@@ -1,6 +1,8 @@
 # Open vSwitch Multi-Bridge Configuration
 
-These files were created to test a method of providing a single Vagrant ([http://www.vagrantup.com](http://www.vagrantup.com)) environment that enables easier experimentation with Open vSwitch (OVS) configurations leveraging multiple OVS bridges. This environment was tested using Vagrant 1.8.1 with VMware Fusion 8.1.0 on OS X 10.11.3 using my self-built "slowe/ubuntu-trusty-x64" Vagrant box.
+These files were created to test a method of providing a single Vagrant ([http://www.vagrantup.com](http://www.vagrantup.com)) environment that enables easier experimentation with Open vSwitch (OVS) configurations leveraging multiple OVS bridges. This environment was tested using Vagrant 1.8.7 with VMware Fusion 8.1.0 on OS X 10.11.6.
+
+Note that VirtualBox is _not_ supported for this environment, as this environment uses a nested hypervisor (not supported by VirtualBox).
 
 ## Contents
 
@@ -8,7 +10,7 @@ These files were created to test a method of providing a single Vagrant ([http:/
 
 * **br0.xml** and **br1.xml**: These XML files are used to define a couple OVS-based Libvirt networks. No edits are necessary to this file.
 
-* **machines.yml**: This YAML file contains a list of VM definitions and associated configuration data. It is referenced by `Vagrantfile` when Vagrant instantiates the VMs. Separate box definitions are included: "vb_box" for VirtualBox, "vmw_box" for VMware Fusion.
+* **machines.yml**: This YAML file contains a list of VM definitions and associated configuration data. It is referenced by `Vagrantfile` when Vagrant instantiates the VMs. Use the "vmw_box" line to specify a box formatted for the VMware provider. VirtualBox is not supported here because the environment uses nested virtualization.
 
 * **provision.yml**: This YAML file is an Ansible playbook that configures the VMs created by Vagrant when they are first provisioned. Ansible is called automatically by Vagrant; you do not need to invoke Ansible separately. No changes are needed to this file.
 
@@ -18,13 +20,13 @@ These files were created to test a method of providing a single Vagrant ([http:/
 
 ## Instructions
 
-These instructions assume you've already installed Vagrant, the necessary back-end virtualization provider(s) (only VirtualBox and VMware Fusion are supported by this testing environment), and any necessary plugins. These instructions also assume that Ansible (version 2.1.1.0 or later) is installed and working properly. Please refer to the documentation for those products for more information on installation or configuration.
+These instructions assume you've already installed Vagrant, the necessary back-end virtualization provider(s) (only VMware providers are supported by this testing environment), and any necessary plugins. These instructions also assume that Ansible (version 2.1.1.0 or later) is installed and working properly. Please refer to the documentation for those products for more information on installation or configuration.
 
-1. Use `vagrant box add` to install a 64-bit Ubuntu 14.04 Vagrant box. If you are a VMware Fusion user, I have a base box you can use for this purpose; to use my Ubuntu 14.04 x64 base box, add the box with `vagrant box add slowe/ubuntu-trusty-x64`. (In theory you should be able to use this Vagrant environment with VMware Workstation as well, but only VMware Fusion was tested.)
+1. Use `vagrant box add` to install a 64-bit Ubuntu 14.04 Vagrant box. For a VMware-formatted box, one good option is the "bento/ubuntu-14.04" box. (In theory you should be able to use this Vagrant environment with VMware Workstation as well, but only VMware Fusion was tested.)
 
 2. Copy the files from the `ovs-multi-br` directory of this repository (the "learning-tools" repository) to a directory on your system. You can clone the entire "learning-tools" repository (using `git clone`), or just download the specific files from the `ovs-multi-br` directory.
 
-3. Edit `machines.yml` to ensure that the box specified in that file matches the Ubuntu 14.04 x64 base box you just installed and will be using. If you are using VMware Fusion (or VMware Workstation), specify the value on the "vmw_box" line. If you are using VirtualBox, specify the value for "vb_box". _I recommend that you do not change any other values in this file unless you know it is necessary._
+3. Edit `machines.yml` to ensure that the box specified in that file matches the Ubuntu 14.04 x64 base box you just installed and will be using. If you are using VMware Fusion (or VMware Workstation), specify the value on the "vmw_box" line. _I recommend that you do not change any other values in this file unless you know it is necessary._
 
 4. From a terminal window, change into the directory where the files from this directory are stored and run `vagrant up` to bring up the VMs according to the instructions in `machines.yml` and `Vagrantfile`. (By default, it will create and power on a single VMs that will act as a KVM hypervisor.)
 

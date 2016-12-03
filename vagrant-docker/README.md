@@ -6,13 +6,13 @@ These files were created to allow users to use Vagrant ([http://www.vagrantup.co
 
 * **README.md**: The file you're currently reading.
 
-* **host/Vagrantfile**: This file is used by Vagrant to spin up a "host VM" for use with the Vagrant Docker provider. Edit this file to change the Vagrant box you'd like to use; by default, this Vagrantfile uses the "slowe/ubuntu-trusty-x64" box (built for the "vmware_desktop" provider).
+* **host/Vagrantfile**: This file is used by Vagrant to spin up a "host VM" for use with the Vagrant Docker provider. Edit this file to change the Vagrant box you'd like to use; by default, this Vagrantfile uses the "bento/ubuntu-14.04" box (includes support for the "vmware_desktop" provider).
 
 * **Vagrantfile**: This file is used by Vagrant to spin up the Docker containers on the host VM created by `host/Vagrantfile`. Edit this file to change any of the properties of the Docker container you want created by Vagrant.
 
 ## Instructions
 
-1. If you wish to use a box _other_ than my "ubuntu-trusty-x64" base box (running Ubuntu 14.04), edit the `Vagrantfile` in the host subdirectory.
+1. If you wish to use a box _other_ than the "bento/ubuntu-14.04" box (running Ubuntu 14.04), edit the `Vagrantfile` in the host subdirectory.
 
 2. If you wish to run a Docker container with an image _other_ than the standard Nginx image, edit the main `Vagrantfile` and specify a new image.
 

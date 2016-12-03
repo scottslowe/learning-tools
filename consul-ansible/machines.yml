@@ -1,21 +1,21 @@
 ---
 - name: "consul-01"
   box:
-    vmw: "slowe/ubuntu-trusty-x64"
+    vmw: "bento/ubuntu-14.04"
     vb: "ubuntu/trusty64"
   ram: "512"
   vcpu: "1"
   ip_addr: "192.168.100.101"
 - name: "consul-02"
   box:
-    vmw: "slowe/ubuntu-trusty-x64"
+    vmw: "bento/ubuntu-14.04"
     vb: "ubuntu/trusty64"
   ram: "512"
   vcpu: "1"
   ip_addr: "192.168.100.102"
 - name: "consul-03"
   box:
-    vmw: "slowe/ubuntu-trusty-x64"
+    vmw: "bento/ubuntu-14.04"
     vb: "ubuntu/trusty64"
   ram: "512"
   vcpu: "1"

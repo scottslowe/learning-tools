@@ -24,7 +24,7 @@ These files were created to allow users to use Vagrant ([http://www.vagrantup.co
 
 These instructions assume you've already installed VMware Fusion, Vagrant, and the Vagrant VMware plugin. Please refer to the documentation for those products for more information on installation or configuration.
 
-1. Use `vagrant box add` to add a 64-bit Ubuntu 14.04 ("Trusty Tahr") base box to be used by this `Vagrantfile`. You'll need to specify a box that provides support for the `vmware_desktop` provider (it should work with either VMware Workstation or VMware Fusion). If you'd like, you can use my base box ("slowe/ubuntu-trusty-x64").
+1. Use `vagrant box add` to add a 64-bit Ubuntu 14.04 ("Trusty Tahr") base box to be used by this `Vagrantfile`. For a VMware-formatted box, the "bento/ubuntu-14.04" box is a good option. The "ubuntu/trusty64" box is a good option for VirtualBox.
 
 2. Edit the `servers.yml` file to ensure the box you downloaded in step 1 is specified on the "box:" line of this file for each VM. (By default, there are four VMs, so make sure to specify the correct box name for all four VMs.)
 

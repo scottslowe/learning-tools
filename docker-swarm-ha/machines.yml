@@ -1,7 +1,7 @@
 ---
 - name: "consul-01"
   box:
-    vmw: "slowe/ubuntu-trusty-x64"
+    vmw: "bento/ubuntu-14.04"
     vb: "ubuntu/trusty64"
   ram: "512"
   vcpu: "1"
@@ -9,7 +9,7 @@
   role: "consul"
 - name: "consul-02"
   box:
-    vmw: "slowe/ubuntu-trusty-x64"
+    vmw: "bento/ubuntu-14.04"
     vb: "ubuntu/trusty64"
   ram: "512"
   vcpu: "1"
@@ -17,7 +17,7 @@
   role: "consul"
 - name: "consul-03"
   box:
-    vmw: "slowe/ubuntu-trusty-x64"
+    vmw: "bento/ubuntu-14.04"
     vb: "ubuntu/trusty64"
   ram: "512"
   vcpu: "1"
@@ -25,7 +25,7 @@
   role: "consul"
 - name: "docker-01"
   box:
-    vmw: "slowe/ubuntu-trusty-x64"
+    vmw: "bento/ubuntu-14.04"
     vb: "ubuntu/trusty64"
   ram: "512"
   vcpu: "1"
@@ -33,7 +33,7 @@
   role: "docker"
 - name: "docker-02"
   box:
-    vmw: "slowe/ubuntu-trusty-x64"
+    vmw: "bento/ubuntu-14.04"
     vb: "ubuntu/trusty64"
   ram: "512"
   vcpu: "1"
@@ -41,7 +41,7 @@
   role: "docker"
 - name: "docker-03"
   box:
-    vmw: "slowe/ubuntu-trusty-x64"
+    vmw: "bento/ubuntu-14.04"
     vb: "ubuntu/trusty64"
   ram: "512"
   vcpu: "1"

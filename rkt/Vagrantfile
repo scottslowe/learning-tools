@@ -32,9 +32,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       srv.vm.synced_folder '.', '/vagrant', disabled: true
 
       # If it exists, copy the rkt download into the Vagrant VM
-      if File.file?(File.join(File.dirname(__FILE__), 'rkt-v1.4.0.tar.gz'))
-        srv.vm.provision 'file', source: 'rkt-v1.4.0.tar.gz',
-          destination: '/home/vagrant/rkt-v1.4.0.tar.gz'
+      if File.file?(File.join(File.dirname(__FILE__), 'rkt-v1.20.0.tar.gz'))
+        srv.vm.provision 'file', source: 'rkt-v1.20.0.tar.gz',
+          destination: '/home/vagrant/rkt-v1.20.0.tar.gz'
       end # if File.file?(rkt)
 
       # Run the provisioning shell script

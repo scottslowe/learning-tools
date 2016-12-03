@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set some variables for later
-VER="1.4.0"
+VER="1.20.0"
 URL="https://github.com/coreos/rkt/releases/download"
 FILE="rkt-v$VER.tar.gz"
 DIR="rkt-v$VER"

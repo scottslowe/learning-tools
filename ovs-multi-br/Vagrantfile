@@ -46,13 +46,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         end # if machine['hypervisor']
       end # srv.vm.provider vmware_fusion
 
-      # Configure the VM with RAM and CPUs per machines.yml (VirtualBox)
-      srv.vm.provider 'virtualbox' do |vb, override|
-        vb.memory = machine['ram']
-        vb.cpus = machine['vcpu']
-        override.vm.box = machine['vb_box']
-      end # srv.vm.provider virtualbox
-
       # Provision with Ansible
       config.vm.provision 'ansible' do |ansible|
         ansible.playbook = 'provision.yml'

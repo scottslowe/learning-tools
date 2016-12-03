@@ -6,7 +6,7 @@ These files were created to allow users to use Vagrant ([http://www.vagrantup.co
 
 * **containers.json**: This JSON file contains a list of the Docker containers and their properties for use by Vagrant. If you don't want to use the default values, you will need to edit this file to specify container friendly name, image, and exposed ports.
 
-* **host/Vagrantfile**: This file is used by Vagrant to spin up a "host VM" for use with the Vagrant Docker provider. Edit this file to change the Vagrant box you'd like to use; by default, this Vagrantfile uses the "slowe/ubuntu-trusty-x64" box (built for the "vmware_desktop" provider).
+* **host/Vagrantfile**: This file is used by Vagrant to spin up a "host VM" for use with the Vagrant Docker provider. Edit this file to change the Vagrant box you'd like to use; by default, this Vagrantfile uses the "bento/ubuntu-14.04" box (includes support for the "vmware_desktop" provider).
 
 * **README.md**: The file you're currently reading.
 
@@ -14,7 +14,7 @@ These files were created to allow users to use Vagrant ([http://www.vagrantup.co
 
 ## Instructions
 
-1. If you wish to use a box _other_ than my "ubuntu-trusty-x64" base box (running Ubuntu 14.04), edit the `Vagrantfile` in the `host` subdirectory.
+1. If you wish to use a box _other_ than the "bento/ubuntu-14.04" box (running Ubuntu 14.04), edit the `Vagrantfile` in the `host` subdirectory.
 
 2. Edit the `containers.json` file to specify the Docker containers that Vagrant should create on the host VM (specified by `host/Vagrantfile`). Each container should contain three properties: `name` (the friendly name to be assigned to the Docker container), `image` (the name of the Docker image to be used for this container), and `ports` (a list of ports to be exposed for the container).
 

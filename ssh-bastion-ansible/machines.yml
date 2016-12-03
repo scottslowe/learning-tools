@@ -1,7 +1,7 @@
 ---
 - name: "client"
   box:
-    vmw: "slowe/ubuntu-trusty-x64"
+    vmw: "bento/ubuntu-14.04"
     vb: "ubuntu/trusty64"
   ram: 512
   vcpu: 1
@@ -10,7 +10,7 @@
       ip_addr: "192.168.100.101"
 - name: "bastion"
   box:
-    vmw: "slowe/ubuntu-trusty-x64"
+    vmw: "bento/ubuntu-14.04"
     vb: "ubuntu/trusty64"
   ram: 512
   vcpu: 1
@@ -21,7 +21,7 @@
       ip_addr: "10.100.60.10"
 - name: "remote1"
   box:
-    vmw: "slowe/ubuntu-trusty-x64"
+    vmw: "bento/ubuntu-14.04"
     vb: "ubuntu/trusty64"
   ram: 512
   vcpu: 1
@@ -30,7 +30,7 @@
       ip_addr: "10.100.60.11"
 - name: "remote2"
   box:
-    vmw: "slowe/ubuntu-trusty-x64"
+    vmw: "bento/ubuntu-14.04"
     vb: "ubuntu/trusty64"
   ram: 512
   vcpu: 1

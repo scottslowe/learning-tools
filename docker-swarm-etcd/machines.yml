@@ -1,7 +1,7 @@
 ---
 - name: "etcd-01"
   box:
-    vmw: "slowe/ubuntu-trusty-x64"
+    vmw: "bento/ubuntu-14.04"
     vb: "ubuntu/trusty64"
   ram: "512"
   vcpu: "1"
@@ -9,7 +9,7 @@
   etcd: true
 - name: "etcd-02"
   box:
-    vmw: "slowe/ubuntu-trusty-x64"
+    vmw: "bento/ubuntu-14.04"
     vb: "ubuntu/trusty64"
   ram: "512"
   vcpu: "1"
@@ -17,7 +17,7 @@
   etcd: true
 - name: "etcd-03"
   box:
-    vmw: "slowe/ubuntu-trusty-x64"
+    vmw: "bento/ubuntu-14.04"
     vb: "ubuntu/trusty64"
   ram: "512"
   vcpu: "1"

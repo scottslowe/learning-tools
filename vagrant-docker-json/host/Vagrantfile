@@ -19,7 +19,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Spin up a "host box" for use with the Docker provider
   # and then provision it with Docker
-  config.vm.box = "slowe/ubuntu-trusty-x64"
+  config.vm.box = "bento/ubuntu-14.04"
   config.vm.provision "docker"
 
   # Disable synced folders (prevents an NFS error on "vagrant up")
