@@ -1,0 +1,11 @@
+---
+- box:
+    vmw: "bento/ubuntu-14.04"
+    vb: "ubuntu/trusty64"
+  name: "lxd-01"
+  nested: false
+  nics:
+    - type: "private_network"
+      ip_addr: "dhcp"
+  ram: "512"
+  vcpu: "1"

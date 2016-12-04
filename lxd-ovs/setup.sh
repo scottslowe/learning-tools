@@ -15,3 +15,8 @@ sudo apt-get update
 if [[ ! -e /usr/bin/lxd ]]; then
     sudo apt-get -y install lxd
 fi
+
+# Install OVS if not already installed
+if [[ ! -e /usr/bin/ovs-vsctl ]]; then
+    sudo apt-get -y install openvswitch-common openvswitch-switch
+fi
