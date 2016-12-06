@@ -18,6 +18,7 @@
       - "git"
       - "libtool"
       - "autoconf"
+      - "ubuntu-cloud-keyring"
     tags:
       - consul
       - packages
@@ -57,15 +58,15 @@
 
   - name: Download Consul package
     get_url:
-      url: "https://releases.hashicorp.com/consul/0.7.0/consul_0.7.0_linux_amd64.zip"
-      dest: "/tmp/consul_0.7.0_linux_amd64.zip"
+      url: "https://releases.hashicorp.com/consul/0.7.1/consul_0.7.1_linux_amd64.zip"
+      dest: "/tmp/consul_0.7.1_linux_amd64.zip"
     tags:
       - consul
 
   - name: Unzip downloaded Consul file
     unarchive:
       copy: "no"
-      src: "/tmp/consul_0.7.0_linux_amd64.zip"
+      src: "/tmp/consul_0.7.1_linux_amd64.zip"
       dest: "/usr/local/bin/"
       creates: "/usr/local/bin/consul"
     tags:
@@ -107,20 +108,12 @@
       - docker
       - apt-cfg
 
-  - name: Add Docker APT repository (Trusty)
+  - name: Add Docker APT repository (Xenial)
     apt_repository:
-      repo: "deb https://apt.dockerproject.org/repo ubuntu-trusty main"
+      repo: "deb https://apt.dockerproject.org/repo ubuntu-xenial main"
+      update_cache: "yes"
       state: "present"
-    when: ansible_distribution_release == "trusty"
-    tags:
-      - docker
-      - apt-cfg
-
-  - name: Add Docker APT repository (Precise)
-    apt_repository:
-      repo: "deb https://apt.dockerproject.org/repo ubuntu-precise main"
-      state: "present"
-    when: ansible_distribution_release == "precise"
+    when: ansible_distribution_release == "xenial"
     tags:
       - docker
       - apt-cfg
@@ -132,7 +125,7 @@
       update_cache: "yes"
       cache_valid_time: "3600"
     with_items:
-      - "docker-engine=1.11.2-0~trusty"
+      - "docker-engine=1.11.2-0~xenial"
     tags:
       - docker
       - packages
@@ -141,7 +134,7 @@
     lineinfile:
       dest: "/etc/default/docker"
       insertafter: '#DOCKER_OPTS="--dns 8.8.8.8 --dns 8.8.4.4"'
-      line: "DOCKER_OPTS='-H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock --cluster-store=consul://127.0.0.1:8500 --cluster-advertise={{ ansible_eth1.ipv4.address }}:0'"
+      line: "DOCKER_OPTS='-H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock --cluster-store=consul://127.0.0.1:8500 --cluster-advertise={{ ansible_enp0s8.ipv4.address }}:0'"
       owner: "root"
       group: "root"
       mode: "0644"
@@ -176,10 +169,47 @@
       - docker
       - ovn
 
-  - name: Download OVS 2.6.0 release tarball
-    become: "no"
-    get_url:
-      url: "https://github.com/openvswitch/ovs/archive/v2.6.0.tar.gz"
-      dest: "/home/vagrant/2.6.0.tar.gz"
+  - name: "Add Ubuntu Cloud Archive repository"
+    apt_repository:
+      repo: "{{ item }}"
+      state: "present"
+      update_cache: "yes"
+    with_items:
+    - "deb http://ubuntu-cloud.archive.canonical.com/ubuntu xenial-updates/newton main"
+    tags:
+      - ovn
+      - apt-cfg
+
+  - name: "Install OVS/OVN 2.6.0"
+    apt:
+      state: "present"
+      update_cache: "no"
+      name: "{{ item }}"
+    with_items:
+    - "ovn-common"
+    - "ovn-host"
+    - "openvswitch-common"
+    - "openvswitch-switch"
+    tags:
+      - ovn
+      - packages
+
+  - name: "Install central OVN components"
+    apt:
+      state: "present"
+      update_cache: "no"
+      name: "ovn-central"
+    when: ansible_hostname == "docker-01"
+    tags:
+      - ovn
+      - packages
+
+  - name: "Install configuration script"
+    template:
+      src: "setup.sh.j2"
+      dest: "/home/vagrant/setup.sh"
+      owner: "vagrant"
+      group: "vagrant"
+      mode: "0755"
     tags:
       - ovn
