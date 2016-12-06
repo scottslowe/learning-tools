@@ -53,3 +53,12 @@
   ip_addr: "192.168.100.113"
   etcd: false
   playbook: "cfg-docker.yml"
+- name: "photon-04"
+  box:
+    vmw: "vmware/photon"
+    vb: "vmware/photon"
+  ram: "512"
+  vcpu: "1"
+  ip_addr: "192.168.100.114"
+  etcd: false
+  playbook: "cfg-docker.yml"
