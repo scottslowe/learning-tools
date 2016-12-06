@@ -72,10 +72,10 @@
     tags:
       - consul
 
-  - name: Install Upstart script for Consul
+  - name: Install systemd unit for Consul
     copy:
-      src: "consul.conf"
-      dest: "/etc/init/consul.conf"
+      src: "consul-server.service"
+      dest: "/etc/systemd/system/consul-server.service"
       owner: "root"
       group: "root"
       mode: "0644"
@@ -92,9 +92,12 @@
     tags:
       - consul
 
+  - name: Reload systemd units
+    command: "systemctl daemon-reload"
+
   - name: Start Consul service
     service:
-      name: "consul"
+      name: "consul-server"
       state: "started"
     tags:
       - consul
@@ -188,6 +191,7 @@
     with_items:
     - "ovn-common"
     - "ovn-host"
+    - "ovn-docker"
     - "openvswitch-common"
     - "openvswitch-switch"
     tags:
