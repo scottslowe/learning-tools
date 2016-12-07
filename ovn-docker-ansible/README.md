@@ -30,18 +30,20 @@ These instructions assume you've already installed Vagrant, your back-end virtua
 
 2. Edit the `machines.yml` file to ensure the box you downloaded in step 1 is specified on the "box:" sections of this file. Specify the name of a VMware-formatted box on the "vmw:" line; place the name of a VirtualBox-formatted box on the "vb:" line.
 
-3. Run `vagrant up` to have Vagrant instantiate the three machines configured by default in this environment, and provision them using Ansible. (Note you'll need Ansible installed locally on the system where you're running `vagrant up`.)
+3. Run `vagrant up` to have Vagrant instantiate the three machines configured by default in this environment. Vagrant will launch a simple Ansible playbook to populate inventory, but it will _not_ actually configure the VM. (Note you'll need Ansible installed locally on the system where you're running `vagrant up`.)
 
-4. Use `vagrant ssh ovn-01` to log into the first system. Run `sudo ./setup.sh` to perform final configuration steps for OVS/OVN.
+4. After Vagrant has instantiated all the VMs, run `ansible-playbook provision.yml` to run the full provisioning playbook.
 
-5. Repeat step #4 with `ovn-02` and `ovn-03`. At this point, OVN is up and running, with the OVN central components running on "ovn-01".
+5. Use `vagrant ssh ovn-01` to log into the first system. Run `sudo ./setup.sh` to perform final configuration steps for OVS/OVN.
 
-6. To add Docker support to OVN, log into "ovn-01" and run `/usr/bin/ovn-docker-overlay-driver --detach`. This will launch the Docker driver for OVS/OVN.
+6. Repeat step #4 with `ovn-02` and `ovn-03`. At this point, OVN is up and running, with the OVN central components running on "ovn-01".
 
-7. Repeat step #6 on "ovn-02" and "ovn-03". Your OVN environment now has Docker networking support.
+7. To add Docker support to OVN, log into "ovn-01" and run `/usr/bin/ovn-docker-overlay-driver --detach`. This will launch the Docker driver for OVS/OVN.
 
-8. Create a Docker network using `docker network create -d openvswitch --subnet=<A.B.C.D/24> <name>`. You will note an OVN logical switch is created that corresponds to the Docker network.
+8. Repeat the previous step on "ovn-02" and "ovn-03". Your OVN environment now has Docker networking support.
 
-9. Launch a Docker container and attach it to the new network with `docker run -d --net=<name> <image>`. You will note OVN logical ports added to the OVN logical switch.
+9. Create a Docker network using `docker network create -d openvswitch --subnet=<A.B.C.D/24> <name>`. You will note an OVN logical switch is created that corresponds to the Docker network.
+
+10. Launch a Docker container and attach it to the new network with `docker run -d --net=<name> <image>`. You will note OVN logical ports added to the OVN logical switch.
 
 Enjoy!
