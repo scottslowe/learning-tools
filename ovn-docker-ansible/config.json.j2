@@ -1,0 +1,20 @@
+{% set lbracket = "[" %}
+{% set rbracket = "]" %}
+{% set quote = '"' %}
+
+{
+	"advertise_addr": "{{ hostvars[inventory_hostname]['ansible_enp0s8']['ipv4']['address'] }}",
+	"bind_addr": "{{ hostvars[inventory_hostname]['ansible_enp0s8']['ipv4']['address'] }}",
+	"bootstrap_expect": 3,
+	"client_addr": "0.0.0.0",
+	"datacenter": "dc1",
+	"data_dir": "/var/consul",
+	"enable_syslog": true,
+	"log_level": "INFO",
+	"retry_join": [ {% for host in groups['all'] %}{% if not loop.last %}
+"{{ hostvars[host]['ansible_enp0s8']['ipv4']['address'] }}", 
+      {% else %}
+"{{ hostvars[host]['ansible_enp0s8']['ipv4']['address'] }}"
+      {% endif %}{% endfor %} ],
+	"server": true
+}

@@ -1,0 +1,232 @@
+---
+- hosts: "all"
+  become: "yes"
+  remote_user: "vagrant"
+
+  tasks:
+  - name: Install prerequisite packages
+    apt:
+      pkg: "{{ item }}"
+      state: "latest"
+      update_cache: "yes"
+      cache_valid_time: "3600"
+    with_items:
+      - "unzip"
+      - "python-pip"
+      - "libssl-dev"
+      - "libcap-ng-dev"
+      - "git"
+      - "libtool"
+      - "autoconf"
+      - "ubuntu-cloud-keyring"
+    tags:
+      - consul
+      - packages
+      - ovn
+
+  - name: Create consul group
+    group:
+      name: "consul"
+      state: "present"
+    tags:
+      - consul
+
+  - name: Create user for Consul
+    user:
+      name: "consul"
+      group: "consul"
+      comment: "Consul daemon user"
+      shell: "/usr/sbin/nologin"
+      state: "present"
+      home: "/var/consul"
+      system: "yes"
+      createhome: "no"
+    tags:
+      - consul
+
+  - name: Create Consul data and configuration directories
+    file:
+      path: "{{ item }}"
+      state: "directory"
+      owner: "consul"
+      group: "consul"
+    with_items:
+      - "/var/consul"
+      - "/etc/consul.d/server"
+    tags:
+      - consul
+
+  - name: Download Consul package
+    get_url:
+      url: "https://releases.hashicorp.com/consul/0.7.1/consul_0.7.1_linux_amd64.zip"
+      dest: "/tmp/consul_0.7.1_linux_amd64.zip"
+    tags:
+      - consul
+
+  - name: Unzip downloaded Consul file
+    unarchive:
+      copy: "no"
+      src: "/tmp/consul_0.7.1_linux_amd64.zip"
+      dest: "/usr/local/bin/"
+      creates: "/usr/local/bin/consul"
+    tags:
+      - consul
+
+  - name: Install systemd unit for Consul
+    copy:
+      src: "consul-server.service"
+      dest: "/etc/systemd/system/consul-server.service"
+      owner: "root"
+      group: "root"
+      mode: "0644"
+    tags:
+      - consul
+
+  - name: Install Consul configuration file
+    template:
+      src: "config.json.j2"
+      dest: "/etc/consul.d/server/config.json"
+      owner: "consul"
+      group: "consul"
+      mode: "0644"
+    tags:
+      - consul
+
+  - name: Reload systemd units
+    command: "systemctl daemon-reload"
+
+  - name: Start Consul service
+    service:
+      name: "consul-server"
+      state: "started"
+    tags:
+      - consul
+
+  - name: Add Docker APT repository key
+    apt_key:
+      keyserver: "p80.pool.sks-keyservers.net"
+      id: "58118E89F3A912897C070ADBF76221572C52609D"
+      state: "present"
+    tags:
+      - docker
+      - apt-cfg
+
+  - name: Add Docker APT repository (Xenial)
+    apt_repository:
+      repo: "deb https://apt.dockerproject.org/repo ubuntu-xenial main"
+      update_cache: "yes"
+      state: "present"
+    when: ansible_distribution_release == "xenial"
+    tags:
+      - docker
+      - apt-cfg
+
+  - name: Install Docker packages
+    apt:
+      name: "{{ item }}"
+      state: "present"
+      update_cache: "yes"
+      cache_valid_time: "3600"
+    with_items:
+      - "docker-engine=1.11.2-0~xenial"
+    tags:
+      - docker
+      - packages
+
+  - name: Create systemd drop-in directory
+    file:
+      path: "/etc/systemd/system/docker.service.d"
+      state: "directory"
+      owner: "root"
+      group: "root"
+      mode: "0755"
+    tags:
+      - docker
+      - docker-cfg
+
+  - name: Customize Docker daemon configuration
+    template:
+      src: "10-exec-options.conf.j2"
+      dest: "/etc/systemd/system/docker.service.d/10-exec-options.conf"
+      owner: "root"
+      group: "root"
+      mode: "0644"
+    tags:
+      - docker
+      - docker-cfg
+
+  - name: Reload systemd units
+    command: "systemctl daemon-reload"
+
+  - name: Restart Docker daemon
+    service:
+      name: "docker"
+      state: "restarted"
+    tags:
+      - docker
+      - docker-cfg
+
+  - name: Set Vagrant user to member of Docker group
+    user:
+      name: "vagrant"
+      groups: "docker"
+      append: "yes"
+    tags:
+      - docker
+      - docker-cfg
+
+  - name: Install Python modules
+    pip:
+      name: "{{ item }}"
+    with_items:
+      - "Flask"
+      - "ovs"
+    tags:
+      - docker
+      - ovn
+
+  - name: "Add Ubuntu Cloud Archive repository"
+    apt_repository:
+      repo: "{{ item }}"
+      state: "present"
+      update_cache: "yes"
+    with_items:
+    - "deb http://ubuntu-cloud.archive.canonical.com/ubuntu xenial-updates/newton main"
+    tags:
+      - ovn
+      - apt-cfg
+
+  - name: "Install OVS/OVN 2.6.0"
+    apt:
+      state: "present"
+      update_cache: "no"
+      name: "{{ item }}"
+    with_items:
+    - "ovn-common"
+    - "ovn-host"
+    - "ovn-docker"
+    - "openvswitch-common"
+    - "openvswitch-switch"
+    tags:
+      - ovn
+      - packages
+
+  - name: "Install central OVN components"
+    apt:
+      state: "present"
+      update_cache: "no"
+      name: "ovn-central"
+    when: ansible_hostname == "docker-01"
+    tags:
+      - ovn
+      - packages
+
+  - name: "Install configuration script"
+    template:
+      src: "setup.sh.j2"
+      dest: "/home/vagrant/setup.sh"
+      owner: "vagrant"
+      group: "vagrant"
+      mode: "0755"
+    tags:
+      - ovn
