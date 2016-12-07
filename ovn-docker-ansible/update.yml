@@ -1,0 +1,10 @@
+---
+- hosts: "all"
+  become: "yes"
+  remote_user: "vagrant"
+
+  tasks:
+  - name: Update package cache
+    apt:
+      update_cache: "yes"
+      cache_valid_time: "3600"
