@@ -133,17 +133,30 @@
       - docker
       - packages
 
+  - name: Create systemd drop-in directory
+    file:
+      path: "/etc/systemd/system/docker.service.d"
+      state: "directory"
+      owner: "root"
+      group: "root"
+      mode: "0755"
+    tags:
+      - docker
+      - docker-cfg
+
   - name: Customize Docker daemon configuration
-    lineinfile:
-      dest: "/etc/default/docker"
-      insertafter: '#DOCKER_OPTS="--dns 8.8.8.8 --dns 8.8.4.4"'
-      line: "DOCKER_OPTS='-H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock --cluster-store=consul://127.0.0.1:8500 --cluster-advertise={{ ansible_enp0s8.ipv4.address }}:0'"
+    template:
+      src: "10-exec-options.conf.j2"
+      dest: "/etc/systemd/system/docker.service.d/10-exec-options.conf"
       owner: "root"
       group: "root"
       mode: "0644"
     tags:
       - docker
       - docker-cfg
+
+  - name: Reload systemd units
+    command: "systemctl daemon-reload"
 
   - name: Restart Docker daemon
     service:
