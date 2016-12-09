@@ -1,0 +1,14 @@
+#!/bin/bash
+
+# Stop the ovn-controller daemon
+sudo /usr/share/openvswitch/scripts/ovn-ctl stop_controller
+
+# Configure OVS
+sudo ovs-vsctl set Open_vSwitch . \
+    external_ids:ovn-remote="tcp:192.168.100.101:6642" \
+    external_ids:ovn-nb="tcp:192.168.100.101:6641" \
+    external_ids:ovn-encap-ip={{ ansible_ens33.ipv4.address }} \
+    external_ids:ovn-encap-type="geneve"
+
+# Start the ovn-controller daemon
+sudo /usr/share/openvswitch/scripts/ovn-ctl start_controller

@@ -1,0 +1,31 @@
+---
+- name: "hv-01"
+  box:
+    vmw: "bento/ubuntu-16.04"
+    vb: "bento/ubuntu-16.04"
+  nested: true
+  ram: "1024"
+  vcpu: "1"
+  nics:
+    - type: "private_network"
+      ip_addr: "192.168.100.101"
+- name: "hv-02"
+  box:
+    vmw: "bento/ubuntu-16.04"
+    vb: "bento/ubuntu-16.04"
+  nested: true
+  ram: "1024"
+  vcpu: "1"
+  nics:
+    - type: "private_network"
+      ip_addr: "192.168.100.102"
+- name: "hv-03"
+  box:
+    vmw: "bento/ubuntu-16.04"
+    vb: "bento/ubuntu-16.04"
+  nested: true
+  ram: "1024"
+  vcpu: "1"
+  nics:
+    - type: "private_network"
+      ip_addr: "192.168.100.103"
