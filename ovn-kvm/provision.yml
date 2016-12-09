@@ -1,0 +1,91 @@
+---
+- hosts: "all"
+  become: "yes"
+  remote_user: "vagrant"
+
+  tasks:
+  - name: "Install Ubuntu Cloud Keyring package"
+    apt:
+      state: "present"
+      update_cache: "yes"
+      name: "ubuntu-cloud-keyring"
+    tags:
+      - "apt-cfg"
+
+  - name: "Add Ubuntu Cloud Archive repository"
+    apt_repository:
+      repo: "{{ item }}"
+      state: "present"
+      update_cache: "yes"
+    with_items:
+      - "deb http://ubuntu-cloud.archive.canonical.com/ubuntu xenial-updates/newton main"
+    tags:
+      - "apt-cfg"
+
+  - name: "Install KVM, Libvirt, OVS/OVN 2.6.0"
+    apt:
+      state: "present"
+      update_cache: "no"
+      name: "{{ item }}"
+    with_items:
+      - "ovn-common"
+      - "ovn-host"
+      - "openvswitch-common"
+      - "openvswitch-switch"
+      - "qemu-kvm"
+      - "libvirt-bin"
+      - "virtinst"
+    tags:
+      - "packages"
+
+  - name: "Install central OVN components"
+    apt:
+      state: "present"
+      update_cache: "no"
+      name: "ovn-central"
+    when: ansible_hostname == "hv-01"
+    tags:
+      - "packages"
+
+  - name: "Install configuration script"
+    template:
+      src: "ovn-setup.sh.j2"
+      dest: "/home/vagrant/ovn-setup.sh"
+      owner: "vagrant"
+      group: "vagrant"
+      mode: "0755"
+    tags:
+      - "config"
+
+  - name: "Download Cirros image"
+    get_url:
+      url: "https://download.cirros-cloud.net/0.3.2/cirros-0.3.2-x86_64-disk.img"
+      dest: "/home/vagrant/cirros-0.3.2-x86_64-disk.img"
+      validate_certs: "no"
+
+  - name: "Set file permissions"
+    file:
+      path: "/home/vagrant/cirros-0.3.2-x86_64-disk.img"
+      owner: "vagrant"
+      group: "vagrant"
+      mode: "0644"
+
+  - name: "Copy network definition"
+    copy:
+      src: "ovs.xml"
+      dest: "/home/vagrant/ovs.xml"
+      owner: "vagrant"
+      group: "vagrant"
+      mode: "0644"
+
+  - name: "Copy network and VM setup scripts"
+    copy:
+      src: "{{ item }}"
+      dest: "/home/vagrant/"
+      owner: "vagrant"
+      group: "vagrant"
+      mode: "0755"
+    with_items:
+      - "net-setup.sh"
+      - "vm-setup.sh"
+      - "final-setup.sh"
