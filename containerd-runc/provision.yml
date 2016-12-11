@@ -1,0 +1,18 @@
+---
+- hosts: "all"
+  become: "yes"
+  remote_user: "vagrant"
+
+  tasks:
+  - name: "Download containerd/runc binaries"
+    get_url:
+      url: "{{ item }}"
+      dest: "/usr/local/bin/"
+      mode: "0755"
+    with_items:
+      - "https://github.com/docker/containerd/releases/download/0.0.5/containerd-shim"
+      - "https://github.com/docker/containerd/releases/download/0.0.5/ctr"
+      - "https://github.com/docker/containerd/releases/download/0.0.5/containerd"
+      - "https://github.com/docker/containerd/releases/download/0.0.5/runc"
+    tags:
+      - packages
