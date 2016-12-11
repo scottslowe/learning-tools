@@ -1,12 +1,9 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
-# Specify Vagrant version, Vagrant API version, and desired clone location
+# Specify minimum Vagrant version and Vagrant API version
 Vagrant.require_version '>= 1.8.0'
 VAGRANTFILE_API_VERSION = '2'
-ENV['VAGRANT_DEFAULT_PROVIDER'] = 'vmware_fusion'
-ENV['VAGRANT_VMWARE_CLONE_DIRECTORY'] = '~/.vagrant'
-#ENV['VAGRANT_DEFAULT_PROVIDER'] = 'virtualbox'
 
 # Require 'yaml' module
 require 'yaml'
@@ -26,8 +23,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
       # Don't check for box updates
       srv.vm.box_check_update = false
+
+      # Specify the hostname of the VM
       srv.vm.hostname = machine['name']
-      srv.vm.box = machine['box']
+
+      # Specify the Vagrant box to use (use VMware box by default)
+      srv.vm.box = machine['box']['vmw']
 
       # Configure default synced folder (disable by default)
       if machine['sync_disabled'] != nil
@@ -37,19 +38,20 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       end #if machine['sync_disabled']
 
       # Configure CPU & RAM per settings in machines.yml (Fusion)
-      srv.vm.provider :vmware_fusion do |vmw|
+      srv.vm.provider 'vmware_fusion' do |vmw|
         vmw.vmx['memsize'] = machine['ram']
         vmw.vmx['numvcpus'] = machine['vcpu']
         if machine['nested'] == true
           vmw.vmx['vhv.enable'] = 'TRUE'
         end #if machine['nested']
-      end # srv.vm.provider vmware_fusion
+      end # srv.vm.provider 'vmware_fusion'
 
       # Configure CPU & RAM per settings in machines.yml (VirtualBox)
-      srv.vm.provider :virtualbox do |vb|
+      srv.vm.provider 'virtualbox' do |vb, override|
         vb.memory = machine['ram']
         vb.cpus = machine['vcpu']
-      end # srv.vm.provider virtualbox
+        override.vm.box = machine['box']['vb']
+      end # srv.vm.provider 'virtualbox'
 
       # Provision the VMs
       srv.vm.provision 'shell', path: 'provision.sh', privileged: true
