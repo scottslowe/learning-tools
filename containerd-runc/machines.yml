@@ -1,0 +1,11 @@
+---
+- box:
+    vmw: "bento/ubuntu-16.04"
+    vb: "bento/ubuntu-16.04"
+  name: "runc-01"
+  nics:
+    - type: "private_network"
+      ip_addr: "192.168.100.101"
+  provision: "containerd-runc.yml"
+  ram: "512"
+  vcpu: "1"
