@@ -9,6 +9,7 @@ VAGRANTFILE_API_VERSION = '2'
 require 'yaml'
 
 # Read YAML file with VM details (box, CPU, RAM, IP addresses)
+# Edit machines.yml to change VM configuration details
 machines = YAML.load_file(File.join(File.dirname(__FILE__), 'machines.yml'))
 
 # Create and configure the VMs
@@ -19,6 +20,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Iterate through entries in YAML file to create VMs
   machines.each do |machine|
+
+    # Configure the VMs per details in machines.yml
     config.vm.define machine['name'] do |srv|
 
       # Don't check for box updates
@@ -36,6 +39,15 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       else
         srv.vm.synced_folder '.', '/vagrant', disabled: true
       end #if machine['sync_disabled']
+
+      # Iterate through networks as per settings in machines.yml
+      machine['nics'].each do |net|
+        if net['ip_addr'] == 'dhcp'
+          srv.vm.network net['type'], type: net['ip_addr']
+        else
+          srv.vm.network net['type'], ip: net['ip_addr']
+        end # if net['ip_addr']
+      end # machine['nics'].each
 
       # Configure CPU & RAM per settings in machines.yml (Fusion)
       srv.vm.provider 'vmware_fusion' do |vmw|
