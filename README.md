@@ -54,7 +54,7 @@ This repository contains a variety of files and tools for learning new technolog
 
 **openstack-cli**: This folder contains the files for a Vagrant environment that spins up an Ubuntu box with all the OpenStack CLI clients pre-installed. The provisioning is handled via shell scripts.
 
-**ovn**: _This is a placeholder for future work._
+**ovn**: This directory contains a Vagrant environment for working with Open Virtual Network (OVN).
 
 **ovn-docker-ansible**: _This is a placeholder for future work._
 
