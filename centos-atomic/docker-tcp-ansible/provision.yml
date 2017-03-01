@@ -1,0 +1,52 @@
+---
+- hosts: "all"
+  become: "yes"
+  remote_user: "vagrant"
+
+  tasks:
+  - name: Stop the Docker Engine service
+    service:
+      name: "docker.service"
+      state: "stopped"
+
+  - name: Copy the Docker socket unit files into place
+    copy:
+      src: "{{ item }}"
+      dest: "/etc/systemd/system/"
+      owner: "root"
+      group: "root"
+      mode: "0644"
+    with_items:
+      - "docker.socket"
+      - "docker-tcp.socket"
+
+  - name: Create systemd drop-in directory for Docker
+    file:
+      path: "/etc/systemd/system/docker.service.d"
+      state: "directory"
+      owner: "root"
+      group: "root"
+
+  - name: Install drop-in file
+    copy:
+      src: "docker-socket.conf"
+      dest: "/etc/systemd/system/docker.service.d"
+      owner: "root"
+      group: "root"
+      mode: "0644"
+
+  - name: Create Docker group
+    group:
+      name: "docker"
+
+  - name: Reload systemd unit files
+    command: "systemctl daemon-reload"
+
+  - name: Start Docker sockets and service
+    service:
+      name: "{{ item }}"
+      state: "started"
+    with_items:
+      - "docker.socket"
+      - "docker-tcp.socket"
+      - "docker.service"
