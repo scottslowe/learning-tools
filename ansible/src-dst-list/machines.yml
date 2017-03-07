@@ -1,0 +1,12 @@
+---
+- box:
+    vmw: "bento/centos-7.1"
+    vb: "centos/atomic-host"
+  name: "atomic-01"
+  nested: false
+  nics:
+    - type: "private_network"
+      ip_addr: "dhcp"
+  ram: "512"
+  sync_disabled: true
+  vcpu: "1"
