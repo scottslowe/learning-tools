@@ -55,6 +55,9 @@ write_files:
     permissions: '0644'
 runcmd:
   - systemctl daemon-reload
+  - systemctl enable docker.service
+  - systemctl enable docker.socket
+  - systemctl enable docker-tcp.socket
   - systemctl stop docker.service
   - systemctl start docker.socket
   - systemctl start docker-tcp.socket
