@@ -1,0 +1,21 @@
+---
+- hosts: "all"
+  become: "yes"
+  remote_user: "vagrant"
+
+  tasks:
+  - name: "Install OVS"
+    apt:
+      state: "present"
+      update_cache: "yes"
+      name: "{{ item }}"
+    with_items:
+      - "openvswitch-common"
+      - "openvswitch-switch"
+
+  - name: "Create OVS bridges"
+    openvswitch_bridge:
+      bridge: "{{ item }}"
+      state: "present"
+    with_items:
+      - "br0"
