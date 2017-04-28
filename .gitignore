@@ -8,3 +8,4 @@
 real-adminrc
 *.taskpaper
 terraform/tf-example/terraform.tfstate*
+consul-*.config.json
