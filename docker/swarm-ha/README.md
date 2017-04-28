@@ -30,7 +30,7 @@ These instructions assume you've already installed VMware Fusion, Vagrant, and t
 
 5. Use `vagrant ssh docker-01` to connect to the first Docker host and join the Docker Engine to a Swarm cluster:
 
-        docker run -d swarm join --addr=192.168.100.104 consul://192.168.100.101:8500/swarm
+        docker run -d swarm join --addr=192.168.100.104:2375 consul://192.168.100.101:8500/swarm
 
     If you changed the private IP addresses in `machines.yml`, be sure to supply the appropriate IP addresses from that file in the command above.
 
