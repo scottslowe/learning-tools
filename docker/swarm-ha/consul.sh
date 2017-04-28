@@ -1,4 +1,5 @@
 #!/bin/bash
+PLATFORM='linux_amd64'
 
 # Update list of packages
 export DEBIAN_FRONTEND=noninteractive
@@ -17,11 +18,13 @@ fi
 if [[ ! -e /usr/local/bin/consul ]];then
 
   # Download Consul
-  curl -kLO https://releases.hashicorp.com/consul/0.7.0/consul_0.7.0_linux_amd64.zip
+  IFS=' ' CURL_OUT=$(curl https://releases.hashicorp.com/consul/)
+  CONSUL_VERSION=$(echo ${CURL_OUT} | grep href | grep consul | head -n 1 | awk -F'/' '{print $3}')
+  curl -kL https://releases.hashicorp.com/consul/$CONSUL_VERSION/consul_${CONSUL_VERSION}_${PLATFORM}.zip > consul.zip
 
   # Decompress and remove Consul download
-  unzip consul_0.7.0_linux_amd64.zip
-  rm consul_0.7.0_linux_amd64.zip
+  unzip consul.zip
+  rm consul.zip
 
   # Move Consul binary to location in path
   sudo mv consul /usr/local/bin/
