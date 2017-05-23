@@ -1,0 +1,12 @@
+Host *
+  PubkeyAuthentication yes
+
+Host bastion
+  Hostname <public IP address of bastion>
+  User centos
+  IdentityFile </path/to/SSH/keypair>
+
+Host 10.2.2.*
+  User centos
+  IdentityFile </path/to/SSH/keypair>
+  ProxyCommand ssh bastion -W %h:%p
