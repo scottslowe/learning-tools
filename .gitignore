@@ -12,3 +12,5 @@ real-adminrc
 *.tfvars
 consul-*.config.json
 *.defaults
+ssh.cfg
+known_hosts
