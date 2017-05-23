@@ -4,9 +4,11 @@ This directory contains a number of subdirectories with example configurations i
 
 ## Contents
 
-* **README.md**: This file you're currently reading.
+* **bastion-aws**: This directory contains a Terraform configuration to create a topology for using an SSH bastion host. It creates a publicly accessible instance to serve as the bastion, and a private instance that can only be reached through the bastion.
 
 * **new-vpc**: This directory contains a Terraform configuration to create a new VPC and associated items, then turn up a CoreOS instance in that VPC. _This directory requires Terraform 0.7.9 or later._
+
+* **README.md**: This file you're currently reading.
 
 * **simple-ec2**: This directory contains a simple Terraform configuration for spinning up an Ubuntu 14.04 EC2 instance in an account's default VPC.
 
