@@ -1,25 +1,13 @@
-# Create a security group to allow web traffic to remote host
-resource "aws_security_group" "remote_sg" {
+# Create a security group to allow SSH traffic to private host(s) only from bastion
+resource "aws_security_group" "private_sg" {
     vpc_id                  = "${aws_vpc.bastion_vpc.id}"
-    name                    = "remote-sg"
-    description             = "Security group for web traffic to remote hosts"
-    ingress {
-        from_port           = "80"
-        to_port             = "80"
-        protocol            = "tcp"
-        cidr_blocks         = ["0.0.0.0/0"]
-    }
-    ingress {
-        from_port           = "443"
-        to_port             = "443"
-        protocol            = "tcp"
-        cidr_blocks         = ["0.0.0.0/0"]
-    }
+    name                    = "private-sg"
+    description             = "Security group for web traffic to private hosts"
     ingress {
         from_port           = "22"
         to_port             = "22"
         protocol            = "tcp"
-        cidr_blocks         = ["${aws_vpc.bastion_vpc.cidr_block}"]
+        cidr_blocks         = ["10.2.1.0/24"]
     }
     egress {
         from_port           = "0"

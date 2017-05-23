@@ -7,5 +7,5 @@ output "bastion_priv_ip" {
 }
 
 output "remote_priv_ip" {
-    value = ["${aws_instance.remote.private_ip}"]
+    value = ["${aws_instance.private.private_ip}"]
 }

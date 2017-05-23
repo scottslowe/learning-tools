@@ -1,8 +1,8 @@
 # Create a new VPC
 resource "aws_vpc" "bastion_vpc" {
     cidr_block              = "10.2.0.0/16"
-    enable_dns_hostnames    = "true"
-    enable_dns_support      = "true"
+    enable_dns_hostnames    = true
+    enable_dns_support      = true
     tags {
         tool                = "terraform"
         demo                = "bastion-aws"
@@ -14,7 +14,19 @@ resource "aws_vpc" "bastion_vpc" {
 resource "aws_subnet" "bastion_net" {
     vpc_id                  = "${aws_vpc.bastion_vpc.id}"
     cidr_block              = "10.2.1.0/24"
-    map_public_ip_on_launch = "true"
+    map_public_ip_on_launch = true
+    tags {
+        tool                = "terraform"
+        demo                = "bastion-aws"
+        area                = "networking"
+    }
+}
+
+# Create a private subnet in the new VPC
+resource "aws_subnet" "private_net" {
+    vpc_id                  = "${aws_vpc.bastion_vpc.id}"
+    cidr_block              = "10.2.2.0/24"
+    map_public_ip_on_launch = false
     tags {
         tool                = "terraform"
         demo                = "bastion-aws"
