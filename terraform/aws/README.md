@@ -12,6 +12,8 @@ This directory contains a number of subdirectories with example configurations i
 
 * **simple-ec2**: This directory contains a simple Terraform configuration for spinning up an Ubuntu 14.04 EC2 instance in an account's default VPC.
 
+* **simple-module**: This directory contains a very simple example of using a Terraform module for more reusable code blocks.
+
 ## Prerequisites
 
 These instructions assume you've already installed Terraform and that you have access to a valid AWS account. Installing Terraform and/or working with AWS accounts are not covered in any of these materials.
