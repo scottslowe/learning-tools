@@ -13,7 +13,7 @@ module "vpc20" {
 module "vpc50" {
     source                  = "./modules/vpc"
 
-    name                    = "test-vpc-1"
+    name                    = "test-vpc-2"
     vpc_cidr_block          = "10.50.0.0/16"
     vpc_dns_hostnames       = "true"
     vpc_dns_support         = "true"
