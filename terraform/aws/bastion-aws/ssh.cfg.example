@@ -9,4 +9,4 @@ Host bastion
 Host 10.2.2.*
   User centos
   IdentityFile </path/to/SSH/keypair>
-  ProxyCommand ssh bastion -W %h:%p
+  ProxyCommand ssh -F </path/to/ssh.cfg> bastion -W %h:%p
