@@ -10,6 +10,8 @@ These files show an example of how to use `cloud-init` on a public cloud provide
 
 * **README.md**: The file you're currently reading.
 
+* **ssh.cfg**: A custom SSH configuration file; not essential for using this environment.
+
 ## Prerequisites
 
 Before you can use this environment, there are a few things you'll need to do:
