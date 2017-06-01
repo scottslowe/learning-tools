@@ -2,20 +2,18 @@
 # vim: syntax=yaml
 
 groups:
-  - docker: [root,centos]
-ssh_authorized_keys:
-  - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQChbmG4wPh/f5CtB5hmepkUHwLKCBXuVX7CcxryMDfXx4W/2ffLO9J/Ek1w58ED3o5/KExduXjwtpMAvOoBffJsaSmm+Tc1NwzyR7GZ75MJYE1/5z5gkBUkZpjmM6qXCpiD6m3jIbaSxxfNEBL64i6H+UL6Ak1LKuYCLutTex+f4Q0NgJvRQyyG2Ms04egWjp91Kbd/cTA3/zfXGI2T3ZvGScvLcUE/neUgBloykuYi0k+VcFK0RAPjqfITaZXs6vtcPLXSX6CR4eHwgM8WpfO3sCEFkMwIhystAFapzSRdfHgtln0XZz84iydcvZVW1o3W8FTiOoNxDoC9ph6XmlU3 scott.lowe@scottlowe.org
+  - docker: [centos,root]
 write_files:
   - content: |
       [Unit]
       Description=UNIX Socket for the Docker API
-      PartOf=docker.service
 
       [Socket]
       ListenStream=/var/run/docker.sock
       SocketMode=0660
       SocketUser=root
       SocketGroup=docker
+      Service=docker.service
 
       [Install]
       WantedBy=sockets.target
@@ -54,11 +52,13 @@ write_files:
     owner: root:root
     permissions: '0644'
 runcmd:
-  - systemctl daemon-reload
-  - systemctl enable docker.service
-  - systemctl enable docker.socket
-  - systemctl enable docker-tcp.socket
-  - systemctl stop docker.service
-  - systemctl start docker.socket
-  - systemctl start docker-tcp.socket
-  - systemctl start docker.service
+  - [ systemctl, start, docker-storage-setup ]
+  - [ systemctl, mask, docker-storage-setup ]
+  - [ systemctl, daemon-reload ]
+  - [ systemctl, enable, docker.service ]
+  - [ systemctl, enable, docker.socket ]
+  - [ systemctl, enable, docker-tcp.socket ]
+  - [ systemctl, stop, docker.service ]
+  - [ systemctl, start, docker.socket ]
+  - [ systemctl, start, docker-tcp.socket ]
+  - [ systemctl, start, docker.service ]
