@@ -1,0 +1,64 @@
+#cloud-config
+# vim: syntax=yaml
+
+groups:
+  - docker: [centos,root]
+write_files:
+  - content: |
+      [Unit]
+      Description=UNIX Socket for the Docker API
+
+      [Socket]
+      ListenStream=/var/run/docker.sock
+      SocketMode=0660
+      SocketUser=root
+      SocketGroup=docker
+      Service=docker.service
+
+      [Install]
+      WantedBy=sockets.target
+    path: /etc/systemd/system/docker.socket
+    owner: root:root
+    permissions: '0644'
+  - content: |
+      [Unit]
+      Description=TCP Socket for the Docker API
+
+      [Socket]
+      ListenStream=2375
+      BindIPv6Only=both
+      Service=docker.service
+
+      [Install]
+      WantedBy=sockets.target
+    path: /etc/systemd/system/docker-tcp.socket
+    owner: root:root
+    permissions: '0644'
+  - content: |
+      [Service]
+      ExecStart=
+      ExecStart=/usr/bin/dockerd-current -H fd:// \
+                --add-runtime docker-runc=/usr/libexec/docker/docker-runc-current \
+                --default-runtime=docker-runc \
+                --exec-opt native.cgroupdriver=systemd \
+                --userland-proxy-path=/usr/libexec/docker/docker-proxy-current \
+                $OPTIONS \
+                $DOCKER_STORAGE_OPTIONS \
+                $DOCKER_NETWORK_OPTIONS \
+                $ADD_REGISTRY \
+                $BLOCK_REGISTRY \
+                $INSECURE_REGISTRY
+    path: /etc/systemd/system/docker.service.d/docker-socket.conf
+    owner: root:root
+    permissions: '0644'
+runcmd:
+  - [ systemctl, start, docker-storage-setup ]
+  - [ systemctl, mask, docker-storage-setup ]
+  - [ systemctl, daemon-reload ]
+  - [ systemctl, enable, docker.service ]
+  - [ systemctl, enable, docker.socket ]
+  - [ systemctl, enable, docker-tcp.socket ]
+  - [ systemctl, stop, docker.service ]
+  - [ systemctl, start, docker.socket ]
+  - [ systemctl, start, docker-tcp.socket ]
+  - [ systemctl, start, docker.service ]
