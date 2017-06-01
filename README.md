@@ -2,6 +2,8 @@
 
 This repository contains a variety of files and tools for learning new technologies. It is aimed at existing IT professionals who need some help coming up to speed with new technologies, products, or open source projects.
 
+If you're interested in contributing, please see [the guidelines](https://github.com/lowescott/learning-tools/blob/master/CONTRIBUTING.md).
+
 ## Contents
 
 The contents of this repository are organized according to primary technology area. Here's a quick breakdown of the major technology areas so far:
