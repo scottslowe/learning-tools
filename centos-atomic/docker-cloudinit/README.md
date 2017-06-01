@@ -1,38 +1,43 @@
-# Instructions
+# Using cloud-init to Customize Docker on CentOS Atomic Host
 
-1. Capture the VPC ID of your default VPC using this command:
+These files show an example of how to use `cloud-init` on a public cloud provider (AWS is used in this example) to customize the configuration and behavior of the Docker daemon on a CentOS Atomic Host instance.
 
-        VPC_ID=$(aws --output text ec2 describe-vpcs \
-        --filters Name=isDefault,Values="true" \
-        --query 'Vpcs[0].VpcId')
+## Contents
 
-2. Capture the subnet ID of one of the subnets (the first, by default) in the default VPC using this command (step 1 must be completed first):
+* **cloud-config.yml**: This is the `cloud-init` configuration file that does the configuration of the Docker daemon on the instance. No modifications to this file should be necessary.
 
-        SN_ID=$(aws --output text ec2 describe-subnets \
-        --filters Name=vpc-id,Values="$VPC_ID" \
-        --query 'sort_by(Images,&AvailabilityZone)[0].SubnetId')
+* **launch.sh**: This Bash shell script uses the AWS CLI to gather information from AWS and then launch an instance in your default VPC.
 
-3. Capture the security group ID of a security group in the default VPC with the name "default" (it is assumed that this security group exists and allows SSH access to the instance; if this is not the case, you must fix this outside of this process):
+* **README.md**: The file you're currently reading.
 
-        SG_ID=$(aws --output text ec2 describe-security-groups \
-        --filters Name=group-name,Values="default" \
-        Name=vpc-id,Values="$VPC_ID" \
-        --query 'SecurityGroups[0].GroupId')
+## Prerequisites
 
-4. Finally, capture the image ID of the latest version of the CentOS 7 Atomic Host AMI using this command:
+Before you can use this environment, there are a few things you'll need to do:
 
-        IMAGE_ID=$(aws --output text ec2 describe-images \
-        --owners 410186602215 --filter Name=name,Values="*CentOS Atomic*" \
-        --query 'sort_by(Images,&CreationDate)[-1].ImageId')
+1. You'll need to install **and** configure the AWS CLI. The launch script provided in this environment assumes that the AWS CLI is installed, configured, and working as expected.
 
-5. Make sure you have an SSH key available to use with the instance and make note of the name of the SSH key.
+2. In your default VPC, you'll need to either a) modify the default security group to allow inbound SSH; or b) create a security group called "default" that allows inbound SSH. If you prefer to use a name other than "default", you'll need to modify `launch.sh` with the updated name of the security group to use.
 
-6. Launch an AWS instance using this command:
+3. You'll need to have a working SSH keypair in AWS.
 
-        aws ec2 run-instances --image-id $IMAGE_ID --instance-type t2.micro \
-        --key-name keyname --user-data file://cloud-config.yml \
-        --subnet-id $SN_ID --security-group-ids $SG_ID
+## Instructions
 
-7. Connect to the instance using SSH.
+1. If you are using a security group other than one named "default" (as described in the "Prerequisites" section), edit `launch.sh` and modify the command that looks up the security group ID accordingly.
 
-8. Verify that the Docker daemon is listening over a network socket (not the default configuration) by running `ss -lnt` and/or running `docker` commands against the network socket (via `-H tcp://127.0.0.1:2375`).
+2. Edit `launch.sh` to specify the correct AWS keypair to use when launching the instance.
+
+3. Launch the instance using `./launch.sh`. This launch script assumes that the AWS CLI is working, and that the `cloud-config.yml` file is in the same directory.
+
+4. Using the AWS CLI or the AWS Console, determine the public IP address assigned to the instance you just created.
+
+5. Use SSH to connect to the instance (use the username "centos" to connect). Once logged into the instance, use `systemctl status docker.service` to verify that the Docker daemon is running and that the systemd drop-in located in `/etc/systemd/system/docker.service.d` has been loaded.
+
+6. While logged into the instance, use `ss -lnt` to show that a process (the Docker daemon) is listening on TCP port 2375.
+
+7. Verify the Docker daemon is working across the network by running `sudo docker -H tcp://127.0.0.1:2375 ps`.
+
+Enjoy!
+
+## License
+
+This content is licensed under the MIT License.
