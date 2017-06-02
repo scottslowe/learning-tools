@@ -1,0 +1,43 @@
+---
+- name: "Install Pip"
+  apt:
+    name: "python-pip"
+    state: "present"
+    update_cache: "yes"
+
+- name: "Install some Python modules"
+  pip:
+    name: "{{ item }}"
+    state: "present"
+  with_items:
+    - "urllib3"
+    - "pyopenssl"
+    - "ndg-httpsclient"
+    - "pyasn1"
+
+- name: "Install Docker APT Key"
+  apt_key:
+    url: "https://download.docker.com/linux/ubuntu/gpg"
+    state: "present"
+
+- name: "Add Docker repository"
+  apt_repository:
+    repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu trusty edge"
+    state: "present"
+    update_cache: "yes"
+
+- name: "Install Docker CE Edge"
+  package:
+    name: "docker-ce"
+    state: "present"
+
+- name: "Add user to Docker group"
+  user:
+    name: "{{ ansible_ssh_user }}"
+    group: "docker"
+    append: "yes"
+
+- name: "Restart Docker daemon"
+  service:
+    name: "docker"
+    state: "restarted"

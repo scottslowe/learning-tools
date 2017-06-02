@@ -1,0 +1,6 @@
+---
+- hosts: "all"
+  become: true
+  remote_user: "ubuntu"
+  roles:
+    - role: docker-ce-edge
