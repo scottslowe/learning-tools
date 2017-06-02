@@ -1,0 +1,7 @@
+{
+    "ami_name_prefix": "test",
+    "aws_region": "us-east-1",
+    "aws_vpc_id": "vpc-XXXXXXXX",
+    "aws_subnet_id": "subnet-XXXXXXXX",
+    "ami_description": "Test Packer Build"
+}

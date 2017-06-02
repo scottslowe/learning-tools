@@ -1,0 +1,39 @@
+{
+    "variables": {
+        "ami_name_prefix": "",
+        "aws_region": "",
+        "aws_vpc_id": "",
+        "aws_subnet_id": "",
+        "ami_description": ""
+    },
+
+    "builders": [
+        {
+            "type": "amazon-ebs",
+            "name": "{{ user `aws_region` }} {{ user `ami_description` }}",
+            "instance_type": "t2.micro",
+            "ssh_username": "ubuntu",
+            "associate_public_ip_address": true,
+            "region": "{{ user `aws_region` }}",
+            "source_ami_filter": {
+                "filters": {
+                    "virtualization-type": "hvm",
+                    "root-device-type": "ebs",
+                    "name": "*ubuntu-trusty-14.04-amd64-server*"
+                },
+                "owners": ["099720109477"],
+                "most_recent": true
+            },
+            "vpc_id": "{{ user `aws_vpc_id` }}",
+            "subnet_id": "{{ user `aws_subnet_id` }}",
+            "ami_name": "{{ user `ami_name_prefix` }}-{{ isotime \"2006-01-02-15-04-05\" }}"
+        } 
+    ],
+
+    "provisioners": [
+        {
+            "type": "ansible",
+            "playbook_file": "provision.yml"
+        } 
+    ]
+}
