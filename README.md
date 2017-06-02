@@ -20,6 +20,7 @@ The contents of this repository are organized according to primary technology ar
 * Network operating systems (JunOS, EOS, Cumulus, etc.)
 * OpenStack
 * Open vSwitch (OVS) and Open Virtual Network (OVN)
+* Packer
 * Photon OS
 * The rkt ("Rocket") container runtime
 * SSH
