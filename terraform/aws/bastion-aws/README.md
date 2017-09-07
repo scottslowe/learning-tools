@@ -6,13 +6,13 @@ These files provide an example of how to use Terraform to create a "private" EC2
 
 * **data.tf**: This Terraform configuration file provides information to Terraform on which AWS AMIs to use.
 
-* **instances.yml**: This Terraform configuration file specifies the AWS instances to create.
+* **instances.tf**: This Terraform configuration file specifies the AWS instances to create.
 
 * **networking.tf**: This Terraform configuration creates all the networking components: the VPC (Virtual Private Cloud), subnets, Internet gateway, and the route table.
 
 * **output.tf**: This Terraform configuration file supplies information about the instances created by Terraform (public and private IP addresses, as appropriate).
 
-* **provider.tf**: This Terraform configuration files configures the AWS provider to use the "us-west-2" region. You'll need to edit this file if you'd like to use a different AWS region.
+* **provider.tf**: This Terraform configuration files configures the AWS provider.
 
 * **README.md**: The file you're currently reading.
 
@@ -20,7 +20,7 @@ These files provide an example of how to use Terraform to create a "private" EC2
 
 * **ssh.cfg.example**: This is an example of the configuration stanzas that may be needed to support the use of an SSH bastion host.
 
-* **vars.tf**: This Terraform configuration file specifies variables that Terraform will need in order to create the desired AWS infrastructure.
+* **variables.tf**: This Terraform configuration file specifies variables that Terraform will need in order to create the desired AWS infrastructure.
 
 ## Instructions
 
@@ -28,7 +28,7 @@ These instructions assume that you have an AWS account, that Terraform is instal
 
 1. Place the files from the `terraform/aws/bastion-aws` directory of this GitHub repository into a directory on your local system. You can clone the entire "learning-tools" repository (using `git clone`) or just download the specific files from the `terraform/aws/bastion-aws` folder.
 
-2. Create a file named `terraform.tfvars` and populate it with the name of the AWS keypair you'd like to use for the instances and the flavor of the instances. Refer to [this URL](https://www.terraform.io/intro/getting-started/variables.html) for specific details on the syntax of this file. You can refer to the contents of `vars.tf` for the names of the variables that need to be defined.
+2. Create a file named `terraform.tfvars` and populate it with the name of the AWS keypair you'd like to use for the instances, the AWS region to use, and the type (like "t2.micro") of the instances. Refer to [this URL](https://www.terraform.io/intro/getting-started/variables.html) for specific details on the syntax of this file. You can refer to the contents of `variables.tf` for the names of the variables that need to be defined.
 
 3. Run `terraform plan` to have Terraform examine the current infrastructure and determine what changes are necessary to realize the desired configuration.
 
