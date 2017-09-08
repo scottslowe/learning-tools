@@ -5,9 +5,10 @@
 
   tasks:
   - name: "Install Pip"
-    package:
+    apt:
       name: "python-pip"
       state: "present"
+      update_cache: "yes"
 
   - name: "Install some Python modules"
     pip:

@@ -1,7 +1,7 @@
 ---
 - box:
     vmw: "bento/ubuntu-14.04"
-    vb: "ubuntu/trusty64"
+    vb: "bento/ubuntu-14.04"
   name: "manager"
   nics:
     - type: "private_network"
@@ -10,7 +10,7 @@
   vcpu: "1"
 - box:
     vmw: "bento/ubuntu-14.04"
-    vb: "ubuntu/trusty64"
+    vb: "bento/ubuntu-14.04"
   name: "worker-01"
   nics:
     - type: "private_network"
@@ -19,7 +19,7 @@
   vcpu: "1"
 - box:
     vmw: "bento/ubuntu-14.04"
-    vb: "ubuntu/trusty64"
+    vb: "bento/ubuntu-14.04"
   name: "worker-02"
   nics:
     - type: "private_network"
@@ -28,7 +28,7 @@
   vcpu: "1"
 - box:
     vmw: "bento/ubuntu-14.04"
-    vb: "ubuntu/trusty64"
+    vb: "bento/ubuntu-14.04"
   name: "worker-03"
   nics:
     - type: "private_network"
@@ -37,7 +37,7 @@
   vcpu: "1"
 - box:
     vmw: "bento/ubuntu-14.04"
-    vb: "ubuntu/trusty64"
+    vb: "bento/ubuntu-14.04"
   name: "worker-04"
   nics:
     - type: "private_network"

@@ -65,10 +65,10 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         override.vm.box = machine['box']['vb']
       end # srv.vm.provider 'virtualbox'
     end # config.vm.define
-
-    # Run simple Ansible playbook
-    config.vm.provision 'ansible' do |ansible|
-      ansible.playbook = 'provision.yml'
-    end # config.vm.provision
   end # machines.each
+
+  # Run simple Ansible playbook
+  config.vm.provision 'ansible' do |ansible|
+    ansible.playbook = 'provision.yml'
+  end # config.vm.provision
 end # Vagrant.configure
