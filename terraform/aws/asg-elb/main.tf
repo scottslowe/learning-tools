@@ -39,7 +39,7 @@ resource "aws_autoscaling_group" "asg" {
     max_size                    = "2"
     desired_capacity            = "2"
     launch_configuration        = "${aws_launch_configuration.lc.name}"
-    load_balancers              = ["elb-test"]
+    load_balancers              = ["${aws_elb.elb.name}"]
 
     lifecycle {
         create_before_destroy   = true
