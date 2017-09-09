@@ -1,0 +1,53 @@
+version: "3"
+
+services:
+  wordpress:
+    image: wordpress:php7.1-apache
+    ports:
+      - 8080:80
+    networks:
+      - common
+    depends_on:
+      - dbcluster
+    deploy:
+      replicas: 2
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+    environment:
+      WORDPRESS_DB_HOST: "dbcluster"
+      WORDPRESS_DB_NAME: "wordpress"
+      WORDPRESS_DB_USER: "wp"
+      WORDPRESS_DB_PASSWORD: "changemetoo"
+  dbcluster:
+    image: toughiq/mariadb-cluster
+    networks:
+      - common
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+    environment:
+      DB_SERVICE_NAME: dbcluster 
+      MYSQL_ROOT_PASSWORD: changeme 
+      MYSQL_DATABASE: wordpress 
+      MYSQL_USER: wp 
+      MYSQL_PASSWORD: changemetoo 
+  visualizer:
+    image: dockersamples/visualizer:stable
+    ports:
+      - "8888:8080"
+    stop_grace_period: 1m30s
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+networks:
+  common:
