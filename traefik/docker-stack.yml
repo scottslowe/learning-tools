@@ -1,53 +1,46 @@
 version: "3"
 
 services:
-  wordpress:
-    image: wordpress:php7.1-apache
-    ports:
-      - 8080:80
+  proxy:
+    image: traefik
+    command: --web --docker --logLevel=DEBUG
     networks:
-      - common
-    depends_on:
-      - dbcluster
-    deploy:
-      replicas: 2
-      update_config:
-        parallelism: 2
-        delay: 10s
-      restart_policy:
-        condition: on-failure
-    environment:
-      WORDPRESS_DB_HOST: "dbcluster"
-      WORDPRESS_DB_NAME: "wordpress"
-      WORDPRESS_DB_USER: "wp"
-      WORDPRESS_DB_PASSWORD: "changemetoo"
-  dbcluster:
-    image: toughiq/mariadb-cluster
-    networks:
-      - common
-    deploy:
-      replicas: 1
-      update_config:
-        parallelism: 2
-        delay: 10s
-      restart_policy:
-        condition: on-failure
-    environment:
-      DB_SERVICE_NAME: dbcluster 
-      MYSQL_ROOT_PASSWORD: changeme 
-      MYSQL_DATABASE: wordpress 
-      MYSQL_USER: wp 
-      MYSQL_PASSWORD: changemetoo 
-  visualizer:
-    image: dockersamples/visualizer:stable
+      - webgateway
     ports:
-      - "8888:8080"
-    stop_grace_period: 1m30s
+      - "80:80"
+      - "8080:8080"
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock"
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /dev/null:/traefik.toml
     deploy:
       placement:
         constraints: [node.role == manager]
-
+  web-dev:
+    image: "slowe/flask-demo-app:1.0"
+    networks:
+      - webgateway
+    ports:
+      - "5000:5000"
+    labels:
+      - "traefik.backend=web-dev"
+      - "traefik.frontend.rule=Host:web-dev.learningtools.local"
+    deploy:
+      replicas: 2
+      placement:
+        constraints: [node.role == worker]
+  web-prod:
+    image: "slowe/flask-demo-app:1.0"
+    networks:
+      - webgateway
+    ports:
+      - "5001:5001"
+    labels:
+      - "traefik.backend=web-prod"
+      - "traefik.frontend.rule=Host:web-prod.learningtools.local"
+    deploy:
+      replicas: 2
+      placement:
+        constraints: [node.role == worker]
 networks:
-  common:
+  webgateway:
+    driver: bridge

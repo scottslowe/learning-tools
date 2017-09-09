@@ -3,7 +3,7 @@ resource "aws_instance" "manager" {
     ami                     = "${data.aws_ami.f26_atomic_ami.id}"
     instance_type           = "${var.mgr_flavor}"
     key_name                = "${var.keypair}"
-    vpc_security_group_ids  = ["${aws_security_group.web_sg.id}"]
+    vpc_security_group_ids  = ["${aws_security_group.mgmt_sg.id}"]
     subnet_id               = "${aws_subnet.traefik_pub_subnet.id}"
     depends_on              = ["aws_internet_gateway.traefik_gw"]
     tags {
