@@ -14,6 +14,15 @@
   - name: "Establish Swarm join token as a host fact"
     set_fact: swarmtoken="{{ swarm_token.stdout }}"
 
+  - name: "Copy docker-stack.yml to manager"
+    copy:
+      src: "docker-stack.yml"
+      dest: "/home/fedora/docker-stack.yml"
+      owner: "fedora"
+      group: "fedora"
+    tags:
+      - "files"
+
 - hosts: "tag_role_worker"
   become: "yes"
   remote_user: "fedora"

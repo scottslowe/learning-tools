@@ -3,7 +3,7 @@ version: "3"
 services:
   proxy:
     image: traefik
-    command: --web --docker --logLevel=DEBUG
+    command: --web --docker --docker.swarmmode --docker.watch --logLevel=DEBUG
     networks:
       - webgateway
     ports:
@@ -43,4 +43,4 @@ services:
         constraints: [node.role == worker]
 networks:
   webgateway:
-    driver: bridge
+    driver: overlay
