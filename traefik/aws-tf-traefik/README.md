@@ -1,73 +1,103 @@
-# Instructions for Using this Demo Environment
+# Using Traefik with Docker on CoreOS on AWS
+
+These files help establish a simple Docker Swarm cluster on which you can deploy Traefik ([https://traefik.io](https://traefik.io)), a dynamic reverse proxy, to help direct traffic for services deployed on the Swarm cluster.
 
 ## Prerequisites
 
 This demo environment assumes that you have the following software already installed on your system:
 
-* Terraform 0.9.x (tested with 0.9.2, should work with any 0.9.x version)
-* Ansible 2.x (tested with Ansible 2.3.0)
-* Git 2.x (should work with any recent version of Git)
-
-This demo also assumes that you've properly configured your AWS credentials. (If the `aws` command-line tools work, then your credentials are properly configured.)
+* Terraform 0.9.x (tested with 0.9.11, should work with any 0.9.x version)
 
 Before trying to use this demo environment, please ensure that you've installed the necessary prerequisites.
 
-This demo environment was tested on Fedora Linux, but it should work without any issues on any Linux distribution or on recent versions of OS X. I don't know what would be required to make it work on Windows, sorry.
+This demo environment was tested on macOS 10.12 "Sierra", but it should work on any recent macOS release or recent Linux distribution. I don't know what would be required to make it work on Windows, sorry.
 
-## Setup for the Demo Environment
+## Contents
 
-1. Open a terminal and navigate to the directory where you'd like to store the files for this demo environment.
+* **compute.tf**: This Terraform configuration launches the CoreOS-based instances used for the Docker Swarm setup.
 
-2. Run `git clone https://github.com/lowescott/2017-itx-container-workshop` to clone the repository to the current directory.
+* **data.tf**: This Terraform configuration file provides information to Terraform on which AWS AMIs to use.
 
-3. Switch into the directory for this demo environment (`cd 2017-itx-container-workshop/ec2-swarm`).
+* **networking.tf**: This Terraform configuration file creates all the networking constructs needed for the environment (VPC, Internet gateway, subnet, gateway attachment, route table, and route table associations).
 
-4. Edit `terraform.tf` and specify a valid name for the S3 bucket and the name/path of the file where Terraform should store its state. If you want to use a region other than "us-west-2", you also need to specify the AWS region.
+* **output.tf**: This Terraform configuration outputs information about the resources created (the public IP addresses of the instances, specifically).
 
-5. Run `terraform init` to configure the S3 storage for Terraform state. Address any errors that may be reported.
+* **provider.tf**: This Terraform configuration files configures the AWS provider.
 
-6. Edit `ec2.ini` and specify the AWS region(s) you'll be using. (If you are using the "us-west-2" region, you may leave this file unmodified.)
+* **README.md**: The file you're currently reading.
 
-7. Edit `vars.tf` to specify the name of an AWS keypair to use. If you want to use a region other than "us-west-2", you'll also need to specify the name of the AWS region to use.
+* **security.tf**: This Terraform configuration creates the security groups used by the instances.
 
-The demo environment is now ready to be created.
+* **variables.tf**: This Terraform configuration file specifies variables that Terraform will need in order to create the desired AWS infrastructure.
 
-## Creating the Demo Environment
+## Instructions
 
-1. In the `ec2-swarm` directory where the repository was cloned, run `terraform plan` to evaluate the requested Terraform configuration against your current AWS infrastructure.
+As mentioned in "Prerequisites" above, these instructions assume that you have a working Terraform installation capable of working with AWS.
 
-2. Run `terraform apply` to create all the necessary AWS infrastructure.
+1. Place the files from the `traefik/aws-tf-traefik` directory of the "learning-tools" GitHub repository into a direcotry on your local system. You can clone the entire repository (using `git clone`) or just download the specific files from the `traefik/aws-tf-traefik` directory.
 
-3. Run `./ec2.py --refresh-cache` to refresh the Ansible inventory. This will query AWS and return information about the AWS infrastructure that was just created by Terraform.
+2. Create a file named `terraform.tfvars` and populate it with the name of the AWS keypair you'd like to use for the instances, the AWS region to use, the ID of the security group you'd like to use, the flavor of the instances (such as "t2.micro"), and the number of worker nodes you'd like created. Refer to [this URL](https://www.terraform.io/intro/getting-started/variables.html) for specific details on the syntax of this file. You can refer to the contents of `variables.tf` for the names of the variables that need to be defined.
 
-4. Run `ansible-playbook create-swarm.yml` to create the Swarm cluster.
+3. Run `terraform validate` to ensure there are no errors in the Terraform configuration. (If using Terraform 0.10.x, you will also need to run `terraform init` first; however, I haven't tested this environment with 0.10.x yet).
 
-At this point you now have a working demo environment.
+4. Run `terraform plan` to have Terraform examine the current infrastructure and determine what changes are necessary to realize the desired configuration.
 
-## Deploying the Demo Application
+5. Run `terraform apply` to have Terraform make the changes necessary to realize the desired configuration. When this command has completed, it will output the public IP addresses assigned to the created instances.
 
-1. Connect to the manager node using SSH with the command `ssh -i <Path to SSH Key file> ubuntu@<public IP of manager>`. You can determine the public IP of the manager node using the `ec2.py` inventory script, if necessary.
+6. Use SSH to log into the "manager" instance. While logged into the "manager" instance, establish this node as a Docker Swarm manager using this command:
 
-2. While logged into the manager node, run `docker stack deploy --compose-file docker-stack.yml demo` to deploy the sample application.
+        docker swarm init
 
-3. Use a local browser to connect to port 8888 of the manager node's public IP address to show the visualizer.
+    Copy the output of this command; you'll need it for the next step.
 
-4. Use a local browser to connect to port 8080 of the manager node's public IP address to show WordPress.
+7. Use SSH to log into the first "worker" node. While logged into the first "worker" node, use the output from the previous step to have this node join the Swarm cluster.
 
-5. You can scale up the number of containers using the `docker service scale` command. The visualizer will reflect the additional containers that are deployed. Use `docker service ls` to list the services.
+8. Repeat step 7 with all remaining worker nodes.
 
-You now have a working demo application.
+9. You now have a working Docker Swarm cluster running on CoreOS on AWS. To deploy Traefik into this cluster, first create an overlay network:
 
-## Destroying Only the Swarm Cluster
+        docker network create --driver=overlay demo-net
 
-If you'd like to tear down the Swarm cluster but leave the AWS infrastructure intact, follow these steps:
+10. Next, create a service (constrained to the manager node) to run the Traefik reverse proxy:
 
-1. Open a terminal and switch into the `ec2-swarm` directory of the cloned repository.
+        docker service create --name traefik \
+        --constraint 'node.role==manager' \
+        --publish 80:80 --publish 8080:8080 \
+        --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock \
+        --network demo-net
+        traefik --web --docker --docker.watch \
+        --docker.swarmmode --docker.domain=docker.local
 
-2. Run `ansible-playbook destroy-swarm.yml` to destroy the Swarm cluster.
+    If you'd like additional logging, add `--logLevel=DEBUG` to the above command.
 
-The Swarm cluster will be destroyed, but the AWS infrastructure will remain active. You can use `ansible-playbook create-swarm.yml` to create a new Swarm using the same infrastructure.
+11. Deploy a web service to be used behind Traefik:
 
-## Destroying the Entire Demo Environment
+        docker service create --name web \
+        --label 'traefik.port=5000' \
+        --network demo-net slowe/flask-demo-app:1.0
 
-To destroy the entire demo environment, simply run `terraform destroy` from the `ec2-swarm` directory.
+12. Run this command against the IP address of the manager and note the output:
+
+        curl -H "Host:web.docker.local" http://<manager_ip_address>
+
+    If you used a name other than "web" in step 11, replace that name in the "Host" portion of the above command.
+
+13. Run `docker service scale web=3` to scale up the "web" service (replace "web" with whatever name you used in step 11). Repeat step 12 and note that Traefik will load balance across the different containers hosting the service.
+
+13. Deploy a new web service:
+
+        docker service create --name api \
+        --label 'traefik.port=5000' \
+        --network demo-net slowe/flask-demo-app:1.0
+
+14. Run this command to access the "api" service behind Traefik:
+
+        curl -H "Host:api.docker.local" http://<manager_ip_address>
+
+    If you used a name other than "api", use that name in the above command.
+
+15. Note that Traefik is taking inbound traffic to the manager and correctly routing it to the appropriate backend container based on the "Host" header. Feel free to deploy additional services with different names to see Traefik in action.
+
+## License
+
+This content is licensed under the MIT License.
