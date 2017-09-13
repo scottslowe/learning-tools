@@ -1,6 +1,6 @@
-# Launch a Fedora Atomic Host 26 instance to serve as a manager
+# Launch an instance to serve as a manager
 resource "aws_instance" "manager" {
-    ami                     = "${data.aws_ami.f26_atomic_ami.id}"
+    ami                     = "${data.aws_ami.worker_ami.id}"
     instance_type           = "${var.mgr_flavor}"
     key_name                = "${var.keypair}"
     vpc_security_group_ids  = ["${aws_security_group.mgmt_sg.id}"]
@@ -15,9 +15,9 @@ resource "aws_instance" "manager" {
     }
 }
 
-# Launch some Fedora Atomic Host 26 instances to serve as worker nodes
+# Launch one or more instances to serve as worker nodes
 resource "aws_instance" "worker" {
-    ami                     = "${data.aws_ami.f26_atomic_ami.id}"
+    ami                     = "${data.aws_ami.worker_ami.id}"
     count                   = "${var.num_wkr_nodes}"
     instance_type           = "${var.wkr_flavor}"
     key_name                = "${var.keypair}"

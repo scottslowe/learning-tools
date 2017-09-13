@@ -1,8 +1,9 @@
-data "aws_ami" "f26_atomic_ami" {
+data "aws_ami" "worker_ami" {
     most_recent             = true
+    owners                  = ["595879546273"]
     filter {
         name                = "name"
-        values              = ["*Fedora-Atomic-26*"]
+        values              = ["*CoreOS-stable*"]
     }
     filter {
         name                = "virtualization-type"
@@ -14,11 +15,12 @@ data "aws_ami" "f26_atomic_ami" {
     }
 }
 
-data "aws_ami" "f26_ami" {
+data "aws_ami" "manager_ami" {
     most_recent             = true
+    owners                  = ["099720109477"]
     filter {
         name                = "name"
-        values              = ["*Fedora-Cloud-Base-26*"]
+        values              = ["*ubuntu-xenial-16.04*"]
     }
     filter {
         name                = "virtualization-type"
