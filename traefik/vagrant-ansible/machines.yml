@@ -1,7 +1,7 @@
 ---
 - box:
-    vmw: "centos/atomic-host"
-    vb: "fedora/26-atomic-host"
+    vmw: "bento/ubuntu-14.04"
+    vb: "bento/ubuntu-14.04"
   name: "manager"
   nics:
     - type: "private_network"
@@ -9,8 +9,8 @@
   ram: "512"
   vcpu: "1"
 - box:
-    vmw: "centos/atomic-host"
-    vb: "fedora/26-atomic-host"
+    vmw: "bento/ubuntu-14.04"
+    vb: "bento/ubuntu-14.04"
   name: "worker-01"
   nics:
     - type: "private_network"
@@ -18,8 +18,8 @@
   ram: "512"
   vcpu: "1"
 - box:
-    vmw: "centos/atomic-host"
-    vb: "fedora/26-atomic-host"
+    vmw: "bento/ubuntu-14.04"
+    vb: "bento/ubuntu-14.04"
   name: "worker-02"
   nics:
     - type: "private_network"
@@ -27,8 +27,8 @@
   ram: "512"
   vcpu: "1"
 - box:
-    vmw: "centos/atomic-host"
-    vb: "fedora/26-atomic-host"
+    vmw: "bento/ubuntu-14.04"
+    vb: "bento/ubuntu-14.04"
   name: "worker-03"
   nics:
     - type: "private_network"
@@ -36,8 +36,8 @@
   ram: "512"
   vcpu: "1"
 - box:
-    vmw: "centos/atomic-host"
-    vb: "fedora/26-atomic-host"
+    vmw: "bento/ubuntu-14.04"
+    vb: "bento/ubuntu-14.04"
   name: "worker-04"
   nics:
     - type: "private_network"

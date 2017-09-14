@@ -1,7 +1,7 @@
 ---
-- hosts: "us-west-2"
+- hosts: "all"
   become: "yes"
-  remote_user: "ubuntu"
+  remote_user: "vagrant"
 
   tasks:
   - name: "Leave Swarm cluster"
