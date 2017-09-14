@@ -1,0 +1,86 @@
+---
+- hosts: "all"
+  become: "yes"
+  remote_user: "vagrant"
+
+  tasks:
+  - name: "Install Pip"
+    apt:
+      name: "python-pip"
+      state: "present"
+      update_cache: "yes"
+    tags:
+      - manager
+      - worker
+
+  - name: "Install some Python modules"
+    pip:
+      name: "{{ item }}"
+      state: "present"
+    with_items:
+      - "urllib3"
+      - "pyopenssl"
+      - "ndg-httpsclient"
+      - "pyasn1"
+    tags:
+      - manager
+      - worker
+
+  - name: "Install Docker APT Key"
+    apt_key:
+      url: "https://download.docker.com/linux/ubuntu/gpg"
+      state: "present"
+    tags:
+      - manager
+      - worker
+
+  - name: "Add Docker repository"
+    apt_repository:
+      repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu trusty stable"
+      state: "present"
+      update_cache: "yes"
+    tags:
+      - manager
+      - worker
+
+  - name: "Install Docker CE"
+    package:
+      name: "docker-ce"
+      state: "present"
+    tags:
+      - manager
+      - worker
+
+  - name: "Add user to Docker group"
+    user:
+      name: "{{ ansible_ssh_user }}"
+      group: "docker"
+      append: "yes"
+    tags:
+      - manager
+      - worker
+
+  - name: "Initialize Docker Swarm from manager"
+    command: "docker swarm init --advertise-addr {{ ansible_eth1.ipv4.address }}"
+    when: ansible_hostname == 'manager'
+    tags:
+      - manager
+
+  - name: "Register Swarm join token"
+    command: "docker swarm join-token -q worker"
+    register: swarm_token
+    when: ansible_hostname == 'manager'
+    tags:
+      - manager
+
+  - name: "Establish Swarm join token as a host fact"
+    set_fact: swarmtoken="{{ swarm_token.stdout }}"
+    when: ansible_hostname == 'manager'
+    tags:
+      - manager
+
+  - name: "Join worker nodes to Swarm cluster"
+    command: "docker swarm join --advertise-addr {{ ansible_eth1.ipv4.address }} --token {{ hostvars['manager'].swarmtoken }} {{ hostvars['manager']['ansible_eth1']['ipv4']['address'] }}:2377"
+    when: ansible_hostname != 'manager'
+    tags:
+      - worker
