@@ -1,0 +1,22 @@
+---
+- hosts: "all"
+  become: "yes"
+  remote_user: "vagrant"
+
+  tasks:
+  - name: "Initialize Docker Swarm from manager"
+    command: "docker swarm init --advertise-addr {{ ansible_default_ipv4.address }}"
+    when: ansible_hostname == "manager"
+
+  - name: "Register Swarm join token"
+    command: "docker swarm join-token -q worker"
+    register: swarm_token
+    when: ansible_hostname == "manager"
+
+  - name: "Establish Swarm join token as a host fact"
+    set_fact: swarmtoken="{{ swarm_token.stdout }}"
+    when: ansible_hostname == "manager"
+
+  - name: "Join worker nodes to Swarm cluster"
+    command: "docker swarm join --advertise-addr {{ ansible_default_ipv4.address }} --token {{ swarmtoken }} {{ hostvars[groups['tag_role_manager'][0]].ansible_default_ipv4.address }}:2377"
+    when: ansible_hostname != "manager"

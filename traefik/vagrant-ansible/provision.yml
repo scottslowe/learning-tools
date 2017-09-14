@@ -1,0 +1,8 @@
+---
+- hosts: "all"
+  remote_user: "vagrant"
+  become: "yes"
+
+  tasks:
+    - name: Verify Ansible connectivity
+      ping:
