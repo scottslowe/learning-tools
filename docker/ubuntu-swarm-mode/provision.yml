@@ -1,0 +1,10 @@
+---
+- hosts: "all"
+  become: "yes"
+  remote_user: "vagrant"
+
+  tasks:
+  - name: "Install Pip"
+    package:
+      name: "python-pip"
+      state: "present"
