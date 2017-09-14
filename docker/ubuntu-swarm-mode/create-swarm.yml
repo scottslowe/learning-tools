@@ -61,7 +61,7 @@
       - worker
 
   - name: "Initialize Docker Swarm from manager"
-    command: "docker swarm init --advertise-addr {{ ansible_default_ipv4.address }}"
+    command: "docker swarm init --advertise-addr {{ ansible_eth1.ipv4.address }}"
     when: ansible_hostname == 'manager'
     tags:
       - manager
@@ -80,7 +80,7 @@
       - manager
 
   - name: "Join worker nodes to Swarm cluster"
-    command: "docker swarm join --advertise-addr {{ ansible_default_ipv4.address }} --token {{ hostvars['manager'].swarmtoken }} {{ hostvars['manager'].ansible_default_ipv4.address }}:2377"
+    command: "docker swarm join --advertise-addr {{ ansible_eth1.ipv4.address }} --token {{ hostvars['manager'].swarmtoken }} {{ hostvars['manager']['ansible_eth1']['ipv4']['address'] }}:2377"
     when: ansible_hostname != 'manager'
     tags:
       - worker
