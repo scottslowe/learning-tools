@@ -1,0 +1,66 @@
+---
+- hosts: "us-west-2"
+  become: "yes"
+  remote_user: "ubuntu"
+
+  tasks:
+  - name: "Install Pip"
+    apt:
+      name: "python-pip"
+      state: "present"
+      update_cache: "yes"
+
+  - name: "Install some Python modules"
+    pip:
+      name: "{{ item }}"
+      state: "present"
+    with_items:
+      - "urllib3"
+      - "pyopenssl"
+      - "ndg-httpsclient"
+      - "pyasn1"
+
+  - name: "Install Docker APT Key"
+    apt_key:
+      url: "https://download.docker.com/linux/ubuntu/gpg"
+      state: "present"
+
+  - name: "Add Docker repository"
+    apt_repository:
+      repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu trusty stable"
+      state: "present"
+      update_cache: "yes"
+
+  - name: "Install Docker CE"
+    package:
+      name: "docker-ce"
+      state: "present"
+
+  - name: "Add user to Docker group"
+    user:
+      name: "{{ ansible_ssh_user }}"
+      group: "docker"
+      append: "yes"
+
+- hosts: "tag_role_manager"
+  become: "yes"
+  remote_user: "ubuntu"
+
+  tasks:
+  - name: "Initialize Docker Swarm from manager"
+    command: "docker swarm init --advertise-addr {{ ansible_default_ipv4.address }}"
+
+  - name: "Register Swarm join token"
+    command: "docker swarm join-token -q worker"
+    register: swarm_token
+
+  - name: "Establish Swarm join token as a host fact"
+    set_fact: swarmtoken="{{ swarm_token.stdout }}"
+
+- hosts: "tag_role_worker"
+  become: "yes"
+  remote_user: "ubuntu"
+
+  tasks:
+  - name: "Join worker nodes to Swarm cluster"
+    command: "docker swarm join --advertise-addr {{ ansible_default_ipv4.address }} --token {{ hostvars[groups['tag_role_manager'][0]].swarmtoken }} {{ hostvars[groups['tag_role_manager'][0]].ansible_default_ipv4.address }}:2377"
