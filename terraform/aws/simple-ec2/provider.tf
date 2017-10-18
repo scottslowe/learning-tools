@@ -1,3 +1,3 @@
 provider "aws" {
-    region                  = "${var.user_region}"
+  region = "${var.user_region}"
 }
