@@ -1,0 +1,5 @@
+---
+group: "vagrant"
+image: "Canonical:UbuntuServer:16.04-LTS:latest"
+name: "aztest"
+size: "Standard_B1s"
