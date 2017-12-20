@@ -1,7 +1,9 @@
 ---
-- name: "jessie"
-  box:
-    vmw: "slowe/debian-81-x64"
+- box:
+    vmw: "bento/debian-8.2"
     vb: "debian/jessie64"
+    lv: "debian/jessie64"
+  name: "jessie"
+  nested: false
   ram: "1024"
   vcpu: "1"

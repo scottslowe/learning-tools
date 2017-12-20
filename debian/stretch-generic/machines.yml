@@ -1,0 +1,9 @@
+---
+- box:
+    vmw: "bento/debian-9.2"
+    vb: "debian/stretch64"
+    lv: "debian/stretch64"
+  name: "stretch"
+  nested: false
+  ram: "1024"
+  vcpu: "1"
