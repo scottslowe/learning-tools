@@ -1,0 +1,46 @@
+---
+- box:
+    vmw: "centos/atomic-host"
+    vb: "centos/atomic-host"
+  name: "manager"
+  nics:
+    - type: "private_network"
+      ip_addr: "192.168.100.100"
+  ram: "512"
+  vcpu: "1"
+- box:
+    vmw: "centos/atomic-host"
+    vb: "centos/atomic-host"
+  name: "worker-01"
+  nics:
+    - type: "private_network"
+      ip_addr: "192.168.100.101"
+  ram: "512"
+  vcpu: "1"
+- box:
+    vmw: "centos/atomic-host"
+    vb: "centos/atomic-host"
+  name: "worker-02"
+  nics:
+    - type: "private_network"
+      ip_addr: "192.168.100.102"
+  ram: "512"
+  vcpu: "1"
+- box:
+    vmw: "centos/atomic-host"
+    vb: "centos/atomic-host"
+  name: "worker-03"
+  nics:
+    - type: "private_network"
+      ip_addr: "192.168.100.103"
+  ram: "512"
+  vcpu: "1"
+- box:
+    vmw: "centos/atomic-host"
+    vb: "centos/atomic-host"
+  name: "worker-04"
+  nics:
+    - type: "private_network"
+      ip_addr: "192.168.100.104"
+  ram: "512"
+  vcpu: "1"
