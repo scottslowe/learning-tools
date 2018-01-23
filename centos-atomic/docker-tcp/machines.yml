@@ -2,6 +2,7 @@
 - box:
     vmw: "bento/centos-7.1"
     vb: "centos/atomic-host"
+    lv: "centos/atomic-host"
   name: "atomic-01"
   nested: false
   nics:
