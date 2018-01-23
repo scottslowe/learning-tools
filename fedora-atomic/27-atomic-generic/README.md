@@ -1,8 +1,8 @@
-# Running OVS on Fedora Atomic Host
+# Generic Fedora 27 Atomic Host VM
 
-**THIS AREA IS NOT YET FUNCTIONAL**
+These files were created to allow users to use Vagrant ([http://www.vagrantup.com](http://www.vagrantup.com)) to quickly and easily spin up an environment running Fedora 27 Atomic Host. This configuration was tested with VirtualBox and Libvirt (no VMware-compatible Fedora Atomic Host box was available).
 
-These files were created to allow users to use Vagrant ([http://www.vagrantup.com](http://www.vagrantup.com)) to quickly and easily spin up an environment that shows how to run Open vSwitch (OVS) on a Fedora Atomic Host system.
+**NOTE:** This is just a generic VM environment. I'm including it here for the sake of completeness and because it can/will serve as a basis for other environments.
 
 ## Contents
 
