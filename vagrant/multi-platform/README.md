@@ -2,8 +2,8 @@
 
 These files were created to test a method of providing a single Vagrant ([http://www.vagrantup.com](http://www.vagrantup.com)) environment that could support multiple local virtualization platforms without any changes to the `Vagrantfile` or supporting configuration files. This configuration was tested with the following components:
 
-* Vagrant 1.7.4 with VirtualBox 4.3.36 on Debian "Jessie" using the official "debian/jessie64" Vagrant box
-* Vagrant 1.8.1 with VMware Fusion 8.1.0 on OS X 10.11.3 using my self-built "slowe/debian-81-x64" Vagrant box
+* Vagrant 1.9.7 with VirtualBox 5.1.26 on OS X 10.12.6 using the official "debian/jessie64" Vagrant box
+* Vagrant 1.9.7 with VMware Fusion 10.1.1 on OS X 10.12.6 using the "bento/debian-8.6" Vagrant box
 
 ## Contents
 
