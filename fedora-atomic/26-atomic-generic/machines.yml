@@ -1,0 +1,12 @@
+---
+- box:
+    vmw: "bento/debian-9.2"
+    vb: "fedora/26-atomic-host"
+    lv: "fedora/26-atomic-host"
+  name: "atomic-01"
+  nested: false
+  nics:
+  - type: "private_network"
+    ip_addr: "dhcp"
+  ram: "1024"
+  vcpu: "1"
