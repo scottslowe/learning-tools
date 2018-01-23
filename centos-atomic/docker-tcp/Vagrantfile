@@ -23,6 +23,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
       # Don't check for box updates
       srv.vm.box_check_update = false
+
+      # Set machine's hostname
       srv.vm.hostname = machine['name']
 
       # Use VMware box by default
@@ -61,6 +63,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         vb.customize ['modifyvm', :id, '--nictype1', 'virtio']
         vb.customize ['modifyvm', :id, '--nictype2', 'virtio']
       end # srv.vm.provider 'virtualbox'
+
+      # Configure CPU & RAM per settings in machines.yml (Libvirt)
+      srv.vm.provider 'libvirt' do |lv,override|
+        lv.memory = machine['ram']
+        lv.cpus = machine['vcpu']
+        override.vm.box = machine['box']['lv']
+        if machine['nested'] == true
+          lv.nested = true
+        end # if machine['nested']
+      end # srv.vm.provider 'libvirt'
     end # config.vm.define
   end # machines.each
 end # Vagrant.configure
