@@ -1,7 +1,7 @@
 ---
 - box:
     vmw: "generic/ubuntu1604"
-    vb: "ubuntu/trusty64"
+    vb: "ubuntu/xenial64"
     lv: "generic/ubuntu1604"
   name: "xenial"
   nested: false
