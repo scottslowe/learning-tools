@@ -66,4 +66,9 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       end # srv.vm.provider 'virtualbox'
     end # config.vm.define
   end # machines.each
+
+  # Configure the VM using Ansible
+  config.vm.provision 'ansible' do |ansible|
+    ansible.playbook = 'ansible.yml'
+  end # config.vm.provision
 end # Vagrant.configure
