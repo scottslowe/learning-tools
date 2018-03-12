@@ -33,7 +33,7 @@
     "provisioners": [
         {
             "type": "ansible",
-            "playbook_file": "provision.yml"
+            "playbook_file": "ansible.yml"
         } 
     ]
 }

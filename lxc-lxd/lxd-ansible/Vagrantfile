@@ -57,7 +57,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
     # Provision the VM with Ansible
     config.vm.provision 'ansible' do |ansible|
-      ansible.playbook = 'provision.yml'
+      ansible.playbook = 'ansible.yml'
     end # config.vm.provision
   end # machines.each
 end # Vagrant.configure
