@@ -6,6 +6,8 @@ These files were created to allow users to use Vagrant ([http://www.vagrantup.co
 
 * **ansible.cfg**: This Ansible configuration file tells Ansible which inventory file to use (a file named `hosts` in the current directory), which SSH private key to use (the default Vagrant insecure key), and which remote user to use (the default user of `vagrant` that should be common to all Vagrant boxes). No edits to this file should be necessary.
 
+* **ansible.yml**: This is the Ansible playbook that will configure the Vagrant VMs to become members of a Consul cluster. No edits to this file should be necessary.
+
 * **config.json.j2**: This Jinja2 template is automatically filled in with appropriate values by Ansible when the Ansible playbook is applied against the Vagrant VMs. No edits to this file should be necessary.
 
 * **consul.conf**: This Upstart script configures Consul to run as a background daemon (service) on the Ubuntu-based VMs created by Vagrant. This file is installed by Ansible when the Ansible playbook is applied against the Vagrant VMs. No edits to this file should be necessary.
@@ -13,8 +15,6 @@ These files were created to allow users to use Vagrant ([http://www.vagrantup.co
 * **hosts**: This Ansible inventory file is generated automatically by Vagrant once you run `vagrant status` or any other command that requires Vagrant to parse the `Vagrantfile`. Since it is automatically generated, no edits directly to this file are needed (they would be overwritten anyway).
 
 * **machines.yml**: This YAML file contains a list of VM definitions. It is referenced by `Vagrantfile` when Vagrant instantiates the VMs. Generally, the only change needed to this file is to specify the correct Vagrant box you will be used (see "Instructions" below). If necessary, you may need to edit the IP addresses supplied in this file to avoid IP addressing conflicts with other networks.
-
-* **provision.yml**: This is the Ansible playbook that will configure the Vagrant VMs to become members of a Consul cluster. No edits to this file should be necessary.
 
 * **README.md**: This file you're currently reading.
 
@@ -32,7 +32,7 @@ These instructions assume you've already installed VMware Fusion, Vagrant, the V
 
 4. Once you have edited `machines.yml`, use `vagrant up` to bring up the 3 systems that will serve as your Consul cluster.
 
-5. Once Vagrant has finished bringing up the VMs, run `ansible-playbook provision.yml`. Ansible will use the configuration file in the current directory to pull inventory from the file named `hosts` (it was automatically generated when you ran `vagrant up`). This will provision and configure Consul on each of the Vagrant VMs.
+5. Once Vagrant has finished bringing up the VMs, run `ansible-playbook ansible.yml`. Ansible will use the configuration file in the current directory to pull inventory from the file named `hosts` (it was automatically generated when you ran `vagrant up`). This will provision and configure Consul on each of the Vagrant VMs.
 
     **NOTE**: Due to the way the Ansible provisioner in Vagrant works, it's currently not possible to provision the VMs with Ansible from within the `Vagrantfile`. As a result, step #5 (running `ansible-playbook` manually) is needed.
 

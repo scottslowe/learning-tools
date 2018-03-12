@@ -8,7 +8,7 @@ These files show an example of how to use Packer ([https://www.packer.io/](https
 
 ## Contents
 
-* **provision.yml**: This Ansible playbook applies the "docker-ce-edge" role to the AMI being created by Packer, and is called by `template.json`.
+* **ansible.yml**: This Ansible playbook applies the "docker-ce-edge" role to the AMI being created by Packer, and is called by `template.json`.
 
 * **README.md**: This file you're currently reading.
 
