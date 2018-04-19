@@ -1,0 +1,35 @@
+apiVersion: kubeadm.k8s.io/v1alpha1
+  kind: MasterConfiguration
+  api:
+    advertiseAddress: {{ apiAdvertiseAddress }}
+  etcd:
+    endpoints:
+    - {{ etcdServer1 }}
+    - {{ etcdServer2 }}
+    - {{ etcdServer3 }}
+  networking:
+    podSubnet: {{ podSubnet }}
+    serviceSubnet: {{ serviceSubnet }}
+  kubernetesVersion: {{ k8sVersion }}
+  cloudProvider: {{ cloudProvider }}
+  token: {{ kubeadmToken }}
+  tokenTTL: "0"
+  apiServerCertSANs: [{{ apiServerCertSANs }}]
+  featureGates:
+    CoreDNS: true
+    DynamicKubeletConfig: true
+  apiServerExtraArgs:
+    endpoint-reconciler-type: lease
+    admission-control: NamespaceAutoProvision,Initializers,NamespaceLifecycle,LimitRanger,ServiceAccount,PersistentVolumeLabel,DefaultStorageClass,DefaultTolerationSeconds,NodeRestriction,ResourceQuota,PodTolerationRestriction
+    cloud-provider: {{ cloudProvider }}
+    audit-log-path: "/var/log/kube-audit"
+    audit-log-maxage: "10"
+    audit-log-maxsize: "100"
+    audit-policy-file: "/etc/kubernetes/audit/audit-policy.yaml"
+  controllerManagerExtraArgs:
+    cloud-provider: {{ cloudProvider }}
+    configure-cloud-routes: "false"
+  apiServerExtraVolumes: 
+    - name: "audit-policy"
+      hostPath: "/etc/kubernetes/audit"
+      mountPath: "/etc/kubernetes/audit"
