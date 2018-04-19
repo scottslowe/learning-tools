@@ -1,0 +1,31 @@
+---
+- box:
+    vmw: "generic/ubuntu1604"
+    vb: "ubuntu/xenial64"
+    lv: "generic/ubuntu1604"
+  name: "master"
+  nics:
+    - type: "private_network"
+      ip_addr: "192.168.100.100"
+  ram: "2048"
+  vcpu: "1"
+- box:
+    vmw: "generic/ubuntu1604"
+    vb: "ubuntu/xenial64"
+    lv: "generic/ubuntu1604"
+  name: "node-01"
+  nics:
+    - type: "private_network"
+      ip_addr: "192.168.100.101"
+  ram: "2048"
+  vcpu: "1"
+- box:
+    vmw: "generic/ubuntu1604"
+    vb: "ubuntu/xenial64"
+    lv: "generic/ubuntu1604"
+  name: "node-02"
+  nics:
+    - type: "private_network"
+      ip_addr: "192.168.100.102"
+  ram: "2048"
+  vcpu: "1"
