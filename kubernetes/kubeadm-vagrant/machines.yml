@@ -2,6 +2,7 @@
 - box:
     vmw: "generic/ubuntu1604"
     vb: "ubuntu/xenial64"
+    lv: "generic/ubuntu1604"
   name: "master"
   nics:
     - type: "private_network"
@@ -11,6 +12,7 @@
 - box:
     vmw: "generic/ubuntu1604"
     vb: "ubuntu/xenial64"
+    lv: "generic/ubuntu1604"
   name: "node-01"
   nics:
     - type: "private_network"
@@ -20,6 +22,7 @@
 - box:
     vmw: "generic/ubuntu1604"
     vb: "ubuntu/xenial64"
+    lv: "generic/ubuntu1604"
   name: "node-02"
   nics:
     - type: "private_network"

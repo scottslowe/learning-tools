@@ -64,6 +64,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         vb.cpus = machine['vcpu']
         override.vm.box = machine['box']['vb']
       end # srv.vm.provider 'virtualbox'
+
+      # Configure CPU & RAM per settings in machines.yml (Libvirt)
+      srv.vm.provider 'libvirt' do |lv,override|
+        lv.memory = machine['ram']
+        lv.cpus = machine['vcpu']
+        override.vm.box = machine['box']['lv']
+        if machine['nested'] == true
+          lv.nested = true
+        end # if machine['nested']
+      end # srv.vm.provider 'libvirt'
     end # config.vm.define
   end # machines.each
 
