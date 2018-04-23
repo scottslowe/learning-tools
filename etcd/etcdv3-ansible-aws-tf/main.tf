@@ -8,6 +8,36 @@ module "etcd-vpc" {
   subnet_map_pub_ip = "true"
 }
 
+resource "aws_security_group" "etcd_sg" {
+  name        = "etcd_sg"
+  description = "Allow traffic needed by etcd"
+  vpc_id      = "${module.etcd-vpc.id}"
+}
+
+resource "aws_security_group_rule" "etcd_sg_allow_sg" {
+  type                     = "ingress"
+  from_port                = 0
+  to_port                  = 65535
+  protocol                 = "tcp"
+  source_security_group_id = "${aws_security_group.etcd_sg.id}"
+}
+
+resource "aws_security_group_rule" "etcd_sg_allow_client" {
+  type        = "ingress"
+  from_port   = 2379
+  to_port     = 2379
+  protocol    = "tcp"
+  cidr_blocks = ["0.0.0.0/0"]
+}
+
+resource "aws_security_group_rule" "etcd_sg_allow_peer" {
+  type        = "ingress"
+  from_port   = 2380
+  to_port     = 2380
+  protocol    = "tcp"
+  cidr_blocks = ["0.0.0.0/0"]
+}
+
 module "etcd" {
   source = "./modules/instance-cluster"
 
@@ -18,6 +48,6 @@ module "etcd" {
   ssh_key        = "${var.key_pair}"
   cluster_size   = 3
   subnet_list    = ["${module.etcd-vpc.subnet_id}"]
-  sec_group_list = ["${module.etcd-vpc.default_sg_id}"]
+  sec_group_list = ["${module.etcd-vpc.default_sg_id}", "${aws_security_group.etcd_sg.id}"]
   role           = "etcd"
 }
