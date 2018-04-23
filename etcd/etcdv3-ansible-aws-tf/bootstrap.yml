@@ -1,0 +1,11 @@
+---
+- hosts: "all"
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: "Install Python"
+    raw: "apt-get -y -q install python"
+
+  - name: "Gather facts"
+    setup:
