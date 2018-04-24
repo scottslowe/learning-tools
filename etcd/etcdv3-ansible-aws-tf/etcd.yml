@@ -1,4 +1,12 @@
 ---
+- hosts: "all"
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: "Install Python"
+    raw: "apt-get -y -q install python"
+
 - hosts: "tag_role_etcd"
   become: true
   vars:
