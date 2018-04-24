@@ -1,0 +1,107 @@
+---
+- hosts: "all"
+  become: true
+  gather_facts: false
+
+  tasks:
+  - name: "Install Python"
+    raw: "apt-get -y -q install python"
+
+- hosts: "tag_role_etcd"
+  become: true
+  vars:
+    etcd_install_dir: "/usr/local/bin"
+    etcd_platform: "linux-amd64"
+    etcd_version: "3.2.18"
+    etcd_name: "etcd-v{{etcd_version}}-{{etcd_platform}}"
+    etcd_tgz: "{{etcd_name}}.tar.gz"
+    etcd_tgz_url: "https://github.com/coreos/etcd/releases/download/v{{etcd_version}}/{{etcd_tgz}}"
+
+  tasks:
+  - name: check for installation of etcd
+    stat:
+      path: '{{etcd_install_dir}}/{{etcd_name}}'
+    changed_when: false
+    register: etcd_binary_dir
+
+  - when: not etcd_binary_dir.stat.exists
+    block:
+      - name: download etcd
+        become: yes
+        become_user: root
+        get_url:
+          url: '{{etcd_tgz_url}}'
+          dest: /tmp/{{etcd_tgz}}
+          timeout: 300
+          mode: 0644
+      - name: unachive etcd
+        become: yes
+        become_user: root
+        unarchive:
+          remote_src: yes
+          src: /tmp/{{etcd_tgz}}
+          dest: '{{etcd_install_dir}}'
+          creates: '{{etcd_install_dir}}/{{etcd_name}}'
+    always:
+      - name: delete archive
+        become: yes
+        become_user: root
+        file:
+          path: /tmp/{{etcd_tgz}}
+          state: absent
+
+  - name: link etcd and etcdctl
+    file:
+      src: '{{etcd_install_dir}}/{{etcd_name}}/{{item}}'
+      dest: '{{etcd_install_dir}}/{{item}}'
+      state: link
+    with_items:
+      - etcd
+      - etcdctl
+
+  - name: Create etcd group
+    group:
+      name: etcd
+      state: present
+
+  - name: Create etcd user
+    user:
+      name: etcd
+      create_home: no
+      append: yes
+      groups: etcd
+      system: yes
+
+  - name: Create etcd directories
+    file:
+      path: "{{ item }}"
+      state: directory
+      owner: etcd
+      group: etcd
+      mode: 0755
+    with_items:
+      - /var/etcd
+      - /etc/etcd
+
+  - name: Copy etcd systemd unit file
+    copy:
+      src: etcd.service
+      dest: /etc/systemd/system/etcd.service
+      owner: root
+      group: root
+      mode: 0755
+
+  - name: Render etcd.conf template
+    template:
+      src: etcd.conf.j2
+      dest: /etc/etcd/etcd.conf
+
+  - name: Reload systemd
+    systemd:
+      daemon_reload: yes
+
+  - name: Enable etcd service
+    systemd:
+      name: etcd
+      enabled: true
+      state: started
