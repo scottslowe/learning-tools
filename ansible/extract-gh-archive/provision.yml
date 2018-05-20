@@ -1,0 +1,50 @@
+---
+- hosts: "all"
+  vars:
+    github: "https://github.com"
+  become: "yes"
+  remote_user: "vagrant"
+
+  tasks:
+  - name: Ensure /usr/local/bin directory exists
+    file:
+      state: "directory"
+      path: "/usr/local/bin"
+      owner: "root"
+      group: "root"
+
+  - name: Create a temporary directory
+    tempfile:
+      state: "directory"
+      suffix: "tmp"
+    register: "tmpdir"
+
+  - name: Download and extract ksonnet archive from GitHub
+    unarchive:
+      src: "{{ github }}/ksonnet/ksonnet/releases/download/v0.10.2/ks_0.10.2_linux_amd64.tar.gz"
+      dest: "{{ tmpdir.path }}"
+      remote_src: "yes"
+      owner: "root"
+      group: "root"
+
+  - name: Copy versioned ks binary into final location
+    copy:
+      src: "{{ tmpdir.path }}/ks_0.10.2_linux_amd64/ks"
+      dest: "/usr/local/bin/ks-0.10.2"
+      remote_src: "yes"
+      owner: "root"
+      group: "root"
+      mode: 0755
+
+  - name: Make a symbolic link to versioned binary
+    file:
+      path: "/usr/local/bin/ks"
+      src: "/usr/local/bin/ks-0.10.2"
+      state: "link"
+      owner: "root"
+      group: "root"
+
+  - name: Remove temporary directory
+    file:
+      path: "{{ tmpdir.path }}"
+      state: "absent"
