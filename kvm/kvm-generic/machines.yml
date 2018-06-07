@@ -1,7 +1,11 @@
 ---
-- name: "kvm-01"
-  vmw_box: "bento/ubuntu-14.04"
+- box:
+    vmw: "bento/ubuntu-16.04"
+    lv: "generic/ubuntu1604"
+  name: "kvm-01"
+  nics:
+    - type: "private_network"
+      ip_addr: "dhcp"
   ram: "1024"
+  sync_disabled: true
   vcpu: "1"
-  ip_addr: "192.168.100.100"
-  nested: true
