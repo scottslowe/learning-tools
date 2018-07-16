@@ -1,0 +1,32 @@
+apiVersion: kubeadm.k8s.io/v1alpha2
+kind: MasterConfiguration
+kubernetesVersion: v1.11.0
+api:
+  controlPlaneEndpoint: {{ api_lb_ip }}
+  advertiseAddress: {{ hostvars[inventory_hostname]['ansible_' + primary_interface]['ipv4']['address'] }}
+etcd:
+  local:
+    extraArgs:
+      listen-client-urls: "https://127.0.0.1:2379,https://{{ hostvars[inventory_hostname]['ansible_' + primary_interface]['ipv4']['address'] }}:2379"
+      advertise-client-urls: "https://{{ hostvars[inventory_hostname]['ansible_' + primary_interface]['ipv4']['address'] }}:2379"
+      listen-peer-urls: "https://{{ hostvars[inventory_hostname]['ansible_' + primary_interface]['ipv4']['address'] }}:2380"
+      initial-advertise-peer-urls: "https://{{ hostvars[inventory_hostname]['ansible_' + primary_interface]['ipv4']['address'] }}:2380"
+      initial-cluster: "{%- for host in groups['masters'] -%}
+      {%- if loop.first -%}
+      {{ hostvars[host]['ansible_fqdn'] }}=https://{{ hostvars[host]['ansible_' + primary_interface]['ipv4']['address'] }}:2380,{%- endif -%}
+      {%- if (not loop.last and not loop.first) -%}
+      {{ hostvars[host]['ansible_fqdn'] }}=https://{{ hostvars[host]['ansible_' + primary_interface]['ipv4']['address'] }}:2380{%- endif %}
+      {%- endfor -%}"
+      initial-cluster-state: existing
+    serverCertSANs:
+      - {{ hostvars[inventory_hostname]['ansible_fqdn'] }}
+      - {{ hostvars[inventory_hostname]['ansible_' + primary_interface]['ipv4']['address'] }}
+    peerCertSANs:
+      - {{ hostvars[inventory_hostname]['ansible_fqdn'] }}
+      - {{ hostvars[inventory_hostname]['ansible_' + primary_interface]['ipv4']['address'] }}
+networking:
+  podSubnet: {{ podSubnet }}
+token: {{ kubeadmToken }}
+apiServerCertSANs:
+- {{ api_lb_ip }}
+- {{ api_lb_dns }}
