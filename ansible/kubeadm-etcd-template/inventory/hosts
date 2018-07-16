@@ -1,0 +1,9 @@
+[tag_role_master]
+
+[tag_role_worker]
+
+[masters:children]
+tag_role_master
+
+[nodes:children]
+tag_role_worker
