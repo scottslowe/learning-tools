@@ -65,6 +65,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
         # Enable nested virtualization (required for KVM)
         lv.nested = true
+        lv.cpu_mode = 'host-passthrough'
       end # srv.vm.provider 'libvirt'
     end # config.vm.define
   end # machines.each
