@@ -1,9 +1,13 @@
 ---
 - hosts: "all"
-  sudo: "yes"
+  become: "yes"
   remote_user: "vagrant"
+  gather_facts: false
 
   tasks:
+  - name: "Install Python 2"
+    raw: "apt-get -y -q install python"
+
   - name: "Install KVM and Libvirt"
     apt:
       state: "present"
