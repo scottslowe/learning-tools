@@ -40,8 +40,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         srv.vm.synced_folder '.', '/vagrant', disabled: true
       end #if machine['sync_disabled']
 
-      # Assign an additional static private network
-      srv.vm.network 'private_network', ip: machine['priv_ip']
+      # Iterate through networks as per settings in machines.yml
+      machine['nics'].each do |net|
+        if net['ip_addr'] == 'dhcp'
+          srv.vm.network net['type'], type: net['ip_addr']
+        else
+          srv.vm.network net['type'], ip: net['ip_addr']
+        end # if net['ip_addr']
+      end # machine['nics'].each
 
       # Configure VMs with RAM and CPUs per settings in machines.yml (Fusion)
       srv.vm.provider 'vmware_fusion' do |vmw|
@@ -59,9 +65,19 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         override.vm.box = machine['box']['vb']
       end # srv.vm.provider 'virtualbox'
 
+      # Configure CPU & RAM per settings in machines.yml (Libvirt)
+      srv.vm.provider 'libvirt' do |lv,override|
+        lv.memory = machine['ram']
+        lv.cpus = machine['vcpu']
+        override.vm.box = machine['box']['lv']
+        if machine['nested'] == true
+          lv.nested = true
+        end # if machine['nested']
+      end # srv.vm.provider 'libvirt'
+
       # Copy in the Consul configuration files
       srv.vm.provision 'file', source: 'server.json', destination: '/home/vagrant/config.json'
-      srv.vm.provision 'file', source: 'consul.conf', destination: '/home/vagrant/consul.conf'
+      srv.vm.provision 'file', source: 'consul.service', destination: '/home/vagrant/consul.service'
 
       # Provision consul to the VMs
       srv.vm.provision 'shell', path: 'consul.sh'

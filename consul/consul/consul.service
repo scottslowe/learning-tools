@@ -1,0 +1,12 @@
+[Unit]
+Description=Consul Server
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+User=consul
+ExecStart=/usr/local/bin/consul agent -config-dir="/etc/consul.d/server" -bind=BINDADDR
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

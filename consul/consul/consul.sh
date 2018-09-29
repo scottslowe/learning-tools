@@ -17,11 +17,11 @@ fi
 if [[ ! -e /usr/local/bin/consul ]];then
 
   # Download Consul
-  curl -kLO https://releases.hashicorp.com/consul/0.7.1/consul_0.7.1_linux_amd64.zip
+  curl -kLOs https://releases.hashicorp.com/consul/1.2.3/consul_1.2.3_linux_amd64.zip
 
   # Decompress and remove Consul download
-  unzip consul_0.7.1_linux_amd64.zip
-  rm consul_0.7.1_linux_amd64.zip
+  unzip consul_1.2.3_linux_amd64.zip
+  rm consul_1.2.3_linux_amd64.zip
 
   # Move Consul binary to location in path
   sudo mv consul /usr/local/bin/
@@ -46,8 +46,25 @@ if [ -d /etc/consul.d ]; then
   sudo chown -R root:consul /etc/consul.d
 fi
 
+# Customize the systemd unit file
+sed -i s/BINDADDR/$(hostname -I | cut -f2 -d' ')/ /home/vagrant/consul.service
+
 # Move files into the correct locations
-sudo mv /home/vagrant/consul.conf /etc/init/consul.conf
-sudo chown root:root /etc/init/consul.conf
+sudo mv /home/vagrant/consul.service /etc/systemd/system/consul.service
+sudo chown root:root /etc/systemd/system/consul.service
 sudo mv /home/vagrant/config.json /etc/consul.d/server/config.json
 sudo chown root:consul /etc/consul.d/server/config.json
+
+# Reload systemd, then enable and start Consul
+sudo systemctl daemon-reload
+if systemctl is-enabled --quiet consul; then
+  systemctl reenable consul
+else
+  systemctl enable consul
+fi
+
+if systemctl is-active --quiet consul; then
+  systemctl restart consul
+else
+  systemctl start consul
+fi
