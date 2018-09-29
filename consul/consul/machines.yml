@@ -1,22 +1,37 @@
 ---
-- name: "consul-01"
-  box:
-    vmw: "bento/ubuntu-14.04"
-    vb: "ubuntu/trusty64"
+- box:
+    lv: "generic/ubuntu1604"
+    vmw: "bento/ubuntu-16.04"
+    vb: "ubuntu/xenial64"
+  name: "consul-01"
+  nested: false
+  nics:
+    - type: "private_network"
+      ip_addr: "192.168.100.101"
   ram: "512"
+  sync_disabled: true
   vcpu: "1"
-  priv_ip: "192.168.100.101"
-- name: "consul-02"
-  box:
-    vmw: "bento/ubuntu-14.04"
-    vb: "ubuntu/trusty64"
+- box:
+    lv: "generic/ubuntu1604"
+    vmw: "bento/ubuntu-16.04"
+    vb: "ubuntu/xenial64"
+  name: "consul-02"
+  nested: false
+  nics:
+    - type: "private_network"
+      ip_addr: "192.168.100.102"
   ram: "512"
+  sync_disabled: true
   vcpu: "1"
-  priv_ip: "192.168.100.102"
-- name: "consul-03"
-  box:
-    vmw: "bento/ubuntu-14.04"
-    vb: "ubuntu/trusty64"
+- box:
+    lv: "generic/ubuntu1604"
+    vmw: "bento/ubuntu-16.04"
+    vb: "ubuntu/xenial64"
+  name: "consul-03"
+  nested: false
+  nics:
+    - type: "private_network"
+      ip_addr: "192.168.100.103"
   ram: "512"
+  sync_disabled: true
   vcpu: "1"
-  priv_ip: "192.168.100.103"

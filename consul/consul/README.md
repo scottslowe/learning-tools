@@ -1,18 +1,18 @@
 # Running a Consul Cluster in Vagrant
 
-These files were created to allow users to use Vagrant ([http://www.vagrantup.com](http://www.vagrantup.com)) quickly and relatively easily spin up a Consul ([http://www.consul.io](http://www.consul.io)) cluster. The configuration was tested using Vagrant 1.8 (both 1.8.1 and 1.8.5), VMware Fusion 8.1.0 (with the Vagrant VMware plugin), and VirtualBox 5.1.
+These files were created to allow users to use Vagrant ([http://www.vagrantup.com](http://www.vagrantup.com)) quickly and relatively easily spin up a Consul ([http://www.consul.io](http://www.consul.io)) cluster. The configuration was tested using Vagrant, VMware Fusion, VirtualBox, and Libvirt.
 
 ## Contents
 
-* **consul.conf**: This Upstart configuration file allows you to use the Ubuntu `service` or `initctl` commands to start, stop, or check the status of the Consul agent running as a daemon. This configuration file is Ubuntu-specific. No edits should be necessary to this file.
+* **consul.service**: This systemd unit file enables Consul to run as a daemon. No edits should be necessary to this file (the `consul.sh` makes a few in-place edits during provisioning).
 
 * **consul.sh**: This shell script is executed by the Vagrant shell provisioner to provision the Ubuntu base box with the Consul binary. This shell script was written for an Ubuntu system; edits will likely be necessary for use with a different Linux distribution.
+
+* **machines.yml**: This YAML file contains a list of VM definitions. It is referenced by `Vagrantfile` when Vagrant instantiates the VMs. You will need to edit this file to provide appropriate IP addresses and other VM configuration data (see "Instructions" below). If you edit the IP addresses in this file, you _must_ also edit `server.json` to supply matching IP addresses there as well.
 
 * **README.md**: The file you're currently reading.
 
 * **server.json**: This Consul configuration file contains configuration directives to run the Consul agent as a server. This file is copied to `/etc/consul.d/server/config.json` by the Vagrant file provisioner. The IP addresses specified in this file _must_ match the IP address specified in `machines.yml`.
-
-* **machines.yml**: This YAML file contains a list of VM definitions. It is referenced by `Vagrantfile` when Vagrant instantiates the VMs. You will need to edit this file to provide appropriate IP addresses and other VM configuration data (see "Instructions" below). If you edit the IP addresses in this file, you _must_ also edit `server.json` to supply matching IP addresses there as well.
 
 * **Vagrantfile**: This file is used by Vagrant to spin up the virtual machines. This file is fairly extensively commented to help explain what's happening. You should be able to use this file unchanged; all the VM configuration options are stored outside this file.
 
@@ -20,11 +20,11 @@ These files were created to allow users to use Vagrant ([http://www.vagrantup.co
 
 These instructions assume you've already installed the virtualization provider (VMware Fusion or VirtualBox), Vagrant, and any necessary plugins (such as the Vagrant VMware plugin). Please refer to the documentation for those products for more information on installation or configuration.
 
-1. Use `vagrant box add` to install an Ubuntu 14.04 x64 box for your virtualization provider. For a VMware-formatted box, the "bento/ubuntu-14.04" box is one good option; for VirtualBox, the "ubuntu/trusty64" box will work just fine.
+1. Use `vagrant box add` to install an Ubuntu 16.04 x64 box for your virtualization provider. The `machines.yml` file contains some suggested boxes for VirtualBox, VMware, and Libvirt.
 
-2. Place the files from the `consul` directory of this GitHub repository into a directory on your local system. You can clone the entire "learning-tools" repository (using `git clone`) or just download the specific files from the the `consul` folder.
+2. If you decide to use boxes _other_ than those already listed in `machines.yml`, edit this file to specify the box being used. It may be necessary to edit the IP addresses being assigned, but otherwise no other edits should be needed. If you do edit the IP addresses, you _must_ edit `config.json` as well.
 
-3. Edit the `machines.yml` file to provide the specific details on the VMs that Vagrant should create. The `Vagrantfile` expects six values for each VM: `name` (the user-friendly name of the VM, which will also be used as the hostname for the guest OS inside the VM); `vmw_box` (the name of an Ubuntu 14.04 base box for the "vmware_desktop" provider); `vb_box` (the name of an Ubuntu 14.04 base box for the VirtualBox provider); `ram` (the amount of memory to be assigned to the VM); `vcpu` (the number of vCPUs that should be assigned to the VM); and `priv_ip` (an IP address to be statically assigned to the VM and is used for Consul cluster communications).
+3. Place the files from the `consul` directory of this GitHub repository into a directory on your local system. You can clone the entire "learning-tools" repository (using `git clone`) or just download the specific files from the the `consul` folder.
 
 4. Once you have edited `machines.yml` (and `server.json`, if you changed the IP addresses in `machines.yml`), use `vagrant up` to bring up the 3 systems that will serve as your Consul cluster.
 
