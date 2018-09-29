@@ -1,0 +1,12 @@
+[Unit]
+Description=Consul Server
+Requires=network-online.target
+After=network-online.target
+
+[Service]
+User=consul
+ExecStart=/usr/local/bin/consul agent -config-dir="/etc/consul.d/server" -bind={{ hostvars[inventory_hostname]['ansible_eth1']['ipv4']['address'] }}
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
