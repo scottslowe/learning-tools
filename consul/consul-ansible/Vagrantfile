@@ -9,15 +9,8 @@ VAGRANTFILE_API_VERSION = '2'
 require 'yaml'
 
 # Read YAML file with VM details (box, CPU, RAM, IP addresses)
+# Be sure to edit machines.yml to provide correct IP addresses
 machines = YAML.load_file(File.join(File.dirname(__FILE__), 'machines.yml'))
-
-# Create custom Ansible inventory file (can't use built-in inventory)
-f = File.open('hosts','w')
-machines.each do |machine|
-  line = machine['name'] + "     ansible_ssh_host=" + machine['ip_addr']
-  f.puts line
-end # machines.each
-f.close
 
 # Create and configure the VMs
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
@@ -27,11 +20,17 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # Iterate through entries in YAML file to create VMs
   machines.each do |machine|
+
+    # Configure the VMs per details in machines.yml
     config.vm.define machine['name'] do |srv|
 
       # Don't check for box updates
       srv.vm.box_check_update = false
+
+      # Specify hostname and Vagrant box
       srv.vm.hostname = machine['name']
+
+      # Specify the Vagrant box to use (use VMware box by default)
       srv.vm.box = machine['box']['vmw']
 
       # Configure default synced folder (disable by default)
@@ -41,12 +40,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         srv.vm.synced_folder '.', '/vagrant', disabled: true
       end #if machine['sync_disabled']
 
-      # Assign additional private network
-      if machine['ip_addr'] != nil
-        srv.vm.network 'private_network', ip: machine['ip_addr']
-      end # if machine['ip_addr']
+      # Iterate through networks as per settings in machines.yml
+      machine['nics'].each do |net|
+        if net['ip_addr'] == 'dhcp'
+          srv.vm.network net['type'], type: net['ip_addr']
+        else
+          srv.vm.network net['type'], ip: net['ip_addr']
+        end # if net['ip_addr']
+      end # machine['nics'].each
 
-      # Configure CPU & RAM per settings in machines.yml (Fusion)
+      # Configure VMs with RAM and CPUs per settings in machines.yml (Fusion)
       srv.vm.provider 'vmware_fusion' do |vmw|
         vmw.vmx['memsize'] = machine['ram']
         vmw.vmx['numvcpus'] = machine['vcpu']
@@ -55,12 +58,27 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
         end #if machine['nested']
       end # srv.vm.provider 'vmware_fusion'
 
-      # Configure CPU & RAM per settings in machines.yml (VirtualBox)
+      # Configure VMs with RAM and CPUs per settings in machines.yml (VirtualBox)
       srv.vm.provider 'virtualbox' do |vb, override|
         vb.memory = machine['ram']
         vb.cpus = machine['vcpu']
         override.vm.box = machine['box']['vb']
       end # srv.vm.provider 'virtualbox'
+
+      # Configure CPU & RAM per settings in machines.yml (Libvirt)
+      srv.vm.provider 'libvirt' do |lv,override|
+        lv.memory = machine['ram']
+        lv.cpus = machine['vcpu']
+        override.vm.box = machine['box']['lv']
+        if machine['nested'] == true
+          lv.nested = true
+        end # if machine['nested']
+      end # srv.vm.provider 'libvirt'
     end # config.vm.define
+
+    # Install Python 2 to support other Ansible playbooks
+    config.vm.provision 'ansible' do |ansible|
+      ansible.playbook = 'setup.yml'
+    end # config.vm.provision
   end # machines.each
 end # Vagrant.configure
