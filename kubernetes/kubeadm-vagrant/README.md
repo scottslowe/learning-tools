@@ -45,9 +45,14 @@ These instructions assume you've already installed your virtualization provider 
         sed -i "s/KUBELET_EXTRA_ARGS=/KUBELET_EXTRA_ARGS=--node-ip=$ipaddr/" /etc/default/kubelet
         systemctl daemon-reload && systemctl restart kubelet
 
-10. Install a CNI plugin, such as Calico:
+10. Install a CNI plugin, such as Calico (see [https://docs.projectcalico.org/v3.3/getting-started/kubernetes/](https://docs.projectcalico.org/v3.3/getting-started/kubernetes/))
 
-        kubectl apply -f https://docs.projectcalico.org/v3.0/getting-started/kubernetes/installation/hosted/kubeadm/1.7/calico.yaml
+        kubectl apply -f \
+        https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/etcd.yaml
+        kubectl apply -f \
+        https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/rbac.yaml
+        kubectl apply -f \
+        https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/calico.yaml
 
 11. Log out and run `vagrant ssh node-01` to log into "node-01". Run the `kubeadm join` command you copied from the output on "master".
 
