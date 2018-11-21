@@ -38,12 +38,24 @@ These instructions assume you've already installed your virtualization provider 
 
 8. Copy the final output of the `kubeadm init` command, which includes a token, to the clipboard. You'll need it later.
 
-9. Install a CNI plugin, such as Calico:
+9. The three VMs all have two network cards, and we want to ensure that all Kubernetes services run on the second NIC (enp0s8 on Ubuntu 16.04). This is the one connected to the private network 192.168.100.0/24. To ensure this is the case, log into each node (e.g. `vagrant ssh master`). As root, edit the file `/etc/default/kubelet` and add  `--node-ip=$ipaddr` to the `KUBELET_EXTRA_ARGS=` line, where `$ipaddr` is the IP address assigned to the second NIC. Then reload the daemons and restart the kubelet service. The following commands will do this (don't forget to run them as root, and also make sure you run them on all three nodes):
 
-        kubectl apply -f https://docs.projectcalico.org/v3.0/getting-started/kubernetes/installation/hosted/kubeadm/1.7/calico.yaml
+        eth1="enp0s8"
+        ipaddr=$(ip a show $eth1 | egrep -o '([0-9]*\.){3}[0-9]*' | head -n1)
+        sed -i "s/KUBELET_EXTRA_ARGS=/KUBELET_EXTRA_ARGS=--node-ip=$ipaddr/" /etc/default/kubelet
+        systemctl daemon-reload && systemctl restart kubelet
 
-10. Log out and run `vagrant ssh node-01` to log into "node-01". Run the `kubeadm join` command you copied from the output on "master".
+10. Install a CNI plugin, such as Calico (see [https://docs.projectcalico.org/v3.3/getting-started/kubernetes/](https://docs.projectcalico.org/v3.3/getting-started/kubernetes/))
 
-11. Repeat step 10, but on "node-02".
+        kubectl apply -f \
+        https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/etcd.yaml
+        kubectl apply -f \
+        https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/rbac.yaml
+        kubectl apply -f \
+        https://docs.projectcalico.org/v3.3/getting-started/kubernetes/installation/hosted/calico.yaml
+
+11. Log out and run `vagrant ssh node-01` to log into "node-01". Run the `kubeadm join` command you copied from the output on "master".
+
+12. Repeat step 10, but on "node-02".
 
 Enjoy!
