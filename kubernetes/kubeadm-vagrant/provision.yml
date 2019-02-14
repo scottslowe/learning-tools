@@ -13,7 +13,7 @@
 
   - name: "Install Kubernetes APT Key"
     apt_key:
-      url: "https://packages.cloud.google.com/apt/doc/apt-key.gpg"
+      url: "https://mirrors.aliyun.com/kubernetes/apt/doc/apt-key.gpg"
       state: "present"
     tags:
       - manager
@@ -21,7 +21,7 @@
 
   - name: "Add Kubernetes repository for Ubuntu Xenial"
     apt_repository:
-      repo: "deb http://apt.kubernetes.io/ kubernetes-xenial main"
+      repo: "https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main"
       state: "present"
       update_cache: "yes"
     tags:
