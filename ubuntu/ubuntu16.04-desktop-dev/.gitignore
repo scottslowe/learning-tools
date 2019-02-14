@@ -1,0 +1,3 @@
+.vagrant
+*.log
+vagrant_home/

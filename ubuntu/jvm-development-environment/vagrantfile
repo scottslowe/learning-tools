@@ -1,0 +1,74 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.require_version ">= 2.2.3"
+
+Vagrant.configure("2") do |config|
+    config.vagrant.host = :detect
+    config.vm.box = "kurron/bionic-xubuntu"
+    config.vm.boot_timeout = 300
+    config.vm.box_check_update = true
+    config.vm.graceful_halt_timeout = 60
+    config.vm.post_up_message = "Login credentials are vagrant/vagrant"
+    config.vm.synced_folder ".", "/vagrant", disabled: false
+
+    config.ssh.password = "vagrant"
+    config.ssh.username = "vagrant"
+
+    # uncomment to put the box on the network so it can be accessed by others
+#   config.vm.network "public_network"
+
+    config.vm.provider "virtualbox" do |v|
+        v.customize ["modifyvm", :id, "--rtcuseutc", "on"]
+        v.customize ["modifyvm", :id, "--hwvirtex", "on"]
+        v.customize ["modifyvm", :id, "--nestedpaging", "on"]
+        v.customize ["modifyvm", :id, "--vtxvpid", "on"]
+        v.customize ["modifyvm", :id, "--largepages", "on"]
+        v.customize ["modifyvm", :id, "--acpi", "on"]
+        v.customize ["modifyvm", :id, "--groups", "/JVM Development"]
+
+        # change the network card hardware for better performance
+        v.customize ["modifyvm", :id, "--nictype1", "virtio"]
+        v.customize ["modifyvm", :id, "--nictype2", "virtio"]
+
+        # suggested fix for slow network performance
+        # see https://github.com/mitchellh/vagrant/issues/1807
+        v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+        v.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+
+        v.customize ["modifyvm", :id, "--vram", "24"]
+    end
+
+    project = ENV['USER_PLAYS']
+    config.vm.provision "shell" do |custom|
+        custom.path = "scripts/install-custom.sh"
+        custom.args = project
+        custom.privileged = false
+        custom.name = "Personal Ansible Provisions"
+    end
+
+    project = ENV['CORPORATE_PLAYS']
+    config.vm.provision "shell" do |corporate|
+        corporate.path = "scripts/install-corporate.sh"
+        corporate.args = project
+        corporate.privileged = false
+        corporate.name = "Corporate Ansible Provisions"
+    end
+
+    config.vm.define "xubuntu", primary: true do |xubuntu|
+        xubuntu.vm.provider "virtualbox" do |v|
+            v.gui = true
+            v.name = "jvmguy.xubuntu"
+            v.memory = 6144
+            v.cpus = 3
+        end
+        xubuntu.vm.provider "vmware_desktop" do |v|
+            v.gui = true
+            v.name = "jvmguy.xubuntu"
+            v.memory = 8192
+            v.cpus = 3
+            v.port_forward_network_pause = 60
+        end
+    end
+
+end

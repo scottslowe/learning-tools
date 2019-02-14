@@ -1,0 +1,4 @@
+.gradle
+build/
+*.swp
+.vagrant

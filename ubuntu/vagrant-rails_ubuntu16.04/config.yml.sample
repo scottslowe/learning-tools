@@ -1,0 +1,17 @@
+vm:
+  name: LG-Rails
+  memory: 1024
+  ip: '192.168.242.42'
+ports:
+  0:
+    host: 8080
+    huest: 80
+files:
+  host: ~/sites/
+  guest: /var/www
+  user: ubuntu
+  group: ubuntu
+proxy:
+  active: false
+  chain: user:pass@host:port
+  except: *.dev
