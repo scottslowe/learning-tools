@@ -21,7 +21,7 @@
 
   - name: "Add Kubernetes repository for Ubuntu Xenial"
     apt_repository:
-      repo: "https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main"
+      repo: "deb https://mirrors.aliyun.com/kubernetes/apt/ kubernetes-xenial main"
       state: "present"
       update_cache: "yes"
     tags:
