@@ -1,0 +1,62 @@
+
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
+VAGRANTFILE_API_VERSION = "2"
+      PROVISIONER = "./server/scripts/nextcloud7_server_provisioner.sh"
+ #    PROVISIONER = "./server/scripts/server_provisioner.sh"
+ #    PROVISIONER = "./server/scripts/certbot_server_provisioner.sh"
+
+HOSTNAME = "nextcloud-app"
+
+options = {
+	"NGINX_HOST" => "localhost",
+	"NGINX_ROOT" => "/app",
+	"ERROR_PATH" => "/logs",
+	"DB_NAME" => 'nextcloud',
+	"DB_PASS" => 'app_db',
+	"DB_ROOT_PASS" => 'app_db',
+	"ADMIN_USER" => 'admin',
+    "ADMIN_PASSWORD" => 'pass@word1',
+}
+
+Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+
+	config.vm.box = "ubuntu/xenial64"
+    config.vm.box_version = "20181122.1.0"
+	config.vm.hostname = HOSTNAME
+
+	# http
+	config.vm.network :forwarded_port, guest: 80, host: 8080
+
+	# webgrind
+	config.vm.network :forwarded_port, guest: 81, host: 8181
+
+	# maildev
+	# config.vm.network :forwarded_port, guest: 1080, host: 1080
+
+	# ng serve
+	# config.vm.network :forwarded_port, guest: 4200, host: 4200
+
+	# ng serve
+     config.vm.network :forwarded_port, guest: 443, host: 443
+
+	# mysql
+    config.vm.network :forwarded_port, guest: 3306, host: 3306
+
+    # SSH Agent Forwarding
+    # config.ssh.forward_agent = true
+
+	config.vm.synced_folder "./app", options["NGINX_ROOT"], fsnotify: true, create:true,:mount_options => ["dmode=777","fmode=777"]
+	config.vm.synced_folder "./server/logs", options["ERROR_PATH"], fsnotify: true, :mount_options => ["dmode=777","fmode=777"]
+
+	config.vm.provision :shell, :path => PROVISIONER, :env => options
+
+	config.vm.provider "virtualbox" do |v|
+		v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+		v.customize ["modifyvm", :id, "--natdnsproxy1", "on"]
+		v.customize ["modifyvm", :id, "--memory", 2048]
+		v.cpus = 1
+	end
+end

@@ -1,0 +1,9 @@
+[xdebug]
+
+xdebug.profiler_enable=1
+xdebug.profiler_enable_trigger=1
+
+xdebug.remote_enable=1
+xdebug.remote_autostart=1
+xdebug.remote_connect_back=1
+xdebug.remote_log=${ERROR_PATH}/xdebug.log

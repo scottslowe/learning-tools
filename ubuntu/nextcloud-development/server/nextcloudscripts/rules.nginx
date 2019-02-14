@@ -1,0 +1,137 @@
+#!/usr/bin/make -f
+
+#export DH_VERBOSE=1
+export DEB_BUILD_MAINT_OPTIONS=hardening=+all,-pie
+export DEB_CFLAGS_MAINT_APPEND=-Wp,-D_FORTIFY_SOURCE=2 -fPIC
+export DEB_LDFLAGS_MAINT_APPEND=-Wl,--as-needed -pie
+DPKG_EXPORT_BUILDFLAGS = 1
+include /usr/share/dpkg/buildflags.mk
+
+PKGS = nginx nginx-dbg
+
+BUILDDIR_nginx = $(CURDIR)/debian/build-nginx
+BUILDDIR_nginx_debug = $(CURDIR)/debian/build-nginx-debug
+INSTALLDIR = $(CURDIR)/debian/nginx
+BASEDIR = $(CURDIR)
+
+ifneq (,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+	NUMJOBS = $(patsubst parallel=%,%,$(filter parallel=%,$(DEB_BUILD_OPTIONS)))
+	ifeq (${NUMJOBS}, 0)
+		NUMJOBS = 1
+	endif
+else
+	NUMJOBS = 1
+endif
+
+DO_PKGS = $(PKGS)
+
+config.env.%:
+	dh_testdir
+	mkdir -p $(BUILDDIR_$*)
+	cp -Pa $(CURDIR)/auto $(BUILDDIR_$*)/
+	cp -Pa $(CURDIR)/conf $(BUILDDIR_$*)/
+	cp -Pa $(CURDIR)/configure $(BUILDDIR_$*)/
+	cp -Pa $(CURDIR)/contrib $(BUILDDIR_$*)/
+	cp -Pa $(CURDIR)/man $(BUILDDIR_$*)/
+	cp -Pa $(CURDIR)/src $(BUILDDIR_$*)/
+	touch $@
+
+config.status.nginx: config.env.nginx
+	cd $(BUILDDIR_nginx) && \
+	CFLAGS="" ./configure --prefix=/etc/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib/nginx/modules --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --pid-path=/var/run/nginx.pid --lock-path=/var/run/nginx.lock --http-client-body-temp-path=/var/cache/nginx/client_temp --http-proxy-temp-path=/var/cache/nginx/proxy_temp --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp --http-scgi-temp-path=/var/cache/nginx/scgi_temp --user=nginx --group=nginx --with-compat --with-file-aio --with-threads --with-http_addition_module --with-http_auth_request_module --with-http_dav_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_mp4_module --with-http_random_index_module --with-http_realip_module --with-http_secure_link_module --with-http_slice_module --with-http_ssl_module --with-http_stub_status_module --with-http_sub_module --with-http_v2_module --with-mail --with-mail_ssl_module --with-stream --with-stream_realip_module --with-stream_ssl_module --with-stream_ssl_preread_module --with-cc-opt="$(CFLAGS)" --with-ld-opt="$(LDFLAGS)" --with-openssl=/usr/local/src/openssl
+	touch $@
+
+config.status.nginx_debug: config.env.nginx_debug
+	cd $(BUILDDIR_nginx_debug) && \
+	CFLAGS="" ./configure --prefix=/etc/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib/nginx/modules --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --pid-path=/var/run/nginx.pid --lock-path=/var/run/nginx.lock --http-client-body-temp-path=/var/cache/nginx/client_temp --http-proxy-temp-path=/var/cache/nginx/proxy_temp --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp --http-scgi-temp-path=/var/cache/nginx/scgi_temp --user=nginx --group=nginx --with-compat --with-file-aio --with-threads --with-http_addition_module --with-http_auth_request_module --with-http_dav_module --with-http_flv_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_mp4_module --with-http_random_index_module --with-http_realip_module --with-http_secure_link_module --with-http_slice_module --with-http_ssl_module --with-http_stub_status_module --with-http_sub_module --with-http_v2_module --with-mail --with-mail_ssl_module --with-stream --with-stream_realip_module --with-stream_ssl_module --with-stream_ssl_preread_module --with-cc-opt="$(CFLAGS)" --with-ld-opt="$(LDFLAGS)" --with-openssl=/usr/local/src/openssl --with-debug
+	touch $@
+
+build-arch.%: config.status.%
+	dh_testdir
+	dh_prep
+	$(MAKE) -j$(NUMJOBS) -C $(BUILDDIR_$*) build
+
+build-arch: build-arch.nginx build-arch.nginx_debug
+	dh_testdir
+	touch $@
+
+build-dbg.%: install
+	dh_testdir
+	dh_strip --dbg-package=nginx-dbg
+
+build-dbg: build-dbg.nginx
+	dh_testdir
+	touch $@
+
+build-indep:
+	dh_testdir
+	touch $@
+
+build: build-arch build-indep
+	dh_testdir
+	touch $@
+
+clean:
+	dh_testdir
+	dh_testroot
+	dh_clean
+	rm -f $(CURDIR)/objs
+	rm -rf $(CURDIR)/debian/build-*
+	rm -f $(CURDIR)/debian/*.init
+	find $(CURDIR) -maxdepth 1 -size 0 -delete
+
+post-build:
+	mv $(BUILDDIR_nginx_debug)/objs/nginx $(BUILDDIR_nginx_debug)/objs/nginx-debug
+	ln -s $(BUILDDIR_nginx)/objs $(CURDIR)/objs
+	cp $(BUILDDIR_nginx)/objs/nginx.8 $(BUILDDIR_nginx)/objs/nginx-debug.8
+
+install:
+	dh_testdir
+	dh_testroot
+	dh_prep
+	dh_installdirs
+	dh_install
+	mkdir -p $(INSTALLDIR)/usr/lib/nginx/modules
+	mkdir -p $(INSTALLDIR)/usr/share/doc/nginx
+	install -m 644 debian/CHANGES $(INSTALLDIR)/usr/share/doc/nginx/changelog
+	install -m 644 debian/nginx.vh.default.conf $(INSTALLDIR)/etc/nginx/conf.d/default.conf
+	ln -s /usr/lib/nginx/modules $(INSTALLDIR)/etc/nginx/modules
+
+binary-indep: build post-build install
+	dh_testdir
+	dh_testroot
+	dh_installman -i -pnginx
+	dh_installdebconf
+	sed -e 's/%%PROVIDES%%/nginx/g' \
+		-e 's/%%DEFAULTSTART%%/2 3 4 5/g' \
+		-e 's/%%DEFAULTSTOP%%/0 1 6/g' \
+		< debian/nginx.init.in > debian/nginx.init
+	dh_installinit -i -pnginx --no-restart-on-upgrade --no-start --name=nginx
+	dh_systemd_enable -pnginx --name=nginx nginx.service
+	sed -e 's/%%PROVIDES%%/nginx-debug/g' \
+		-e 's/%%DEFAULTSTART%%//g' \
+		-e 's/%%DEFAULTSTOP%%/0 1 2 3 4 5 6/g' \
+		< debian/nginx.init.in > debian/nginx-debug.init
+	dh_installinit -i -pnginx --no-restart-on-upgrade --no-start --noscripts --name=nginx-debug
+	dh_systemd_enable -pnginx --name=nginx-debug --no-enable nginx-debug.service
+	dh_installlogrotate -i -pnginx --name=nginx
+
+binary-arch: install build-dbg
+	dh_testdir
+	dh_testroot
+	dh_installchangelogs -a
+	dh_installdocs -a
+	dh_lintian -a
+	dh_link -aA
+	dh_compress -a
+	dh_perl -a
+	dh_fixperms -a
+	dh_installdeb -a
+	dh_shlibdeps -a --dpkg-shlibdeps-params=--ignore-missing-info
+	dh_gencontrol -a
+	dh_md5sums -a
+	dh_builddeb $(foreach p,$(DO_PKGS),-p$(p))
+
+binary: binary-indep binary-arch
+
+.PHONY: build clean binary-indep binary-arch binary install

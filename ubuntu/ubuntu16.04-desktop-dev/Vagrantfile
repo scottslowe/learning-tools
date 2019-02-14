@@ -1,38 +1,43 @@
 Vagrant.configure(2) do |config|
 
-  config.vm.box = "box-cutter/ubuntu1604-desktop"
+  #config.vm.box = "box-cutter/ubuntu1604-desktop"
+  # config.vm.box = "https://github.com/jose-lpa/packer-ubuntu_lts/releases/download/v3.1/ubuntu-16.04.box"
+  config.vm.box = "ubuntu/xenial64"
+  config.vm.box_version = "20181122.1.0"
   #config.vm.box_version = "2.0.26"
   config.ssh.username = "vagrant"
   config.ssh.password = "vagrant"
 
   config.vm.provider "virtualbox" do |vb|
     #   # Display the VirtualBox GUI when booting the machine
-    vb.gui = true
+    #vb.gui = true
     #
     #   # Customize the amount of memory on the VM:
-    vb.memory = "8192"
-    vb.cpus = 4
+    # vb.memory = "8192"
+    # vb.cpus = 4
+    vb.memory = "2048"
+    vb.cpus = 2
     #config.vm.synced_folder "./vagrant_home", "/home/vagrant"
   end
 
   config.vm.provision "file", source: "./scripts", destination: "/tmp/vagrant/scripts"
 
   config.vm.provision "shell", inline: <<-SHELL
+    echo "start "
+    #. /tmp/vagrant/scripts/utils/before.sh;
+    #. /tmp/vagrant/scripts/utils/import-install-scripts.sh;
+    #. /tmp/vagrant/scripts/utils/install-packages.sh;
+    #. /tmp/vagrant/scripts/utils/after.sh;
 
-    . /tmp/vagrant/scripts/utils/before.sh;
-    . /tmp/vagrant/scripts/utils/import-install-scripts.sh;
-    . /tmp/vagrant/scripts/utils/install-packages.sh;
-    . /tmp/vagrant/scripts/utils/after.sh;
+    #IMPORTS=(angular-cli aws-cli docker git google-chrome gradle guake intellij-idea jdk8 maven mongo node-and-npm opera pip softether-vpn sublime-text-3)
+    #PACKAGES=(guake opera sublime-text-3 git docker jdk8 maven gradle node-and-npm angular-cli pip aws-cli mongo softether-vpn intellij-idea google-chrome)
 
-    IMPORTS=(angular-cli aws-cli docker git google-chrome gradle guake intellij-idea jdk8 maven mongo node-and-npm opera pip softether-vpn sublime-text-3)
-    PACKAGES=(guake opera sublime-text-3 git docker jdk8 maven gradle node-and-npm angular-cli pip aws-cli mongo softether-vpn intellij-idea google-chrome)
+    #before
 
-    before
+    #import-install-scripts $IMPORTS
+    #install-packages $PACKAGES
 
-    import-install-scripts $IMPORTS
-    install-packages $PACKAGES
-
-    after
-
+    #after
+    echo "end "
    SHELL
 end

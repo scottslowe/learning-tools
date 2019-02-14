@@ -1,0 +1,118 @@
+#!/bin/bash
+
+# Tested using Ubuntu 16.04 LTS
+
+
+#Define and read in variable hostname
+until [ -n "$sslanswer" ] ; do
+    read -p "Does ScreenConnect already have SSL enabled? yes or no, do not use capital letters: " sslanswer
+done
+
+service screenconnect stop
+echo " I've attempted to shutdown screenconnect, if you got an error message - press Control+C to kill the script and stop the service manually"
+echo "Please ensure the above output stopped your screenconnect service, pausing for 60 seconds"
+sleep 60
+
+#backup web.config
+echo "backing up screenconnect web.config file to /opt/screenconnect/web.config.bak-<currentdate> ..."
+cp /opt/screenconnect/web.config /opt/screenconnect/web.config.bak-`date +%Y%m%d`
+
+
+if [ "$sslanswer" == "yes" ];then
+sed -i 's/\<add key\=\"WebServerListenUri\" value\=\"https\:\/\/+\:443\/\"\>/\<add key\=\"WebServerListenUri\" value\=\"http\:\/\/+\:8080\/\"\>/g' /opt/screenconnect/web.config
+else
+sed -i 's/\<add key\=\"WebServerListenUri\" value\=\"http\:\/\/+\:80\/\"\>/\<add key\=\"WebServerListenUri\" value\=\"http\:\/\/+\:8080\/\"\>/g' /opt/screenconnect/web.config
+fi
+
+service screenconnect start
+echo "Please ensure in the above output screenconnect successfully, if not Control+C script and start it manually, pausing for 60 seconds"
+echo "Please ensure you can access screenconnect on  http://<hostname>:8080 Sleeping for 120 seconds,  press Control+C if you think something went wrong"
+sleep 120
+
+
+#Define and read in variable hostname
+until [ -n "$hostname" ] ; do
+    read -p "hostname: " hostname
+done
+
+
+#echo "install certbot/letsencrypt"
+add-apt-repository ppa:certbot/certbot
+apt-get update
+apt-get install python-certbot-nginx -y
+
+
+sed "s/server_name/server_name=${hostname}/g" /etc/nginx/sites-enabled/default
+
+#test nginx
+nginx -t
+#restart nginx
+systemctl reload nginx
+
+#run certbot with hostname to get certificate - please make sure this hostname actually resolves in DNS (on the internet) and that the server is internet accessible
+
+certbot --nginx -d ${hostname}
+
+#make backup directory
+mkdir -p /etc/nginx/backup-files
+#make backup of nginx - even know we really dont care about the original file
+cp /etc/nginx/sites-enabled/default /etc/nginx/backup-files/default
+
+
+#replace default nginx config file with below
+
+{
+echo ' server { '
+echo '    listen 443 ssl; # managed by Certbot '
+echo '    ssl_certificate /etc/letsencrypt/live/server_value/fullchain.pem;# managed by Certbot '
+echo '    ssl_certificate_key /etc/letsencrypt/live/server_value/privkey.pem; # managed by Certbot '
+echo '    #include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot'
+echo '     ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot '
+
+echo ' ssl_session_cache shared:SSL:10m; '
+echo ' ssl_session_timeout 5m; '
+echo ' keepalive_timeout 60; '
+echo ' ssl_protocols TLSv1 TLSv1.1 TLSv1.2; '
+echo ' add_header Strict-Transport-Security max-age=15768000; '
+
+echo '  location / { '
+echo '  proxy_pass http://127.0.0.1:8080/; '
+echo '  proxy_redirect off; '
+echo '  proxy_set_header Host $host; '
+echo '  proxy_set_header X-Real-IP $remote_addr; '
+echo '  proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for; '
+echo '  proxy_max_temp_file_size 0; '
+echo '  client_max_body_size 50m; '
+echo '  client_body_buffer_size 256k; '
+echo '  proxy_connect_timeout 180; '
+echo '  proxy_send_timeout 180; '
+echo '  proxy_read_timeout 90; '
+echo '  proxy_buffer_size 16k; '
+echo '  proxy_buffers 4 64k; '
+echo '  proxy_busy_buffers_size 128k; '
+echo '  proxy_temp_file_write_size 128k; '
+echo '  } '
+echo ' } '
+
+echo ' server { '
+echo '     if ($host = server_value) { '
+echo '         return 301 https://$host$request_uri; '
+echo '     } # managed by Certbot '
+echo ' '
+echo '         listen 80 ; '
+echo ' #       listen [::]:80 ; '
+echo '     server_name server_value; '
+echo '     return 404; # managed by Certbot '
+echo ' '
+echo ' } '
+} > /etc/nginx/sites-enabled/default
+
+
+#test nginx
+nginx -t
+#restart nginx
+systemctl reload nginx
+
+#search for server_value and replace with your hostname
+sed -i "s/server_value/${hostname}/g" /etc/nginx/sites-enabled/default
+
