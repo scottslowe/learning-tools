@@ -1,0 +1,4 @@
+.vagrant
+*.html
+/texput.log
+/.#texlive.sh

@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kiali
+  labels:
+    app: kiali
+    version: master
+data:
+  config.yaml: |
+    server:
+      port: 20001
+      web_root: /
+    external_services:
+      jaeger:
+        url: "http://172.17.8.101:31888"
+      grafana:
+        url: "http://grafana.istio.jimmysong.io"
