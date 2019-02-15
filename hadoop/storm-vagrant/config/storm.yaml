@@ -1,0 +1,14 @@
+storm.zookeeper.servers:
+  - "zookeeper-0"
+
+storm.local.dir: "/usr/local/storm/data"
+
+nimbus.host: "nimbus-0"
+
+nimbus.seeds: ["nimbus-0"]
+
+supervisor.slots.ports:
+  - 6700
+  - 6701
+  - 6702
+  - 6703

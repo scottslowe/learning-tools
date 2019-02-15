@@ -1,0 +1,8 @@
+192.168.10.12 zoo1
+192.168.10.13 zoo2
+192.168.10.14 zoo3
+192.168.10.15 kafka1
+0.0.0.0 sparkmaster1
+192.168.10.22 sparkslave1
+192.168.10.23 sparkslave2
+192.168.10.24 sparkslave3

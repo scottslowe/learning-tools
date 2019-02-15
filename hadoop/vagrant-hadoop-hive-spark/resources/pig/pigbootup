@@ -1,0 +1,9 @@
+set mapred.job.queue.name default
+set mapreduce.job.queuename default
+set tez.queue.name default
+/* Register piggybank.jar */
+REGISTER /usr/local/pig/lib/piggybank.jar;
+/* Define shortname for HCatLoader */
+DEFINE HCatLoader org.apache.hive.hcatalog.pig.HCatLoader;
+/* Define shortname for CSVExcelStorage */
+DEFINE CSVExcelStorage org.apache.pig.piggybank.storage.CSVExcelStorage;

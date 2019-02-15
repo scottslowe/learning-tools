@@ -1,0 +1,28 @@
+---
+- hosts: all
+  become: yes
+  vars:
+    storm:
+      version: 1.1.1
+      mirror: http://www-us.apache.org/dist
+      user: storm
+      group: root
+      install_dir: /opt
+      base_dir: /opt/storm
+      log_dir: /opt/storm-log
+
+  tasks:
+
+  - include: init_java.yml
+  - include: init_storm.yml
+  - include: init_network.yml
+
+  - name: Supervisor | Set config
+    template:
+      src: "templates/storm/supervisor/storm.yaml"
+      dest: "{{storm.install_dir}}/apache-storm-{{ storm.version }}/conf/"
+
+  - name: Supervisor | Run Supervisor
+    shell: "{{storm.install_dir}}/apache-storm-{{storm.version}}/bin/storm supervisor &"
+    become: true
+    become_user: root

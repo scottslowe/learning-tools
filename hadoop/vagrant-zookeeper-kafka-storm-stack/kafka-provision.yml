@@ -1,0 +1,68 @@
+---
+- hosts: all
+  become: yes
+  vars:
+    kafka:
+      version: 1.0.0
+      mirror: https://archive.apache.org/dist/kafka
+      dataDir: /var/lib/kafka
+      installDir: "/opt"
+      serverMemory: "768M"
+      scalaVersion: 2.11
+    zookeeper:
+      ip: "192.168.5.100:2181,192.168.5.101:2181,192.168.5.102:2181"
+      
+  tasks:
+    - include: init_java.yml
+    - include: init_network.yml
+
+      # Kafka
+    - name: Kafka | Set internal variable kafka_name
+      set_fact: kafka_name="kafka_{{kafka.scalaVersion}}-{{kafka.version}}"
+    - name: Kafka | Set internal variable kafka_dir
+      set_fact: kafka_dir="{{kafka.installDir}}/{{kafka_name}}"
+      
+    - name: Kafka | Download
+      get_url:
+        url: "{{kafka.mirror}}/{{kafka.version}}/{{kafka_name}}.tgz"
+        dest: "/tmp"
+        
+    - name: Kafka | Ensure tar is extracted
+      command: tar xzf /tmp/{{kafka_name}}.tgz chdir="{{kafka.installDir}}"
+
+    - name: Kafka | Set Server config
+      template:
+        src: "templates/kafka/server.properties"
+        dest: "{{kafka_dir}}/config"
+
+    - name: Kafka | Set Consumer config
+      template:
+        src: "templates/kafka/consumer.properties"
+        dest: "{{kafka_dir}}/config"
+
+    - name: Kafka | Set Server Startup
+      template:
+        src: "templates/kafka/kafka-server-start.sh"
+        dest: "{{kafka_dir}}/bin"
+        mode: 0755
+
+    - name: Kafka | Set init.d environment
+      template:
+        src: "templates/kafka/kafka"
+        dest: "/etc/init.d/"
+        mode: 0755
+
+    - name: Kafka | Run service
+      service: name=kafka state=started enabled=yes
+
+    - name: Kafka | Configure autostart
+      file:
+        src: /etc/init.d/kafka
+        dest: /etc/rc2.d/S99kafka
+        state: link
+
+    - name: Kafka | Service
+      service:
+        name: kafka
+        enabled: yes
+        state: reloaded

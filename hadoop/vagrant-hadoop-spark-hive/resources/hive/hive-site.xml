@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<configuration>
+    <property>
+        <name>hive.metastore.uris</name>
+        <value>thrift://127.0.0.1:9083</value>
+        <description>IP address (or fully-qualified domain name) and port of the metastore host</description>
+    </property>
+
+    <property>
+        <name>javax.jdo.option.ConnectionURL</name>
+        <value>jdbc:derby:;databaseName=/usr/local/hive/derby/metastore_db;create=true</value>
+        <description>JDBC connect string for a JDBC metastore</description>
+    </property>
+</configuration>

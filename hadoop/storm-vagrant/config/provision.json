@@ -1,0 +1,78 @@
+{
+  "provider": "hyperv",
+  "gitssh": false,
+  "share": "share",
+  "os": "ubuntu",
+  "ssh": 2200,
+  "machines": [{
+    "type": "zookeeper",
+    "box": "bento/ubuntu-16.04",
+    "memory": 2048,
+    "cpus": 2,
+    "syncs": [],
+    "ports": []
+  }, {
+    "type": "nimbus",
+    "box": "bento/ubuntu-16.04",
+    "memory": 2048,
+    "cpus": 2,
+    "syncs": [{
+      "dest": "/home/vagrant",
+      "mount_options": [
+        "dmode=755",
+        "fmode=755"
+      ]
+    }],
+    "ports": [{
+      "host": 8080,
+      "guest": 8080
+    }]
+  }, {
+    "type": "supervisor",
+    "box": "bento/ubuntu-16.04",
+    "memory": 1024,
+    "cpus": 1,
+    "syncs": [],
+    "ports": []
+  }, {
+    "type": "supervisor",
+    "box": "bento/ubuntu-16.04",
+    "memory": 1024,
+    "cpus": 1,
+    "syncs": [],
+    "ports": []
+  }, {
+    "type": "supervisor",
+    "box": "bento/ubuntu-16.04",
+    "memory": 1024,
+    "cpus": 1,
+    "syncs": [],
+    "ports": []
+  }, {
+    "type": "broker",
+    "box": "bento/ubuntu-16.04",
+    "memory": 1024,
+    "cpus": 2,
+    "syncs": [],
+    "ports": [{
+      "host": 8181,
+      "guest": 8181
+    }, {
+      "host": 61616,
+      "guest": 61616
+    }]
+  }, {
+    "type": "webapp",
+    "box": "bento/ubuntu-16.04",
+    "memory": 1024,
+    "cpus": 1,
+    "syncs": [],
+    "ports": [{
+      "host": 9000,
+      "guest": 9000
+    }, {
+      "host": 3000,
+      "guest": 3000
+    }]
+  }]
+}

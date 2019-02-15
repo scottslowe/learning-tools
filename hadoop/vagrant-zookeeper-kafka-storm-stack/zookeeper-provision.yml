@@ -1,0 +1,110 @@
+---
+- hosts: all
+  become: yes
+  vars:
+    zookeeper:
+      version: 3.4.11
+      mirror: http://www-us.apache.org/dist
+      user: zookeeper
+      group: root
+      install_dir: /opt
+      data_dir: /opt/zookeeper/data
+      log_dir: /opt/zookeeper/log
+  tasks:
+
+  - name: User | Create Group
+    become_user: root
+    group:
+      name: "{{zookeeper.group}}"
+      state: present
+
+  - name: User | Create User
+    become_user: root
+    user:
+      name: "{{zookeeper.user}}"
+      group: "{{zookeeper.group}}"
+      state: present
+
+  - include: init_java.yml
+  - include: init_network.yml
+
+  - name: Zookeeper | Create base directory
+    become_user: root
+    file:
+      path: "{{zookeeper.install_dir}}"
+      owner: "root"
+      group: "root"
+      mode: 0755
+      state: directory
+
+  - name: Zookeeper | Download
+    get_url:
+      url: http://mirror.dkd.de/apache/zookeeper/zookeeper-{{zookeeper.version}}/zookeeper-{{zookeeper.version}}.tar.gz
+      dest: /tmp/zookeeper-{{zookeeper.version}}.tar.gz
+
+  - name: Zookeeper | Extract Zookeeper
+    become_user: root
+    command: tar xzf /tmp/zookeeper-{{zookeeper.version}}.tar.gz chdir="{{zookeeper.install_dir}}"
+
+  - name: Zookeeper | Create data directory
+    become_user: root
+    file:
+      path: "{{zookeeper.data_dir}}"
+      owner: "{{zookeeper.user}}"
+      group: "{{zookeeper.group}}"
+      mode: 0755
+      state: directory
+
+  - name: Zookeeper | Create log directory
+    become_user: root
+    file:
+      path: "{{zookeeper.log_dir}}"
+      owner: "{{zookeeper.user}}"
+      group: "{{zookeeper.group}}"
+      mode: 0755
+      state: directory
+
+  - name: Zookeeper | Update permissions
+    become_user: root
+    file:
+      path: "{{ zookeeper.install_dir }}"
+      owner: "{{ zookeeper.user }}"
+      group: "{{ zookeeper.group }}"
+      recurse: yes
+      mode: 0755
+      state: directory
+
+  - name: ZooKeeper | Ensure zoo.conf is present
+    template:
+      src: "templates/zookeeper/zoo.cfg"
+      dest: "{{zookeeper.install_dir}}/zookeeper-{{zookeeper.version}}/conf"
+
+  - name: ZooKeeper | Ensure myid is set to {{cluster_node_seq}} in {{zookeeper.data_dir}}/myid
+    template:
+      src: "templates/zookeeper/myid"
+      dest: "{{zookeeper.data_dir}}"
+
+  - name: ZooKeeper | Ensure zkEnv.sh is presnt
+    template:
+      src: "templates/zookeeper/zkEnv.sh"
+      dest: "{{zookeeper.install_dir}}/zookeeper-{{zookeeper.version}}/bin"
+
+  - name: Zookeeper | Init as service
+    template:
+      src: "templates/zookeeper/zookeeper"
+      dest: "/etc/init.d/"
+      mode: 0755
+
+  - name: Zookeeper | Configure service
+    file:
+      src: /etc/init.d/zookeeper
+      dest: /etc/rc2.d/S99zookeeper
+      state: link
+
+  - name: ZooKeeper | Service
+    service:
+      name: zookeeper
+      enabled: yes
+      state: reloaded
+    ignore_errors: true
+

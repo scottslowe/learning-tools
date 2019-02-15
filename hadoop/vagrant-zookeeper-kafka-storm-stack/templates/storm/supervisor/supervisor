@@ -1,0 +1,144 @@
+#!/bin/bash
+#
+# Starts a Storm server
+#
+# chkconfig: 35 85 15
+# description: Storm
+#
+### BEGIN INIT INFO
+# Provides:          storm
+# Short-Description: Storm Service
+# Default-Start:     3 5
+# Default-Stop:      0 1 6
+# Required-Start:    $syslog $remote_fs
+# Required-Stop:     $syslog $remote_fs
+# Should-Start:
+# Should-Stop:
+### END INIT INFO
+
+. /lib/lsb/init-functions
+
+RETVAL_SUCCESS=0
+STATUS_RUNNING=0
+STATUS_DEAD=1
+STATUS_DEAD_AND_LOCK=2
+STATUS_NOT_RUNNING=3
+STATUS_OTHER_ERROR=102
+
+ERROR_PROGRAM_NOT_INSTALLED=5
+ERROR_PROGRAM_NOT_CONFIGURED=6
+
+RETVAL=0
+SLEEP_TIME=3
+PROC_NAME="java"
+PIDFILE="/opt/storm/data/storm-server.pid"
+EXEC_PATH="/opt/apache-storm-{{storm.version}}/bin/storm"
+
+DAEMON="storm"
+DESC="Storm Server"
+SVC_USER="root"
+LOCKDIR="/var/lock/subsys"
+LOCKFILE="$LOCKDIR/$DAEMON"
+
+[ -d "$LOCKDIR" ] || install -d -m 0755 $LOCKDIR 1>/dev/null 2>&1 || :
+
+start() {
+  [ -x $EXEC_PATH ] || exit $ERROR_PROGRAM_NOT_INSTALLED
+  [ -d $CONF_DIR ] || exit $ERROR_PROGRAM_NOT_CONFIGURED
+  log_success_msg "Starting ${DESC}: "
+
+  su -s /bin/bash $SVC_USER -c "$EXEC_PATH storm &"
+
+  # Some processes are slow to start
+  sleep $SLEEP_TIME
+  checkstatusofproc
+  RETVAL=$?
+
+  [ $RETVAL -eq $RETVAL_SUCCESS ] && touch $LOCKFILE
+  return $RETVAL
+}
+
+stop() {
+  log_success_msg "Stopping ${DESC}: "
+  start_daemon $EXEC_PATH stop 
+  RETVAL=$?
+
+  [ $RETVAL -eq $RETVAL_SUCCESS ] && rm -f $LOCKFILE $PIDFILE
+}
+
+restart() {
+  stop
+  start
+}
+
+checkstatusofproc(){
+  pidofproc -p $PIDFILE $PROC_NAME > /dev/null
+}
+
+checkstatus(){
+  checkstatusofproc
+  status=$?
+
+  case "$status" in
+    $STATUS_RUNNING)
+      log_success_msg "${DESC} is running"
+      ;;
+    $STATUS_DEAD)
+      log_failure_msg "${DESC} is dead and pid file exists"
+      ;;
+    $STATUS_DEAD_AND_LOCK)
+      log_failure_msg "${DESC} is dead and lock file exists"
+      ;;
+    $STATUS_NOT_RUNNING)
+      log_failure_msg "${DESC} is not running"
+      ;;
+    *)
+      log_failure_msg "${DESC} status is unknown"
+      ;;
+  esac
+  return $status
+}
+
+condrestart(){
+  [ -e $LOCKFILE ] && restart || :
+}
+
+check_for_root() {
+  if [ $(id -ur) -ne 0 ]; then
+    echo 'Error: root user required'
+    echo
+    exit 1
+  fi
+}
+
+service() {
+  case "$1" in
+    start)
+      check_for_root
+      start
+      ;;
+    stop)
+      check_for_root
+      stop
+      ;;
+    status)
+      checkstatus
+      RETVAL=$?
+      ;;
+    restart)
+      check_for_root
+      restart
+      ;;
+    condrestart|try-restart)
+      check_for_root
+      condrestart
+      ;;
+    *)
+      echo $"Usage: $0 {start|stop|status|restart|try-restart|condrestart}"
+      exit 1
+  esac
+}
+
+service "$1"
+
+exit $RETVAL

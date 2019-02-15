@@ -1,0 +1,66 @@
+# Setup network
+
+  - name: Network | Zookeeper 1 to /etc/hosts
+    lineinfile:
+      dest: /etc/hosts
+      regexp: 'zookeeper-node-1'
+      line: '192.168.5.100   zookeeper-node-1'
+    become: true
+    become_user: root
+
+  - name: Network | Zookeeper 2 to /etc/hosts
+    lineinfile:
+      dest: /etc/hosts
+      regexp: 'zookeeper-node-2'
+      line: '192.168.5.101   zookeeper-node-2'
+    become: true
+    become_user: root
+
+  - name: Network | Zookeeper 3 to /etc/hosts
+    lineinfile:
+      dest: /etc/hosts
+      regexp: 'zookeeper-node-3'
+      line: '192.168.5.102   zookeeper-node-3'
+    become: true
+    become_user: root
+
+  - name: Network | Kafka to /etc/hosts
+    lineinfile:
+      dest: /etc/hosts
+      regexp: 'kafka-node-1'
+      line: '192.168.5.110   kafka-node-1'
+    become: true
+    become_user: root
+
+  - name: Network | Kafka to /etc/hosts
+    lineinfile:
+      dest: /etc/hosts
+      regexp: 'kafka-node-2'
+      line: '192.168.5.111   kafka-node-2'
+    become: true
+    become_user: root
+
+  - name: Network | Kafka to /etc/hosts
+    lineinfile:
+      dest: /etc/hosts
+      regexp: 'kafka-node-3'
+      line: '192.168.5.112   kafka-node-3'
+    become: true
+    become_user: root
+
+  - name: Network | Nimbus to /etc/hosts
+    lineinfile:
+      dest: /etc/hosts
+      regexp: 'storm-nimbus-node-1'
+      line: '192.168.5.120   storm-nimbus-node-1'
+    become: true
+    become_user: root
+
+  - name: Network | Supervisor to /etc/hosts
+    lineinfile:
+      dest: /etc/hosts
+      regexp: 'storm-supervisor-node-1'
+      line: '192.168.5.130   storm-supervisor-node-1'
+    become: true
+    become_user: root
+

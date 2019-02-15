@@ -1,0 +1,48 @@
+#! /bin/sh
+
+### BEGIN INIT INFO
+# Provides:        kafka
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:    $remote_fs $syslog
+# Default-Start:    2 3 4 5
+# Default-Stop:        
+# Short-Description:    Kafka daemon
+### END INIT INFO
+
+set -e
+
+export KAFKA_HOME=/opt/kafka_{{ kafka.scalaVersion }}-{{ kafka.version }}
+
+# /etc/init.d/kafka: start and stop the Kafka daemon
+
+. /lib/lsb/init-functions
+
+# Are we running from init?
+run_by_init() {
+    ([ "$previous" ] && [ "$runlevel" ]) || [ "$runlevel" = S ]
+}
+
+export PATH="${PATH:+$PATH:}/usr/sbin:/sbin"
+
+case "$1" in
+  start)
+    log_daemon_msg "Starting Kafka" "kafka" || true
+        "$KAFKA_HOME/bin/kafka-server-start.sh" "-daemon" "$KAFKA_HOME/config/server.properties"
+        log_end_msg 0 || true
+    ;;
+  stop)
+    log_daemon_msg "Stopping Kafka" "kafka" || true
+        ps ax | grep -i 'kafka\.Kafka' | grep java | grep -v grep |  awk '{print $1}' | xargs kill -SIGKILL
+    log_end_msg 0 || true
+    ;;
+
+  status)
+    status_of_proc -p /var/run/kafka.pid && exit 0 || exit $?
+    ;;
+
+  *)
+    log_action_msg "Usage: /etc/init.d/kafka {start|stop|status}" || true
+    exit 1
+esac
+
+exit 0

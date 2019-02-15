@@ -1,0 +1,102 @@
+set nocompatible
+set hidden
+set confirm
+filetype off
+
+" Set the runtime path to include Vundle and initialize
+set rtp+=~/.vim/bundle/Vundle.vim
+call vundle#begin()
+
+" let Vundle manage Vundle (required)
+"
+Plugin 'gmarik/Vundle.vim'
+
+
+" Add all your plugins here (note older versions of Vundle used Bundle instead
+" of Plugin
+
+Plugin 'tmhedberg/SimpylFold'
+Plugin 'vim-scripts/indentpython.vim'
+"Plugin 'Valloric/YouCompleteMe'
+Plugin 'derekwyatt/vim-scala'
+Plugin 'motus/pig.vim'
+
+
+" All your plugins must be added before the following line
+call vundle#end()		" Required
+filetype plugin indent on	" Required
+set modeline 
+set showmatch 
+set showcmd 
+set autochdir
+"
+" Martin 26/05/2017 - Add statusline showing full pathname
+" See
+" https://stackoverflow.com/questions/5375240/a-more-useful-statusline-in-vim
+set laststatus=2
+set statusline=
+set statusline+=%7*\[%n]                                  "buffernr
+set statusline+=%1*\ %<%F\                                "File+path
+set statusline+=%2*\ %y\                                  "FileType
+set statusline+=%3*\ %{''.(&fenc!=''?&fenc:&enc).''}      "Encoding
+set statusline+=%3*\ %{(&bomb?\",BOM\":\"\")}\            "Encoding2
+set statusline+=%4*\ %{&ff}\                              "FileFormat (dos/unix..) 
+set statusline+=%5*\ %{&spelllang}\%{HighlightSearch()}\  "Spellanguage & Highlight on?
+set statusline+=%8*\ %=\ row:%l/%L\ (%03p%%)\             "Rownumber/total (%)
+set statusline+=%9*\ col:%03c\                            "Colnr
+set statusline+=%0*\ \ %m%r%w\ %P\ \                      "Modified? Readonly? Top/bot.
+function! HighlightSearch()
+  if &hls
+    return 'H'
+  else
+    return ''
+  endif
+endfunction
+" Martin 26/05/2017 - End
+"
+"
+" Martin 10/03/2017 - remove solorized - use Slate colorscheme and monaco.ttf
+" font instead.
+syntax enable
+"colorscheme slate
+colorscheme molokai
+set guifont=monaco\ 11
+" Solorized colour scheme...
+" syntax enable
+" colorscheme solarized
+" if has('gui_running')
+" 	set background=light
+" else
+" 	set background=dark
+" endif
+"
+"
+" Enable folding and allow folding using the space bar
+set foldmethod=indent
+set foldlevel=99
+" Enables folding with the spacebar
+nnoremap <space> za	
+" Show docstrings when folded
+let g:SimpylFold_docstring_preview=1
+" Indents for python
+au BufNewFile,BufRead *.py
+    \ set tabstop=4 |
+    \ set softtabstop=4 |
+    \ set shiftwidth=4 |
+    \ set textwidth=79 |
+    \ set expandtab |
+    \ set autoindent |
+    \ set fileformat=unix |
+
+au BufNewFile,BufRead *.js,*.html,*.css
+    \ set tabstop=2 |
+    \ set softtabstop=2 |
+    \ set shiftwidth=2 |
+
+"define BadWhitespace before using in a match
+highlight BadWhitespace ctermbg=red guibg=darkred
+au BufRead,BufNewFile *.py,*.pyw,*.c,*.h match BadWhitespace /\s\+$/
+set encoding=utf-8
+
+
+	

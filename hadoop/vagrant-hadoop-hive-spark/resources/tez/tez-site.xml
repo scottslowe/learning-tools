@@ -1,0 +1,12 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+
+<configuration>
+
+  <property>
+    <name>tez.lib.uris</name>
+    <value>hdfs://node1:8020/user/tez/share/tez.tar.gz</value>
+    <type>string</type>
+  </property>
+
+</configuration>

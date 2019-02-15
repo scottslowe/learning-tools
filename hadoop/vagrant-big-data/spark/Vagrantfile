@@ -1,0 +1,160 @@
+# -*- mode: ruby -*# vi: set ft=ruby :
+require 'yaml'
+vagrantConfig = YAML.load_file 'Vagrantfile.config.yml'
+Vagrant.configure("2") do |config|
+    config.vm.box = "bento/ubuntu-16.04"
+
+    config.vm.define "sparkslave1" do |sparkslave1|
+        sparkslave1.vm.network "private_network", ip: vagrantConfig['ip6']
+        sparkslave1.vm.hostname = "sparkslave1"
+    end
+	
+    config.vm.define "sparkslave2" do |sparkslave2|
+        sparkslave2.vm.network "private_network", ip: vagrantConfig['ip7']
+        sparkslave2.vm.hostname = "sparkslave2"
+    end
+	
+    config.vm.define "sparkslave3" do |sparkslave3|
+        sparkslave3.vm.network "private_network", ip: vagrantConfig['ip8']
+        sparkslave3.vm.hostname = "sparkslave3"
+    end
+	
+    config.vm.define "sparkmaster1" do |sparkmaster1|
+        sparkmaster1.vm.network "private_network", ip: vagrantConfig['ip5']
+        sparkmaster1.vm.hostname = "sparkmaster1"
+    end
+    
+    # config.vm.synced_folder "src/", "/home/vagrant/src", owner:"vagrant", group: "vagrant"
+    config.vm.synced_folder "devops/", "/home/vagrant/devops", owner:"vagrant", group: "vagrant"
+
+    # VirtualBox specific settings
+    config.vm.provider "virtualbox" do |vb|
+        vb.gui = false
+        vb.memory = "1024"
+        vb.cpus = 1
+    end
+
+    config.vm.provision "shell", inline: "sudo apt-get update -y"
+    config.vm.provision "shell", inline: "sudo apt-get upgrade -y"
+    config.vm.provision "shell", inline: "sudo add-apt-repository -y ppa:webupd8team/java"
+    config.vm.provision "shell", inline: "sudo apt-get update -y"
+    config.vm.provision "shell", inline: "echo 'oracle-java8-installer shared/accepted-oracle-license-v1-1 select true' | sudo debconf-set-selections"
+    config.vm.provision "shell", inline: "sudo apt-get install oracle-java8-installer -y"
+
+
+	config.vm.define "sparkslave1" do |sparkslave1|
+        sparkslave1.vm.provision "shell", inline: "sudo cat /home/vagrant/devops/spark/hosts.slave1 >> /etc/hosts"
+		sparkslave1.vm.provision "shell", inline: "sudo apt-get install openssh-client -y"
+        sparkslave1.vm.provision "shell", inline: "wget https://d3kbcqa49mib13.cloudfront.net/spark-1.6.0-bin-hadoop2.6.tgz"
+        sparkslave1.vm.provision "shell", inline: "tar -xvzf spark-1.6.0-bin-hadoop2.6.tgz"
+        sparkslave1.vm.provision "shell", inline: "echo \"copy spark to /opt\""
+        sparkslave1.vm.provision "shell", inline: "cp -R /home/vagrant/spark-1.6.0-bin-hadoop2.6 /opt"
+        sparkslave1.vm.provision "shell", inline: "echo \"change spark to writeable\""
+		sparkslave1.vm.provision "shell", inline: "sudo chmod -R 777 /opt/spark-1.6.0-bin-hadoop2.6"
+        sparkslave1.vm.provision "shell", inline: "echo \"create soft link to spark folder\""
+        sparkslave1.vm.provision "shell", inline: "ln -sf /opt/spark-1.6.0-bin-hadoop2.6 /opt/spark"
+        sparkslave1.vm.provision "shell", inline: "echo \"configure spark slave, copy\""
+        sparkslave1.vm.provision "shell", inline: "cp /home/vagrant/devops/spark/slaves /opt/spark/conf/slaves"
+        sparkslave1.vm.provision "shell", inline: "cp /home/vagrant/devops/spark/spark-env.slave1.sh /opt/spark/conf/spark-env.sh"
+        sparkslave1.vm.provision "shell", inline: "sudo chmod +x /opt/spark/conf/spark-env.sh"
+        sparkslave1.vm.provision "shell", inline: "echo \"install openssh-server\""
+		sparkslave1.vm.provision "shell", inline: "sudo apt-get install openssh-server -y"
+        sparkslave1.vm.provision "shell", inline: "echo \"create .ssh folder if not exists\""
+		sparkslave1.vm.provision "shell", inline: "[ -d /home/vagrant/.ssh ] || mkdir /home/vagrant/.ssh"
+        sparkslave1.vm.provision "shell", inline: "echo \"create .ssh/authorized_keys file if not exists\""
+		sparkslave1.vm.provision "shell", inline: "[ -f /home/vagrant/.ssh/authorized_keys ] || touch /home/vagrant/.ssh/authorized_keys"
+        sparkslave1.vm.provision "shell", inline: "echo \"make .ssh writeable\""
+		sparkslave1.vm.provision "shell", inline: "chmod 700 /home/vagrant/.ssh"
+        sparkslave1.vm.provision "shell", inline: "echo \"make .ssh/authorized_keys writeable\""
+		sparkslave1.vm.provision "shell", inline: "chmod 644 /home/vagrant/.ssh/authorized_keys"
+        sparkslave1.vm.provision "shell", inline: "sudo cat /home/vagrant/devops/ssh/id_rsa.pub >> /home/vagrant/.ssh/authorized_keys"
+    end
+	
+	config.vm.define "sparkslave2" do |sparkslave2|
+        sparkslave2.vm.provision "shell", inline: "sudo cat /home/vagrant/devops/spark/hosts.slave2 >> /etc/hosts"
+		sparkslave2.vm.provision "shell", inline: "sudo apt-get install openssh-client -y"
+        sparkslave2.vm.provision "shell", inline: "wget https://d3kbcqa49mib13.cloudfront.net/spark-1.6.0-bin-hadoop2.6.tgz"
+        sparkslave2.vm.provision "shell", inline: "tar -xvzf spark-1.6.0-bin-hadoop2.6.tgz"
+        sparkslave2.vm.provision "shell", inline: "echo \"copy spark to /opt\""
+        sparkslave2.vm.provision "shell", inline: "cp -R /home/vagrant/spark-1.6.0-bin-hadoop2.6 /opt"
+        sparkslave2.vm.provision "shell", inline: "echo \"change spark to writeable\""
+		sparkslave2.vm.provision "shell", inline: "sudo chmod -R 777 /opt/spark-1.6.0-bin-hadoop2.6"
+        sparkslave2.vm.provision "shell", inline: "echo \"create soft link to spark folder\""
+        sparkslave2.vm.provision "shell", inline: "ln -sf /opt/spark-1.6.0-bin-hadoop2.6 /opt/spark"
+        sparkslave2.vm.provision "shell", inline: "echo \"configure spark slave, copy\""
+        sparkslave2.vm.provision "shell", inline: "cp /home/vagrant/devops/spark/slaves /opt/spark/conf/slaves"
+        sparkslave2.vm.provision "shell", inline: "cp /home/vagrant/devops/spark/spark-env.slave2.sh /opt/spark/conf/spark-env.sh"
+        sparkslave2.vm.provision "shell", inline: "sudo chmod +x /opt/spark/conf/spark-env.sh"
+        sparkslave2.vm.provision "shell", inline: "echo \"install openssh-server\""
+		sparkslave2.vm.provision "shell", inline: "sudo apt-get install openssh-server -y"
+        sparkslave2.vm.provision "shell", inline: "echo \"create .ssh folder if not exists\""
+		sparkslave2.vm.provision "shell", inline: "[ -d /home/vagrant/.ssh ] || mkdir /home/vagrant/.ssh"
+        sparkslave2.vm.provision "shell", inline: "echo \"create .ssh/authorized_keys file if not exists\""
+		sparkslave2.vm.provision "shell", inline: "[ -f /home/vagrant/.ssh/authorized_keys ] || touch /home/vagrant/.ssh/authorized_keys"
+        sparkslave2.vm.provision "shell", inline: "echo \"make .ssh writeable\""
+		sparkslave2.vm.provision "shell", inline: "chmod 700 /home/vagrant/.ssh"
+        sparkslave2.vm.provision "shell", inline: "echo \"make .ssh/authorized_keys writeable\""
+		sparkslave2.vm.provision "shell", inline: "chmod 644 /home/vagrant/.ssh/authorized_keys"
+        sparkslave2.vm.provision "shell", inline: "sudo cat /home/vagrant/devops/ssh/id_rsa.pub >> /home/vagrant/.ssh/authorized_keys"
+    end
+	
+	config.vm.define "sparkslave3" do |sparkslave3|
+        sparkslave3.vm.provision "shell", inline: "sudo cat /home/vagrant/devops/spark/hosts.slave3 >> /etc/hosts"
+		sparkslave3.vm.provision "shell", inline: "sudo apt-get install openssh-client -y"
+        sparkslave3.vm.provision "shell", inline: "wget https://d3kbcqa49mib13.cloudfront.net/spark-1.6.0-bin-hadoop2.6.tgz"
+        sparkslave3.vm.provision "shell", inline: "tar -xvzf spark-1.6.0-bin-hadoop2.6.tgz"
+        sparkslave3.vm.provision "shell", inline: "echo \"copy spark to /opt\""
+        sparkslave3.vm.provision "shell", inline: "cp -R /home/vagrant/spark-1.6.0-bin-hadoop2.6 /opt"
+        sparkslave3.vm.provision "shell", inline: "echo \"change spark to writeable\""
+		sparkslave3.vm.provision "shell", inline: "sudo chmod -R 777 /opt/spark-1.6.0-bin-hadoop2.6"
+        sparkslave3.vm.provision "shell", inline: "echo \"create soft link to spark folder\""
+        sparkslave3.vm.provision "shell", inline: "ln -sf /opt/spark-1.6.0-bin-hadoop2.6 /opt/spark"
+        sparkslave3.vm.provision "shell", inline: "echo \"configure spark slave, copy\""
+        sparkslave3.vm.provision "shell", inline: "cp /home/vagrant/devops/spark/slaves /opt/spark/conf/slaves"
+        sparkslave3.vm.provision "shell", inline: "cp /home/vagrant/devops/spark/spark-env.slave3.sh /opt/spark/conf/spark-env.sh"
+        sparkslave3.vm.provision "shell", inline: "sudo chmod +x /opt/spark/conf/spark-env.sh"
+        sparkslave3.vm.provision "shell", inline: "echo \"install openssh-server\""
+		sparkslave3.vm.provision "shell", inline: "sudo apt-get install openssh-server -y"
+        sparkslave3.vm.provision "shell", inline: "echo \"create .ssh folder if not exists\""
+		sparkslave3.vm.provision "shell", inline: "[ -d /home/vagrant/.ssh ] || mkdir /home/vagrant/.ssh"
+        sparkslave3.vm.provision "shell", inline: "echo \"create .ssh/authorized_keys file if not exists\""
+		sparkslave3.vm.provision "shell", inline: "[ -f /home/vagrant/.ssh/authorized_keys ] || touch /home/vagrant/.ssh/authorized_keys"
+        sparkslave3.vm.provision "shell", inline: "echo \"make .ssh writeable\""
+		sparkslave3.vm.provision "shell", inline: "chmod 700 /home/vagrant/.ssh"
+        sparkslave3.vm.provision "shell", inline: "echo \"make .ssh/authorized_keys writeable\""
+		sparkslave3.vm.provision "shell", inline: "chmod 644 /home/vagrant/.ssh/authorized_keys"
+        sparkslave3.vm.provision "shell", inline: "sudo cat /home/vagrant/devops/ssh/id_rsa.pub >> /home/vagrant/.ssh/authorized_keys"
+    end
+	
+	config.vm.define "sparkmaster1" do |sparkmaster1|
+        sparkmaster1.vm.provision "shell", inline: "sudo cat /home/vagrant/devops/spark/hosts.master1 >> /etc/hosts"
+		sparkmaster1.vm.provision "shell", inline: "sudo apt-get install openssh-client -y"
+		sparkmaster1.vm.provision "shell", inline: "sudo apt-get install sshpass -y"
+		sparkmaster1.vm.provision "shell", inline: "[ -d /home/vagrant/.ssh ] || mkdir /home/vagrant/.ssh"
+        sparkmaster1.vm.provision "shell", inline: "sudo cp /home/vagrant/devops/ssh/id_rsa /home/vagrant/.ssh/id_rsa"
+        sparkmaster1.vm.provision "shell", inline: "sudo cp /home/vagrant/devops/ssh/id_rsa.pub /home/vagrant/.ssh/id_rsa.pub"
+        sparkmaster1.vm.provision "shell", inline: "sudo chown vagrant:vagrant /home/vagrant/.ssh/id_rsa"
+        sparkmaster1.vm.provision "shell", inline: "sudo chmod 600 /home/vagrant/.ssh/id_rsa"
+        sparkmaster1.vm.provision "shell", inline: "wget https://d3kbcqa49mib13.cloudfront.net/spark-1.6.0-bin-hadoop2.6.tgz"
+        sparkmaster1.vm.provision "shell", inline: "tar -xvzf spark-1.6.0-bin-hadoop2.6.tgz"
+        sparkmaster1.vm.provision "shell", inline: "echo \"copy spark to /opt\""
+        sparkmaster1.vm.provision "shell", inline: "cp -R /home/vagrant/spark-1.6.0-bin-hadoop2.6 /opt"
+        sparkmaster1.vm.provision "shell", inline: "echo \"change spark to writeable\""
+		sparkmaster1.vm.provision "shell", inline: "sudo chmod -R 777 /opt/spark-1.6.0-bin-hadoop2.6"
+        sparkmaster1.vm.provision "shell", inline: "echo \"create soft link to spark folder\""
+        sparkmaster1.vm.provision "shell", inline: "ln -sf /opt/spark-1.6.0-bin-hadoop2.6 /opt/spark"
+        sparkmaster1.vm.provision "shell", inline: "echo \"configure spark slave, copy\""
+        sparkmaster1.vm.provision "shell", inline: "cp /home/vagrant/devops/spark/passwordless-ssh-setup.sh /home/vagrant/passwordless-ssh-setup.sh"
+        sparkmaster1.vm.provision "shell", inline: "chmod +x /home/vagrant/passwordless-ssh-setup.sh"
+        sparkmaster1.vm.provision "shell", inline: "cp /home/vagrant/devops/spark/slaves /opt/spark/conf/slaves"
+        sparkmaster1.vm.provision "shell", inline: "cp /home/vagrant/devops/spark/spark-env.sh /opt/spark/conf/spark-env.sh"
+        sparkmaster1.vm.provision "shell", inline: "sudo chmod +x /opt/spark/conf/spark-env.sh"
+        sparkmaster1.vm.provision "shell", inline: "cp /home/vagrant/devops/spark/init.d /etc/init.d/spark"
+        sparkmaster1.vm.provision "shell", inline: "chmod 755 /etc/init.d/spark"
+        sparkmaster1.vm.provision "shell", inline: "sudo update-rc.d spark defaults"
+    end
+
+
+
+
+end

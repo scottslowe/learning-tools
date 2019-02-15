@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Start Page</title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    </head>
+    <body onload="send()">
+        <h1>Simple web to Kafka PoC</h1>
+        <p>
+            <ul>
+                <li>Provision and start Zookeeper - Kafka - Storm environment</li>
+                <li>Create Kafka topic <tt>web2kafka</tt>
+                    <li><pre>
+  > vagrant ssh kafka-node-1
+  > cd /opt/kafka_2.11-1.0.0/bin/
+  > ./kafka-topics.sh --create --topic web2kafka --zookeeper 192.168.5.100:2181 --partitions 1 --replication-factor 1
+  > exit
+                        </pre></li>
+                </li>
+                <li>Build and deploy this web archive. Load this page
+                    <li>E.g. <tt>java -jar ~/payara-micro-4.1.1.164.jar --port 2468 --disablePhoneHome --lite  --deploy  web2kafka.war </tt></li>
+                </li>
+                <li>Check Kafka topic <tt>web2kafka</tt> for content
+                    <li><pre>
+  > vagrant ssh kafka-node-1
+  > cd /opt/kafka_2.11-1.0.0/bin/
+  > ./kafka-console-consumer.sh --zookeeper 192.168.5.100:2181 --topic web2kafka --from-beginning
+                        </pre></li>
+                </li>
+            </ul>
+        </p>
+        
+        <script type="text/javascript">
+            function send() {
+                console.log("Loaded");
+                fetch("data/event/add", {
+                    method: "POST",
+                    body: JSON.stringify(performance.getEntries())
+                }).then(function(response){
+                    console.log(response);
+                });
+            }
+        </script>
+    </body>
+</html>
+

@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<configuration>
+    <property>
+        <name>mapreduce.framework.name</name>
+        <value>yarn</value>
+    </property>
+    <property>
+        <name>mapreduce.jobhistory.intermediate-done-dir</name>
+        <value>/var/hadoop/mr-history/tmp</value>
+    </property>
+    <property>
+        <name>mapreduce.jobhistory.done-dir</name>
+        <value>/var/hadoop/mr-history/done</value>
+    </property>
+</configuration>

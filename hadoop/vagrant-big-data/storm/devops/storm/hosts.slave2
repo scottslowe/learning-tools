@@ -1,0 +1,9 @@
+192.168.10.12 zoo1
+192.168.10.13 zoo2
+192.168.10.14 zoo3
+192.168.10.15 kafka1
+
+192.168.10.17 stormnimbus1
+192.168.10.18 stormslave1
+0.0.0.0 stormslave2
+192.168.10.20 stormslave3
