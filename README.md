@@ -48,3 +48,7 @@ This content is licensed under the MIT License.
 
 
 /Users/huangzhaorongit/.vagrant.d/boxes
+
+http://cloud.centos.org/centos/7/vagrant/x86_64/images/
+
+http://cloud-images.ubuntu.com/xenial/20190212/
