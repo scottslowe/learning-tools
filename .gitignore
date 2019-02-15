@@ -15,3 +15,4 @@ consul-*.config.json
 ssh.cfg
 known_hosts
 .terraform
+.idea
