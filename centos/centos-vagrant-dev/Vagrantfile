@@ -15,7 +15,11 @@ Vagrant.configure("2") do |config|
   # boxes at https://atlas.hashicorp.com/search.
   #config.vm.box = "minimal/centos7"
   #config.vm.box = "centos/7"
-  config.vm.box = "bento/centos-7.4"
+  #config.vm.box = "bento/centos-7.4"
+  config.vm.box = "CentOS7/190101"
+
+  config.vm.box_url = "/Users/huangzhaorongit/Downloads/CentOS-7-x86_64-Vagrant-1901_01.VirtualBox.box"
+
 
   # Disable automatic box update checking. If you disable this, then
   # boxes will only be checked for updates when the user runs
@@ -57,7 +61,7 @@ Vagrant.configure("2") do |config|
   #
   config.vm.provider "virtualbox" do |vb|
     # Display the VirtualBox GUI when booting the machine
-    vb.gui = true
+    #vb.gui = true
 
     # Customize the amount of memory on the VM:
     vb.memory = "6144"
