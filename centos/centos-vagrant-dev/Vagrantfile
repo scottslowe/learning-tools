@@ -74,7 +74,7 @@ Vagrant.configure("2") do |config|
 
   # Enable ssh forwarding
   config.ssh.forward_agent = true
-  config.ssh.forward_x11 = true
+  #config.ssh.forward_x11 = true
 
   # View the documentation for the provider you are using for more
   # information on available options.
@@ -100,72 +100,72 @@ Vagrant.configure("2") do |config|
 
   # Update all packages and install a base set of dependencies,
   # Gnome, Development Tools, etc.
-  config.vm.provision "dependencies", type: "shell", path: "dependencies.sh"
+  #config.vm.provision "dependencies", type: "shell", path: "dependencies.sh"
 
   # config.vm.provision "gnome", type: "shell", path: "gnome.sh"
 
-  config.vm.provision "x11", type: "shell", path: "x11.sh"
+  #config.vm.provision "x11", type: "shell", path: "x11.sh"
 
   # config.vm.provision "mu4e", type: "shell", path: "mu4e.sh", privileged: false
 
   # Install the latest version of Git
-  config.vm.provision "git", type: "shell", path: "git.sh"
+  #config.vm.provision "git", type: "shell", path: "git.sh"
 
   # Download and Install Docker
-  config.vm.provision "docker", type: "shell", path: "docker.sh", privileged: false
+  #config.vm.provision "docker", type: "shell", path: "docker.sh", privileged: false
 
   # Download, Compile and Install Emacs
-  config.vm.provision "emacs", type: "shell", path: "emacs.sh", privileged: false
+  #config.vm.provision "emacs", type: "shell", path: "emacs.sh", privileged: false
 
   # Download and Install Spacemacs
-  config.vm.provision "spacemacs", type: "shell", path: "spacemacs.sh", privileged: false
+  #config.vm.provision "spacemacs", type: "shell", path: "spacemacs.sh", privileged: false
 
   # Download and Install Dot-Emacs
-  config.vm.provision "dot-emacs", type: "shell", path: "dot-emacs.sh", privileged: false
+  #config.vm.provision "dot-emacs", type: "shell", path: "dot-emacs.sh", privileged: false
 
   # Download and Install PlantUML
-  config.vm.provision "plantuml", type: "shell", path: "plantuml.sh", privileged: false
+  #config.vm.provision "plantuml", type: "shell", path: "plantuml.sh", privileged: false
 
   # Download, Compile and Install LanguageTool
-  config.vm.provision "langtool", type: "shell", path: "langtool.sh", privileged: false
+  #config.vm.provision "langtool", type: "shell", path: "langtool.sh", privileged: false
 
   # Download and Install Reveal.js
-  config.vm.provision "reveal", type: "shell", path: "reveal.sh", privileged: false
+  #config.vm.provision "reveal", type: "shell", path: "reveal.sh", privileged: false
 
   # Create the texlive.profile file to allow configuration of Texlive
-  config.vm.provision "shell", path: "texlive.prof.sh"
+  #config.vm.provision "shell", path: "texlive.prof.sh"
 
   # Download and Install Texlive
-  config.vm.provision "texlive", type: "shell", path: "texlive.sh"
+  #config.vm.provision "texlive", type: "shell", path: "texlive.sh"
 
   # Download and Install the Sphinx Documentation Generator
-  config.vm.provision "sphinx", type: "shell", path: "sphinx.sh"
+  #config.vm.provision "sphinx", type: "shell", path: "sphinx.sh"
 
   # Download and Install the Pandoc Documentation Generator
-  config.vm.provision "pandoc", type: "shell", path: "pandoc.sh"
+  #config.vm.provision "pandoc", type: "shell", path: "pandoc.sh"
 
   # Download and Install the Atom editor
-  config.vm.provision "atom", type: "shell", path: "atom.sh", privileged: false
+  #config.vm.provision "atom", type: "shell", path: "atom.sh", privileged: false
 
   # Download and Install Clojure and Leiningen
   # https://leiningen.org/
-  config.vm.provision "lein", type: "shell", path: "lein.sh", privileged: false
+  #config.vm.provision "lein", type: "shell", path: "lein.sh", privileged: false
 
   #Disable "Tracker" as it sucks down too much CPU
   #config.vm.provision "shell", path: "tracker.sh", privileged: false
 
-  config.vm.provision "stumpwm", type: "shell", path: "stumpwm.sh", privileged: false
+  #config.vm.provision "stumpwm", type: "shell", path: "stumpwm.sh", privileged: false
 
-  config.vm.provision "cmatrix", type: "shell", path: "cmatrix.sh", privileged: false
+  #config.vm.provision "cmatrix", type: "shell", path: "cmatrix.sh", privileged: false
 
   # Download and Install Golang
-  config.vm.provision "golang", type: "shell", path: "golang.sh", privileged: false
+  #config.vm.provision "golang", type: "shell", path: "golang.sh", privileged: false
 
   # Download and Install the latest stable version of the Eclipse IDE
   # config.vm.provision "shell", path: "eclipse.sh", privileged: false
 
   # Install all C/C++ dependencies
-  config.vm.provision "cplusplus", type: "shell", path: "cplusplus.sh"
+  #config.vm.provision "cplusplus", type: "shell", path: "cplusplus.sh"
 
   # config.vm.provision "shell", inline: <<-SHELL
   #     systemctl set-default graphical.target
