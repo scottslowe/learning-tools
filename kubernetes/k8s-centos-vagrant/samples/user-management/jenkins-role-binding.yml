@@ -1,0 +1,13 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: jenkins-user
+  namespace: jenkins-namespace
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: jenkins-manager
+subjects:
+- kind: ServiceAccount
+  name: jenkins-user
+  namespace: jenkins-namespace

@@ -1,0 +1,4 @@
+.vagrant
+.kube
+nfs
+tmp

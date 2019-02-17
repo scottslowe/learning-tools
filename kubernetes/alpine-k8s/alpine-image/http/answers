@@ -1,0 +1,16 @@
+KEYMAPOPTS="us us"
+HOSTNAMEOPTS="-n alpine-k8s"
+INTERFACESOPTS="auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet dhcp
+    hostname alpine34
+"
+DNSOPTS="-d local -n 8.8.8.8 8.8.4.4"
+TIMEZONEOPTS="-z UTC"
+PROXYOPTS="none"
+APKREPOSOPTS="/media/cdrom/apks/"
+SSHDOPTS="-c openssh"
+NTPOPTS="-c busybox"
+DISKOPTS="-s 0 -m sys /dev/sda"

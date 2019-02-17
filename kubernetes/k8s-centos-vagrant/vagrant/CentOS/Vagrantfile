@@ -1,0 +1,94 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+require 'ipaddr'
+
+load '../../config.rb'
+
+def nodeIP(ips, id)
+  return ((IPAddr.new ips)|(1+id)).to_s()
+end
+
+image = "sbeliakou/centos"
+
+Vagrant.configure("2") do |config|
+    config.ssh.insert_key = false
+    config.vm.synced_folder ".", "/vagrant", disabled: true
+    config.vm.synced_folder "../../", "/vagrant", 
+        owner: "vagrant", 
+        group: "vagrant"
+
+    (0..$worker_count).each do |index|
+        node_name = (index == 0) ? "k8s-master" : "k8s-worker-%d" % index
+
+        config.vm.define node_name do |node|
+            node.vm.box = image
+            node.vm.hostname = node_name
+            node.vm.network :private_network, ip: nodeIP($cluster_ips, index)
+
+            node.vm.provider :virtualbox do |vb|
+                vb.name = node_name
+                vb.memory = (index == 0) ? $master_memory : $worker_memory
+                vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+                vb.customize ["modifyvm", :id, "--cpuexecutioncap", "#{70/($worker_count+1)}"]
+            end
+
+            node.vm.provision "shell", 
+                name: "Base Installation (scripts/base.sh)",
+                path: "scripts/base.sh"
+
+            node.vm.provision "shell",
+                name: "Master/Worker Installation (scripts/k8s-#{(index == 0) ? 'master' : 'worker'}.sh)",
+                path: "scripts/k8s-#{(index == 0) ? 'master' : 'worker'}.sh", 
+                args: [
+                    "#{nodeIP($cluster_ips, 0)}",
+                    "#{$token}"
+                ]
+
+            if $worker_count == 0
+                node.vm.provision "shell",
+                    name: "Master Isolation (scripts/k8s-master-isolation.sh)",
+                    path: "scripts/k8s-master-isolation.sh"
+            end
+
+            if index == $worker_count
+                node.vm.provision "shell", 
+                    name: "Kubernetes Dashboard (scripts/k8s-dashboard.sh)",
+                    path: "scripts/k8s-dashboard.sh"
+
+                if $metallb
+                node.vm.provision "shell", 
+                    name: "Metall LB (scripts/k8s-metallb.sh)",
+                    path: "scripts/k8s-metallb.sh",
+                    args: [
+                        "#{$metallb_ips}"
+                    ]
+                end
+
+                if $ingress_controller == "nginx"
+                    node.vm.provision "shell", 
+                        name: "Nginx Ingress Controller (scripts/k8s-ingress-nginx.sh)",
+                        path: "scripts/k8s-ingress-nginx.sh",
+                        args: [
+                            "#{$metallb}"
+                        ]
+                end
+
+                if $ingress_controller == "istio"
+                    node.vm.provision "shell", 
+                        name: "Nginx Ingress Controller (scripts/k8s-ingress-istio.sh)",
+                        path: "scripts/k8s-ingress-istio.sh",
+                        args: [
+                            "#{$metallb}"
+                        ]
+                end
+
+                if $prometheus
+                    node.vm.provision "shell", 
+                        name: "Prometheus Monitoring (scripts/k8s-prometheus.sh)",
+                        path: "scripts/k8s-prometheus.sh"
+                end
+            end
+        end
+    end
+end

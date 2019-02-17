@@ -1,0 +1,14 @@
+packer_cache/
+*.box
+output-virtualbox-iso/
+daverun.sh
+output-virtualbox-iso
+packer_virtualbox-iso_virtualbox.box
+Vagrantfile
+Dockerfile
+kubernetes-*
+*.tar.gz
+build.pwi
+build.pwd
+build.hwm
+dave_atlas.credentials

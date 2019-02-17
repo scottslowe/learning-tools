@@ -1,0 +1,60 @@
+## We also create an empty ConfigMap to hold our config
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: vip-configmap
+  namespace: kube-system
+data:
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  labels:
+    app: keepalived-cloud-provider
+  name: keepalived-cloud-provider
+  namespace: kube-system
+spec:
+  replicas: 1
+  revisionHistoryLimit: 2
+  selector:
+    matchLabels:
+      app: keepalived-cloud-provider
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        scheduler.alpha.kubernetes.io/critical-pod: ""
+        scheduler.alpha.kubernetes.io/tolerations: '[{"key":"CriticalAddonsOnly", "operator":"Exists"}]'
+      labels:
+        app: keepalived-cloud-provider
+    spec:
+      containers:
+      - name: keepalived-cloud-provider
+        image: quay.io/munnerz/keepalived-cloud-provider:0.0.1
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: KEEPALIVED_NAMESPACE
+          value: kube-system
+        - name: KEEPALIVED_CONFIG_MAP
+          value: vip-configmap
+        - name: KEEPALIVED_SERVICE_CIDR
+          value: 10.10.0.0/26 # pick a CIDR that is explicitly reserved for keepalived
+        volumeMounts:
+        - name: certs
+          mountPath: /etc/ssl/certs
+        resources:
+          requests:
+            cpu: 200m
+        livenessProbe:
+          httpGet:
+            path: /healthz
+            port: 10252
+            host: 127.0.0.1
+          initialDelaySeconds: 15
+          timeoutSeconds: 15
+          failureThreshold: 8
+      volumes:
+      - name: certs
+        hostPath:
+          path: /etc/ssl/certs

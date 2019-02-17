@@ -1,0 +1,126 @@
+#   http://web-application.kubernetes.example
+#    
+#   [ ingress: "web-application-ingress" ]
+#                      |
+#     [ service: "web-application-svc" ]
+#                      |
+#   [ deployment: "web-application-deployment" ]
+#                      |
+# [ persistentvolumeclaim: "web-application-pvc" ]
+#                      |
+#      [ persistentvolume: "web-application" ]
+#                      |
+#             [ dir: "/mnt/data" ]
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  # RFC 1123, [a-z0-9]([-a-z0-9]*[a-z0-9])?
+  name: devops-ns
+---
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: web-application-pv
+  namespace: devops-ns
+  labels:
+    type: web-application-volume
+  annotations:
+    pv.beta.kubernetes.io/gid: "1234"
+spec:
+  # must consist of lower case alphanumeric characters, '-' or '.', 
+  # and must start and end with an alphanumeric character 
+  # (e.g. 'example.com', 
+  # regex used for validation is '[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*')
+  storageClassName: webapplicationstorage
+  capacity:
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+  hostPath:
+    path: "/mnt/data"
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: web-application-pvc
+  namespace: devops-ns
+  labels:
+    type: web-application-pvc
+spec:
+  storageClassName: webapplicationstorage
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 3Gi
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: web-application-deployment
+  namespace: devops-ns
+  labels:
+    deployment: web-application-deployment
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: web-application
+    spec:
+      volumes:
+      - name: web-application-storage
+        persistentVolumeClaim:
+         claimName: web-application-pvc
+      containers:
+      - name: web-application-container
+        image: nginx:latest
+        ports:
+        - name: http-server
+          containerPort: 80
+        volumeMounts:
+        - mountPath: "/usr/share/nginx/html"
+          name: web-application-storage
+      nodeSelector:
+        team: mtp
+        tool: jenkins
+      initContainers:
+      - name: web-application-container-init
+        image: busybox
+        command: ['sh', '-c', "echo 'Hello from Kubernetes storage (init container)' > /usr/share/nginx/html/index.html"]
+        volumeMounts:
+        - mountPath: "/usr/share/nginx/html"
+          name: web-application-storage
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: web-application-svc
+  namespace: devops-ns
+  labels:
+    svc: web-application-svc
+spec:
+  ports:
+  - name: svc-port
+    port: 30080
+    targetPort: http-server
+  selector:
+    app: web-application
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: web-application-ingress
+  namespace: devops-ns
+  annotations:
+    ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+  - host: web-application.kubernetes.example
+    http:
+      paths:
+      - backend:
+          serviceName: web-application-svc
+          servicePort: svc-port
+

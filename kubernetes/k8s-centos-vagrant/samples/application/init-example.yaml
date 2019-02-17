@@ -1,0 +1,33 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata: 
+  name: init-container
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: init-container
+    spec:
+      containers:
+        - name: application
+          image: busybox
+          command: ["sh", "-c", "echo -n `date`; echo The app is running && sleep 3600"]
+      initContainers:
+        - name: init-container
+          image: busybox
+          command: ["sh", "-c", 'for i in `seq 1 10`; do echo -n `date`; echo $i; sleep 1; done']
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: init-container-svc
+  labels:
+    svc: init-container-svc
+spec:
+  ports:
+  - name: svc-port
+    port: 30080
+    targetPort: 80
+  selector:
+    app: init-container

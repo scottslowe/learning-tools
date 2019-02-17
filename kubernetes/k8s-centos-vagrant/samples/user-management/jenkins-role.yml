@@ -1,0 +1,9 @@
+  kind: Role
+  apiVersion: rbac.authorization.k8s.io/v1
+  metadata:
+    namespace: jenkins-namespace
+    name: jenkins-manager
+  rules:
+  - apiGroups: ["*"] # "" indicates the core API group
+    resources: ["*"]
+    verbs: ["*"]

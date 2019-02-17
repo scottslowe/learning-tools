@@ -1,0 +1,42 @@
+apiVersion: extensions/v1beta1
+kind: DaemonSet
+metadata:
+  name: traefik-ingress-controller-v1
+  namespace: kube-system
+  labels:
+    k8s-app: traefik-ingress-lb
+    kubernetes.io/cluster-service: "true"
+spec:
+  template:
+    metadata:
+      labels:
+        k8s-app: traefik-ingress-lb
+        name: traefik-ingress-lb
+    spec:
+      terminationGracePeriodSeconds: 60
+      containers:
+      - image: containous/traefik
+        name: traefik-ingress-lb
+        imagePullPolicy: Always
+        ports:
+          - containerPort: 80
+            hostPort: 80
+          - containerPort: 443
+            hostPort: 443
+          - containerPort: 8080
+            hostPort: 8080
+        volumeMounts:
+          - mountPath: /etc/traefik
+            name: traefik-volume
+            readOnly: false
+        args:
+        - --web
+        - --kubernetes
+        - --configFile=/etc/traefik/traefik.toml
+        - --logLevel=DEBUG
+      volumes:
+        - hostPath:
+            path: /etc/traefik
+          name: traefik-volume
+      nodeSelector:
+        kubeadm.alpha.kubernetes.io/role: master

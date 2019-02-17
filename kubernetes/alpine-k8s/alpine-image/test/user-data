@@ -1,0 +1,17 @@
+#cloud-config
+
+hostname: testabc
+fqdn: test.local
+manage_etc_hosts: true
+
+# set the locale
+locale: en_GB.UTF-8
+
+# timezone: set the timezone for this instance
+timezone: Europe/London
+
+growpart:
+    mode: auto
+    devices: ["/"]
+    ignore_growroot_disabled: false
+

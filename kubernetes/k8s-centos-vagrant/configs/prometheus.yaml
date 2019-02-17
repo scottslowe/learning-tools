@@ -1,0 +1,35 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  annotations:
+    ingress.kubernetes.io/auth-realm: Authentication Required
+    ingress.kubernetes.io/auth-secret: internal-services-auth
+    ingress.kubernetes.io/auth-type: basic
+    kubernetes.io/ingress.allow-http: "false"
+  name: ingress-monitoring
+  namespace: monitoring
+spec:
+  tls:
+  - hosts:
+    - prometheus.example.com
+    - grafana.example.com
+    secretName: example-tls
+  rules:
+  - host: prometheus.kubernetes.local
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: kube-prometheus
+          servicePort: 9090
+      - path: /alertmanager
+        backend:
+          serviceName: alertmanager
+          servicePort: 9093
+  - host: grafana.kubernetes.local
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: kube-prometheus-grafana
+          servicePort: 3000

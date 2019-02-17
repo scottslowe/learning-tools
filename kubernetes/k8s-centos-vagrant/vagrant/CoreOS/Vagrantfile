@@ -1,0 +1,28 @@
+def workerIP(num)
+  return "192.168.56.#{num+150}"
+end
+
+Vagrant.configure("2") do |config|
+    # config.vm.box = "AntonioMeireles/coreos-stable"
+
+    config.vm.box = "coreos-stable"  
+    config.vm.box_url = "https://stable.release.core-os.net/amd64-usr/current/coreos_production_vagrant_virtualbox.json"
+    
+    config.vm.hostname = "core-master"
+    config.vm.synced_folder ".", "/vagrant", disabled: true
+    config.vm.synced_folder "../", "/vagrant", 
+        owner: "vagrant", 
+        group: "vagrant"
+
+    config.vm.network :private_network, ip: workerIP(0)
+    config.ssh.insert_key = true
+    # config.ssh.forward_agent = true
+
+    config.vm.provider :virtualbox do |v|
+        v.check_guest_additions = false
+
+        v.name = "core-master"
+        v.memory = "2048"
+        v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+    end
+end
