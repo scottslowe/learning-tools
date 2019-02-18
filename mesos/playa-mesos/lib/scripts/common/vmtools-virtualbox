@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -o errexit -o nounset -o pipefail
+
+mkdir -p /tmp/vbox
+VER=$(cat /home/vagrant/.vbox_version)
+mount -o loop /home/vagrant/VBoxGuestAdditions_$VER.iso /tmp/vbox 
+# Unfortunately, this script will exit with an error code if it is unable
+# to install the X11 components. TODO: See if we can improve this.
+sh /tmp/vbox/VBoxLinuxAdditions.run || true
+umount /tmp/vbox
+rmdir /tmp/vbox
+rm /home/vagrant/*.iso

@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+set -o errexit -o nounset -o pipefail
+
+# Disable persistent network interface rules, they tend to be problematic with
+# VM images where the MAC address of the primary interface can change.
+rm /etc/udev/rules.d/70-persistent-net.rules || true
+mkdir /etc/udev/rules.d/70-persistent-net.rules
+rm /lib/udev/rules.d/75-persistent-net-generator.rules || true
+rm -rf /dev/.udev/
+
+# Remove leftover leases
+rm -rf /var/lib/dhcp3/*
+
+# Delay a bit to make dhclient happy
+echo "pre-up sleep 2" >> /etc/network/interfaces

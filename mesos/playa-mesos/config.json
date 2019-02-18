@@ -1,0 +1,8 @@
+{
+    "platform": "virtualbox",
+    "box_name": "playa_mesos_ubuntu_14.04_201601041324",
+    "base_url": "http://downloads.mesosphere.io/playa-mesos",
+    "ip_address": "10.141.141.10",
+    "vm_ram": "2048",
+    "vm_cpus": "2"
+}

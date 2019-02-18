@@ -1,0 +1,46 @@
+#!/bin/bash
+set -e
+set -u
+
+function globals(){
+  readonly CONF_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+  readonly BUILD_ROOT="${CONF_ROOT}/packer"
+  readonly PM_CONFIG="${CONF_ROOT}/config.json"
+  readonly PLATFORM=$(cat "$PM_CONFIG"|python -c 'import json,sys;obj=json.load(sys.stdin);print obj["platform"]')
+  readonly PACKER_CONFIG="${CONF_ROOT}/packer/packer-${PLATFORM}.json"
+}
+
+function prereqs(){
+  hash python  > /dev/null 2>&1 || { echo >&2 "python is required"; exit 1; }
+  hash vagrant > /dev/null 2>&1 || { echo >&2 "vagrant is required"; exit 1; }
+  hash packer  > /dev/null 2>&1 || { echo >&2 "packer is required"; exit 1; }
+}
+
+function remove_box_from_cache(){
+  declare -r box_name=$(cat "$PM_CONFIG"|python -c 'import json,sys;obj=json.load(sys.stdin);print obj["box_name"]')
+  echo "In order to use this box image you must remove any cached instances"
+  echo "from Vagrant with:"
+  echo "  vagrant box remove ${box_name}"
+  read -p "Run this command? " -n 1 -r
+  echo ""
+  if [[ $REPLY =~ ^[Yy]$ ]]
+  then
+    vagrant box remove "$box_name" > /dev/null 2>&1 || true
+    echo "Done"
+  fi
+}
+
+function build(){
+  cd "${BUILD_ROOT}"
+  packer validate -var-file="$PM_CONFIG" "$PACKER_CONFIG"
+  packer build    -var-file="$PM_CONFIG" "$PACKER_CONFIG"
+}
+
+function main(){
+  globals
+  prereqs
+  build
+  remove_box_from_cache
+}
+
+main

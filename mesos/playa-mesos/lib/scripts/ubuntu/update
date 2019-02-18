@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+set -o errexit -o nounset -o pipefail
+
+apt-get update
+
+# ensure the correct kernel headers are installed
+apt-get -y install linux-headers-$(uname -r)

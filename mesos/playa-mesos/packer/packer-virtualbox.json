@@ -1,0 +1,109 @@
+{
+  "builders": [
+    {
+      "boot_command": [
+        "<esc><wait>",
+        "<esc><wait>",
+        "<enter><wait>",
+        "/install/vmlinuz<wait>",
+        " auto<wait>",
+        " console-setup/ask_detect=false<wait>",
+        " console-setup/layoutcode=us<wait>",
+        " console-setup/modelcode=pc105<wait>",
+        " debconf/frontend=noninteractive<wait>",
+        " debian-installer=en_US<wait>",
+        " fb=false<wait>",
+        " initrd=/install/initrd.gz<wait>",
+        " kbd-chooser/method=us<wait>",
+        " keyboard-configuration/layout=USA<wait>",
+        " keyboard-configuration/variant=USA<wait>",
+        " locale=en_US<wait>",
+        " netcfg/get_domain=vm<wait>",
+        " netcfg/get_hostname=mesos<wait>",
+        " noapic<wait>",
+        " preseed/url=http://{{ .HTTPIP }}:{{ .HTTPPort }}/preseed.cfg<wait>",
+        " -- <wait>",
+        "<enter><wait>"
+      ],
+      "boot_wait": "10s",
+      "disk_size": 40960,
+      "guest_additions_path": "VBoxGuestAdditions_{{.Version}}.iso",
+      "guest_os_type": "Ubuntu_64",
+      "http_directory": "http",
+      "iso_checksum": "07e4bb5569814eab41fafac882ba127893e3ff0bdb7ec931c9b2d040e3e94e7a",
+      "iso_checksum_type": "sha256",
+      "iso_url": "{{user `mirror`}}/trusty/ubuntu-14.04.4-server-amd64.iso",
+      "output_directory": "builds/tmp/{{user `box_name`}}",
+      "shutdown_command": "echo 'vagrant'|sudo -S shutdown -P now",
+      "ssh_password": "vagrant",
+      "ssh_port": 22,
+      "ssh_username": "vagrant",
+      "ssh_wait_timeout": "10000s",
+      "type": "virtualbox-iso",
+      "vboxmanage": [
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--memory",
+          "384"
+        ],
+        [
+          "modifyvm",
+          "{{.Name}}",
+          "--cpus",
+          "1"
+        ]
+      ],
+      "virtualbox_version_file": ".vbox_version",
+      "vm_name": "packer-{{user `box_name`}}"
+    }
+  ],
+  "post-processors": [
+    {
+      "output": "builds/{{user `box_name`}}-{{user `platform`}}.box",
+      "type": "vagrant"
+    }
+  ],
+  "provisioners": [
+    {
+      "execute_command": "echo 'vagrant'|{{.Vars}} sudo -S -E bash '{{.Path}}'",
+      "scripts": [
+        "{{user `scripts`}}/ubuntu/update",
+        "{{user `scripts`}}/common/sshd",
+        "{{user `scripts`}}/ubuntu/networking",
+        "{{user `scripts`}}/ubuntu/sudoers",
+        "{{user `scripts`}}/common/vagrant",
+        "{{user `scripts`}}/common/vmtools-virtualbox",
+        "{{user `scripts`}}/ubuntu/python-tools",
+        "{{user `scripts`}}/ubuntu/java"
+      ],
+      "type": "shell"
+    },
+    {
+      "execute_command": "echo 'vagrant'|{{.Vars}} sudo -S -E bash '{{.Path}}' --slave-hostname {{user `ip_address`}}",
+      "scripts": [
+        "{{user `scripts`}}/common/mesosflexinstall"
+      ],
+      "type": "shell"
+    },
+    {
+      "execute_command": "echo 'vagrant'|{{.Vars}} sudo -S -E bash '{{.Path}}'",
+      "scripts": [
+        "{{user `scripts`}}/ubuntu/cleanup",
+        "{{user `scripts`}}/common/minimize"
+      ],
+      "type": "shell"
+    }
+  ],
+  "variables": {
+    "platform": null,
+    "mirror": "http://releases.ubuntu.com",
+    "box_name": null,
+    "base_url": null,
+    "ip_address": null,
+    "vm_ram": null,
+    "vm_cpus": null,
+    "scripts": "../lib/scripts"
+  }
+}
+

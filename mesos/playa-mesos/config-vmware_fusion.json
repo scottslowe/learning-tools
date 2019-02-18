@@ -1,0 +1,8 @@
+{
+    "platform": "vmware_fusion",
+    "box_name": "playa_mesos_ubuntu_14.04",
+    "base_url": "http://downloads.gosddc.io/vagrant/playa-mesos",
+    "ip_address": "10.141.141.10",
+    "vm_ram": "2048",
+    "vm_cpus": "2"
+}
