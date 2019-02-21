@@ -1,0 +1,32 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+$script_provision = <<SCRIPT
+  echo Provisioning...
+    apt-get --yes update
+    apt-get --yes install python-pip python-dev
+    pip install --upgrade https://storage.googleapis.com/tensorflow/linux/cpu/tensorflow-1.6.0rc1-cp27-none-linux_x86_64.whl
+  echo Provisioned!!!
+SCRIPT
+
+Vagrant.configure("2") do |config|
+  # Base box.
+  config.vm.box = "xnerv/desktop-debian-8-amd64.box"
+  
+  # Shared folders.
+  config.vm.synced_folder "./", "/vagrant"
+  
+  # Network config.
+  config.vm.network "forwarded_port", guest: 6006, host: 6006
+
+  # Virtualization provider.
+  config.vm.provider :virtualbox do |vb|
+    # Don't boot with headless mode.
+    vb.gui = true
+ 
+    # Use VBoxManage to customize the VM.
+    vb.customize ["modifyvm", :id, "--memory", "3072"]
+  end
+
+  config.vm.provision "shell", inline: $script_provision, run: "once"
+end
