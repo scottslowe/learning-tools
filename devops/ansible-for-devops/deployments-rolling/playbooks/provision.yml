@@ -1,0 +1,17 @@
+---
+- hosts: nodejs-api
+  become: yes
+
+  vars:
+    nodejs_install_npm_user: root
+    npm_config_prefix: "/usr"
+    nodejs_npm_global_packages:
+      - forever
+    firewall_allowed_tcp_ports:
+      - "22"
+      - "8080"
+
+  roles:
+    - geerlingguy.firewall
+    - geerlingguy.nodejs
+    - geerlingguy.git

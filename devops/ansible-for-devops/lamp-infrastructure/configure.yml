@@ -1,0 +1,5 @@
+---
+- import_playbook: playbooks/varnish/main.yml
+- import_playbook: playbooks/www/main.yml
+- import_playbook: playbooks/db/main.yml
+- import_playbook: playbooks/memcached/main.yml

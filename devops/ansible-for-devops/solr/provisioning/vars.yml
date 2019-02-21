@@ -1,0 +1,10 @@
+---
+# The directory into which Solr will be downloaded for setup.
+download_dir: /tmp
+
+# The directory inside which Solr will be installed.
+solr_dir: /opt/solr
+
+# Solr version and download information.
+solr_version: 6.5.1
+solr_checksum: sha1:2cc43b837743949a46bd7efbab14b43f6d92b4b8

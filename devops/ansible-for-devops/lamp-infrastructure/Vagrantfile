@@ -1,0 +1,79 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+Vagrant.configure("2") do |config|
+  # Base VM OS configuration.
+  config.vm.box = "geerlingguy/centos7"
+  config.ssh.insert_key = false
+  config.vm.synced_folder '.', '/vagrant', disabled: true
+
+  # General VirtualBox VM configuration.
+  config.vm.provider :virtualbox do |v|
+    v.memory = 512
+    v.cpus = 1
+    v.linked_clone = true
+    v.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
+    v.customize ["modifyvm", :id, "--ioapic", "on"]
+  end
+
+  # Varnish.
+  config.vm.define "varnish" do |varnish|
+    varnish.vm.hostname = "varnish.test"
+    varnish.vm.network :private_network, ip: "192.168.2.2"
+  end
+
+  # Apache.
+  config.vm.define "www1" do |www1|
+    www1.vm.hostname = "www1.test"
+    www1.vm.network :private_network, ip: "192.168.2.3"
+
+    www1.vm.provision "shell",
+      inline: "sudo yum update -y"
+
+    www1.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--memory", 256]
+    end
+  end
+
+  # Apache.
+  config.vm.define "www2" do |www2|
+    www2.vm.hostname = "www2.test"
+    www2.vm.network :private_network, ip: "192.168.2.4"
+
+    www2.vm.provision "shell",
+      inline: "sudo yum update -y"
+
+    www2.vm.provider :virtualbox do |v|
+      v.customize ["modifyvm", :id, "--memory", 256]
+    end
+  end
+
+  # MySQL.
+  config.vm.define "db1" do |db1|
+    db1.vm.hostname = "db1.test"
+    db1.vm.network :private_network, ip: "192.168.2.5"
+  end
+
+  # MySQL.
+  config.vm.define "db2" do |db2|
+    db2.vm.hostname = "db2.test"
+    db2.vm.network :private_network, ip: "192.168.2.6"
+  end
+
+  # Memcached.
+  config.vm.define "memcached" do |memcached|
+    memcached.vm.hostname = "memcached.test"
+    memcached.vm.network :private_network, ip: "192.168.2.7"
+
+    # Run Ansible provisioner once for all VMs at the end.
+    memcached.vm.provision "ansible" do |ansible|
+      ansible.playbook = "configure.yml"
+      ansible.inventory_path = "inventories/vagrant/inventory"
+      ansible.limit = "all"
+      ansible.extra_vars = {
+        ansible_ssh_user: 'vagrant',
+        ansible_ssh_private_key_file: "~/.vagrant.d/insecure_private_key"
+      }
+    end
+  end
+end

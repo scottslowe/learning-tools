@@ -1,0 +1,29 @@
+---
+- hosts: all
+  become: yes
+
+  vars_files:
+    - vars.yml
+
+  roles:
+    - geerlingguy.git
+    - geerlingguy.nodejs
+    - geerlingguy.ruby
+    - geerlingguy.passenger
+
+  tasks:
+    - name: Install app dependencies.
+      apt:
+        name:
+          - libsqlite3-dev
+          - libreadline-dev
+          - tzdata
+        state: present
+
+    - name: Ensure app directory exists and is writeable.
+      file:
+        path: "{{ app_directory }}"
+        state: directory
+        owner: "{{ app_user }}"
+        group: "{{ app_user }}"
+        mode: 0755

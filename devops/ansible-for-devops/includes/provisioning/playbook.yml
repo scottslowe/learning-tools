@@ -1,0 +1,22 @@
+---
+- hosts: all
+  become: yes
+
+  vars_files:
+    - vars.yml
+
+  pre_tasks:
+    - name: Update apt cache if needed.
+      apt: update_cache=yes cache_valid_time=3600
+
+  handlers:
+    - import_tasks: handlers/handlers.yml
+
+  tasks:
+    - import_tasks: tasks/common.yml
+    - import_tasks: tasks/apache.yml
+    - import_tasks: tasks/php.yml
+    - import_tasks: tasks/mysql.yml
+    - import_tasks: tasks/composer.yml
+    - import_tasks: tasks/drush.yml
+    - import_tasks: tasks/drupal.yml

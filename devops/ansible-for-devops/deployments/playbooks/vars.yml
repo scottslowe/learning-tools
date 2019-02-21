@@ -1,0 +1,25 @@
+---
+# Variables for our app.
+app_version: 2.0.1
+app_directory: /opt/demo-rails-app
+app_user: www-data
+app_secrets:
+  dev: fe562ec1e21eecc5af4d83f6a157a7
+  test: 4408f36dd290766d2f368fdfcedf4d
+  prod: 9bf801da1a24c9a103ea86a1438caa
+app_environment:
+  RAILS_ENV: production
+
+# Variables for Passenger and Nginx.
+passenger_server_name: 0.0.0.0
+passenger_app_root: /opt/demo-rails-app/public
+passenger_app_env: production
+passenger_ruby: /usr/local/bin/ruby
+
+# Variables for Ruby installation.
+ruby_install_from_source: true
+ruby_download_url: https://cache.ruby-lang.org/pub/ruby/2.6/ruby-2.6.0.tar.gz
+ruby_version: 2.6.0
+
+# Variables for Node.js installation.
+nodejs_install_npm_user: root

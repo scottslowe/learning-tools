@@ -1,0 +1,4 @@
+---
+# Deployments test.
+- import_playbook: ../deployments/playbooks/provision.yml
+- import_playbook: ../deployments/playbooks/deploy.yml

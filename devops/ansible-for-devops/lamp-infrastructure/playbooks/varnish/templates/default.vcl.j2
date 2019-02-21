@@ -1,0 +1,24 @@
+vcl 4.0;
+
+import directors;
+
+{% for host in groups['lamp-www'] %}
+backend www{{ loop.index }} {
+  .host = "{{ host }}";
+  .port = "80";
+}
+{% endfor %}
+
+sub vcl_init {
+  new vdir = directors.random();
+{% for host in groups['lamp-www'] %}
+  vdir.add_backend(www{{ loop.index }}, 1);
+{% endfor %}
+}
+
+sub vcl_recv {
+  set req.backend_hint = vdir.backend();
+
+  # For testing ONLY; makes sure load balancing is working correctly.
+  return (pass);
+}

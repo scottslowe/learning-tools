@@ -1,0 +1,18 @@
+---
+- hosts: lamp-varnish
+  become: yes
+
+  vars_files:
+    - vars.yml
+
+  roles:
+    - geerlingguy.firewall
+    - geerlingguy.repo-epel
+    - geerlingguy.varnish
+
+  tasks:
+    - name: Copy Varnish default.vcl.
+      template:
+        src: "templates/default.vcl.j2"
+        dest: "/etc/varnish/default.vcl"
+      notify: restart varnish

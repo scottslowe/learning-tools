@@ -1,0 +1,38 @@
+---
+- hosts: localhost
+  connection: local
+  gather_facts: False
+
+  tasks:
+    - name: Create new Droplet.
+      digital_ocean:
+        state: present
+        command: droplet
+        name: ansible-test
+        private_networking: yes
+        size_id: s-1vcpu-1gb
+        image_id: centos-7-x64
+        region_id: nyc3
+        # Customize this for your account.
+        ssh_key_ids: 138954
+        # Required for idempotence/only one droplet creation.
+        unique_name: yes
+      register: do
+
+    - name: Add new host to our inventory.
+      add_host:
+        name: "{{ do.droplet.ip_address }}"
+        groups: do
+      when: do.droplet is defined
+      changed_when: False
+
+- hosts: do
+  remote_user: root
+  gather_facts: False
+
+  tasks:
+    - name: Wait for port 22 to become available.
+      local_action: "wait_for port=22 host={{ inventory_hostname }}"
+
+    - name: Install tcpdump.
+      yum: name=tcpdump state=present

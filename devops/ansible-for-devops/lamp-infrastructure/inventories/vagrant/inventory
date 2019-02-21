@@ -1,0 +1,16 @@
+[lamp-varnish]
+192.168.2.2
+
+[lamp-www]
+192.168.2.3
+192.168.2.4
+
+[a4d.lamp.db.1]
+192.168.2.5
+
+[lamp-db]
+192.168.2.5 mysql_replication_role=master
+192.168.2.6 mysql_replication_role=slave
+
+[lamp-memcached]
+192.168.2.7
