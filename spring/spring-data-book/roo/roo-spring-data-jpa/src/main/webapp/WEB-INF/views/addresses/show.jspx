@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:page="urn:jsptagdir:/WEB-INF/tags/form" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+    <page:show id="ps_com_oreilly_springdata_roo_domain_Address" object="${address}" path="/addresses" z="iNq6PRjsvmtmedF4Pnu6/ugMjRQ=">
+        <field:display field="street" id="s_com_oreilly_springdata_roo_domain_Address_street" object="${address}" z="mWOd8gG84qHbRQ3BYncRJvSEbzQ="/>
+        <field:display field="city" id="s_com_oreilly_springdata_roo_domain_Address_city" object="${address}" z="RD8fShlACbIOyDF79V7To8t1nQk="/>
+        <field:display field="country" id="s_com_oreilly_springdata_roo_domain_Address_country" object="${address}" z="bHOnkwsCV/pDq1SMjsXXDXTEnzk="/>
+        <field:display field="customer" id="s_com_oreilly_springdata_roo_domain_Address_customer" object="${address}" z="KHlYAijb0uo4EnTuI3IJCMmTHzQ="/>
+    </page:show>
+</div>

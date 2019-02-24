@@ -1,0 +1,27 @@
+language: java
+cache:
+  directories:
+  - $HOME/.m2
+jdk:
+- oraclejdk8
+sudo: required
+services:
+- docker
+notifications:
+  slack: teamcarnell:zhTADgjsb7yJ5RPEd7LPNFwI
+  email:
+  - carnell28@gmail.com
+  on_success: always
+  on_failure: always
+env:
+  global:
+  - secure: SEOTq7dn1SCVsQ/sGzvetDnHTVep9xTB6JReS5rhZDdfqWId3iqhNb1Gm/10fB0htNmQs3XItQz6nTWy3nIfz0QEMtMQoAs1xVhDu/leuljHsei8ed7eXrPE0x5o7O31e0IQsUa6bURggXZO4SAbqShmTCys4Y9JeV4MKcHeo7JZDqvRxt46qmOoK/IYUb6gapaaSIT1SubChYuYHHYBHG8a4mhBRtIG2iOVJgZNOCRTir16xR4frC9L4ktINnxDHVs+HgGE8nfz5YsZyXKp1mL5MBoqS5RIGUG2lrSz1M3HdRQ3XXrzK7UiM+wdBes5O+z6H5FtEiBqDuF+MtlmenOIQlN10s6A45BN6X+3dJmxH9kquBOTgxC5+WlkwTxmMW4FIo/nR3ISs1ustbg4U4FNXY1Kk6mIh0/20wzUkmsFBc0T6JWHU3f0AFwwNiwgmoqti7aqMtPUtszM8IZksoDfPMH/yYU1N/JAF6VyHRo4toh3JwIkhFAMpHaKWLtqiIpVxr+71/F737Elsf/Y7tIgRV7ySqUBOZMPboJG2Z1dCEt1a5cfCmkEyN+GkXsV56OucRBRVnKCLwlQ/fM4IdjOvCcFXp4KVH8GN5B9A6/8pZkM5CyQTIGjCpDESGVjU6lWYTYRgQIiQKKx1OkNAUcso8+fkcJHl9hI82wm7Vg=
+  - secure: ihTVk+mJYh6abwLWNmaOqsJZcT+a30juKbqiNiFobGCobgDhxkIlfo55TM/DS+yNj+nCTNm7/vwz/f6b5AxnFBUQmN8Km9Kg09kn16sCui0R0YTXzzKbzQd+uyqAx9FpE5YtpS0U5FuMobW/Sqw7pAPJUf2y9xFrmYAa5oawfmqD5ucqO3oxoSZMEmUv3eEFRom5xYbbJJIAsR00QBDDCCMGAPWXBoPlPxp8y2O7U7YK2At+6fSqPmEufRs2IoyhGEsQtlcy9MgJNYK88mHnyRbkJUOKNbdE/u7ZQ1kpY630l26KKEv/29ovQZImTkNMQX+LEDwUuh2JvpAtw5dNjo3vlCCogYk9hUdDA+BJdzo/oRUCqvyNXCmFuXwVk8SpPajStieuDyKXXW1lLF/yJpiaZ5RcvCnRs2TvgomxBOb5Pj9sSF+i90A4Fm/KHzmxfZzYVbSkiUEYUGzVufeBVZrd+zkI8zALyHdQgIyDwEz+lxHvgXeVRaMOjSQTAUgeVyNXQ5t9u+0ms64G7BnBy/WUANsNuzCBDjqpiMD1Aj7iD6otF86kp7rIhaU3MIwK3/ubv6kEqkgMMkmY/DpinO9ViJq/ZZNyW5c0fy+cmPskovuVqIWj++VnHIcSvP7YMsrc9b2xs8s0LOrqzxqgQQ/4q20Zj9jfJ4ISQmWsIRY=
+script:
+  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+  - mvn clean package docker:build
+  - docker push johncarnell/tmx-licensing-service:chapter8
+  - docker push johncarnell/tmx-organization-service:chapter8
+  - docker push johncarnell/tmx-confsvr:chapter8
+  - docker push johncarnell/tmx-eurekasvr:chapter8
+  - docker push johncarnell/tmx-zuulsvr:chapter8

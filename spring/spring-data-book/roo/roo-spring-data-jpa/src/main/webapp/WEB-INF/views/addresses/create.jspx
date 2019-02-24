@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<div xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:field="urn:jsptagdir:/WEB-INF/tags/form/fields" xmlns:form="urn:jsptagdir:/WEB-INF/tags/form" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:spring="http://www.springframework.org/tags" version="2.0">
+    <jsp:directive.page contentType="text/html;charset=UTF-8"/>
+    <jsp:output omit-xml-declaration="yes"/>
+    <form:create id="fc_com_oreilly_springdata_roo_domain_Address" modelAttribute="address" path="/addresses" render="${empty dependencies}" z="OjAdNBBB7j27AdMviQSc+w3Pk6s=">
+        <field:input field="street" id="c_com_oreilly_springdata_roo_domain_Address_street" required="true" z="eP9DIsaW/j4VcMn1LzAv6lIsK5I="/>
+        <field:input field="city" id="c_com_oreilly_springdata_roo_domain_Address_city" required="true" z="a4egyQxu+FMab3OUMfDPQ8ILwhE="/>
+        <field:input field="country" id="c_com_oreilly_springdata_roo_domain_Address_country" required="true" z="TNum4z18m/Gd/zVSOVUc8mfid5c="/>
+        <field:select field="customer" id="c_com_oreilly_springdata_roo_domain_Address_customer" itemValue="id" items="${customers}" path="/customers" z="5ESCv96BTBts2gvHFziZfcjMlWw="/>
+    </form:create>
+    <form:dependency dependencies="${dependencies}" id="d_com_oreilly_springdata_roo_domain_Address" render="${not empty dependencies}" z="qUt+DLyNnz9vjNRbuegjlDeOqcw="/>
+</div>

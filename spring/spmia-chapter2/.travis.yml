@@ -1,0 +1,25 @@
+language: java
+cache:
+  directories:
+  - $HOME/.m2
+jdk:
+- oraclejdk8
+sudo: required
+services:
+- docker
+notifications:
+  slack: teamcarnell:zhTADgjsb7yJ5RPEd7LPNFwI
+  email:
+  - carnell28@gmail.com
+  on_success: always
+  on_failure: always
+env:
+  global:
+  - secure: lG+7cuQG5EqGgZPDKJKfT0+EEEWTWhPDOPS0lCgQKMjYzwS7Y/l14hErcD8PIvvWPux91e0J2ACq30Pz5IQhB56OOmweH8ZlITXkfvfs41Ubli/6LxUdzagRF3zzmNuuolXJ/qCgoReM5ciGlFMhRzYv/UQ6lHKtsro/kdT3RPqnp5ByRtQUWW6ut+2EtC/GiUFdxzD8V5mHo7BV9cDl1fAAH4tnyKpCFZrEUeoQDZ8P3gBpdbxUCd6VkPIgLT8anTkkreo92iQTM7eqXGyKXNYFdrkhP5LDN77aE86d+GzylfgCWNrmf20cgGSVokdTDDMzHEr7aXJ/tCQgw1b8Wd7P+mxVLb1/a3EO5JWxM+59BpGBZsrRgsmLR7/oSnOrowCrVIlzBxhKHzPMel2OPFeyoB5t46QXrKkzp/uhbLaUvI7O3bA0cYJmIymAZ9AWaVmmTUcxiiIW1e/KU46y0Iag7I0c+Hz9ogNLk24Sl2QwRLvRib2EEGfmnNk1uy9tTr9EQNMIDMzGQ8R5pRy2pRvkcB4/YziUKOOpHGzYLebhAe2g1Bh8D+Il47QeVUQhpjNamTXDCf3Kr9G10vzrJrp07Ps6gOKm3jErwfeaYZCqkVO4yZEhO4uRvkChUCiE+q5EQJBTxyaeq9FLyY1rlvEN/kZIE+qTJAJPNffCDTg=
+  - secure: qMXqGfpkyzbiGatxbVOkZWmoakgf9dBkQ8OZpHz/hU645j8rHAcgTyKpzq9mu6hE2Rom4t57fM+UCgGO7uv87ROvqdCKE31kVnu1aiS3FFf4AZ8NX6LKjqIwZTo6S3SF6+evz2pEhW9/nJhOanNroLU4HNBrRMwjGehPxGAjEYYfbUnENU+mwOjnglZGoD/Hp24wy8flXj4aCNdktuVrwQBwwXLeeEtRzztPinAQaBM6cbDnUpjcS6zHdos6VXCUUJS49X+WTXKbSWicXT9txErZfJV0ZoQKoSKRMY7I57q2fYxloaJrRQ1jUhDp8vh+3NoxRFs42uwi7dDa1Usvv5NGtrFeOXatdKrDcdWPOK7NWK099BIvbyfl/Q3+fhompECRmbozqDQAEP4CCyc3YLgx6R2PMIdhY20NMPzU1Bs1rohViSRuObvrwgjKXlbTVQXSM/xUmu9kcFyOcuQX6KdV61qqDUVC3p7Q+JP6c8+937B6dPI66HLPMB85nPQcQIgEIhWR9mcrB3UxPeHZu2gNuUZm2hdLX4uVkEkmh070eiWLJvgvl2joxcsjF0fqM9aXHbvGFc9HbFMCAHy+5LsisJTTozT/edpTadz6S9wVuKG5SuPGCo8+1/ROpRVQA7zq5moy9OqfxsH5wD49qoIddpDTuN/NNcUs3QRvBBQ=
+  matrix:
+  - TMX_DOCKER_IMAGE=johncarnell/tmx-licensing-service:chapter2
+script:
+- docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+- mvn clean package docker:build
+- docker push $TMX_DOCKER_IMAGE

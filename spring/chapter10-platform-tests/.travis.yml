@@ -1,0 +1,22 @@
+language: python
+sudo: required
+install: pip install httplib2
+before_install:
+- sudo curl -k -o /usr/local/bin/ecs-cli https://s3.amazonaws.com/amazon-ecs-cli/ecs-cli-linux-amd64-latest
+- sudo chmod +x /usr/local/bin/ecs-cli
+notifications:
+  email:
+  - carnell28@gmail.com
+  on_success: always
+  on_failure: always
+env:
+  global:
+  - secure: JFgKN3gcLcM166+6uMIEUhU0LGZyiFRM6n0o9HTKJR9rKpmNKNH5QR5vf8PW5WGZyhNE9gBt502bPU2Odnf2qieYc0La2SHZodJzwdhu66MHaQ/79iHvZkR0BYQRsQsB15q2ZZgXMFKuxloytO1A4kdQgGLP0M/1+kVeyOlCHQYw8k6u/robuJ/gIQkz9GvwTRkv3ytk7STatya4/XBT0PE5BIBta/KL+nnBAqoWsRe3iAsopWo77qLqXpTK3FmzhGBpRo6LwCYDDCClqHVzWnubNwV0p4AAGs/r7eNjFt1wcNADeRKo+UdXIGz08XtWbt5293AywlR9tDD+FtHfUMeqEq1nwCkbx5Ay//QCwkkFCEuK+bNFGwo0h1QpiBEcN/0sNVTtIxngLo1BDN/vS2uJfz6wkiy5h0dQmuurQtwe14mkNh9yZ5QnktVKAJzbm+L8T0snBSHMZPYYXDRudpjIaeWAT/cDZUJmSKlcom+FN2iat/rQObaOvGjNzXEg59SmEGRqYjUYnTcWsE89CxXwBKYhNi4N9RY5bxqioOo4yAF88AbZRlsHDtmoeZctlXtNSoqSrgHyKRTns4YjaKCP3zddtzyOJvBoOfQvLtE3ZXBTVR2WEaPUFbbQLMAcYaGMJ4UPvWw4y1ogC3TMXW3lYDJQdeG/nnK6YRKNq78=
+  - secure: MQDB9s99Vee4jLbwWhQb/VlpGOon+b932hw53RCuXvrGxJK4UcSgVb7SibHSOfO989indY65G742OjY9x7ku1Em5UIGV5b8Xta2AjQtBERqYy2wcq2j9jbnsXZWn34Y6mwQD91coyYFd6C1Mk7ypY726+4owed1c/IHxdxIxe67V9x5/RoVhNaMymTIxBxwo6TRWQvORMuIQDo/Gu+DW0UHWpi16b8fFOFskdVrJUXsPbB4+dsuPMjcZwDQ2b4hFl6zuz3iCzLtvyHL3h+GcG0MG+lpHvYqlU1r7nz1S9Q9G4671I1C7VInzleHSubpPx+4cxERiSnXre9nyx6G4X91WdZgh0c91S+yWfclOjWrEF8YduXUhaCj/JaKqaE5ZyVfclhFghqedmspYiFsDBzO86zMryKWvnY8ZuvVsu25tTeGgW5hfl3p7obZGQugHbEBJqW9aw/LRMdD+iZm2dzDWgTUYkXmEc6+Mv3ZdNfJ7+p1AINKiZxhvx9H8sbXNC4b2Q7uyfrJeVO3cae8qP8NbHccsQpusDPvgicdxRBKmQHEObCYpQIKhCrIQ75Q1kDpRMvpv3eLWzDwODUYe/EpwrL2NDTxrRm5rqbN6/nOZAFRSOdBdiudFNBT3U0Es9ppECHmQgm2iyDHt7A5C6ofqhek8XUtbrFp+9Tx8CGk=
+script:
+  - echo "Sleeping 60 seconds to let containers warm up"
+  - sleep 60
+  - echo "Beginning platform tests"
+  - python test_config_server.py
+  - python test_eureka_server.py
+  - python test_zuul_service.py

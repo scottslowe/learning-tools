@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans 
+    xmlns="http://www.springframework.org/schema/hadoop"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:batch="http://www.springframework.org/schema/batch"
+	xsi:schemaLocation="http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/hadoop http://www.springframework.org/schema/hadoop/spring-hadoop.xsd">
+
+
+	<!-- required since Job is a class not an interface -->
+	<beans:bean class="org.springframework.batch.core.scope.StepScope">
+		<beans:property name="proxyTargetClass" value="true"/>
+	</beans:bean>
+	
+	
+	<batch:job id="job1">
+		<batch:step id="import" next="wordcount">
+			<batch:tasklet ref="script-tasklet"/>
+		</batch:step>
+			
+		<batch:step id="wordcount">
+			<batch:tasklet ref="wordcount-tasklet" />
+		</batch:step>
+	</batch:job>
+	
+	
+	
+
+	<job-tasklet id="wordcount-tasklet" job-ref="wordcount-job"/>
+
+	<job id="wordcount-job" input-path="${wordcount.input.path:/user/gutenberg/input/word/}"
+		output-path="${wordcount.output.path:/user/gutenberg/output/word/}" 
+		mapper="org.apache.hadoop.examples.WordCount.TokenizerMapper"
+		reducer="org.apache.hadoop.examples.WordCount.IntSumReducer"
+		validate-paths="false" />
+
+    <script-tasklet id="script-tasklet">
+        <script location="cp-data.js">
+            <property name="inputPath" value="${wordcount.input.path}" />
+            <property name="outputPath" value="${wordcount.output.path}" />
+            <property name="localResource" value="${local.data}" />
+        </script>
+    </script-tasklet>
+
+</beans:beans>

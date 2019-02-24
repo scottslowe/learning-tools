@@ -1,0 +1,71 @@
+version: '2'
+services:
+  eurekaserver:
+     image:   johncarnell/tmx-eurekasvr:chapter4
+     ports:
+       - "8761:8761"
+  configserver:
+      image: johncarnell/tmx-confsvr:chapter4
+      ports:
+         - "8888:8888"
+      environment:
+         EUREKASERVER_URI: "http://eurekaserver:8761/eureka/"
+         EUREKASERVER_PORT: "8761"
+         ENCRYPT_KEY:       "IMSYMMETRIC"
+  # configserver2:
+  #     image: johncarnell/tmx-confsvr:chapter4
+  #     ports:
+  #        - "8889:8889"
+  #     links:
+  #         - "eurekaserver:eurekaserver"
+  #     environment:
+  #       EUREKASERVER_URI: "http://eurekaserver:8761/eureka/"
+  #       EUREKASERVER_PORT:8761
+  #       ENCRYPT_KEY:       "IMSYMMETRIC"
+  database:
+      image: postgres:9.5
+      ports:
+      - "5432:5432"
+      environment:
+        - POSTGRES_USER=postgres
+        - POSTGRES_PASSWORD=p0stgr@s
+        - POSTGRES_DB=eagle_eye_local
+  licensingservice:
+      image: johncarnell/tmx-licensing-service:chapter4
+      ports:
+        - "8080:8080"
+      environment:
+        PROFILE: "default"
+        SERVER_PORT: "8080"
+        CONFIGSERVER_URI: "http://configserver:8888"
+        EUREKASERVER_URI: "http://eurekaserver:8761/eureka/"
+        EUREKASERVER_PORT:   "8761"
+        CONFIGSERVER_PORT:   "8888"
+        DATABASESERVER_PORT: "5432"
+        ENCRYPT_KEY:       "IMSYMMETRIC"
+  organizationservice:
+      image: johncarnell/tmx-organization-service:chapter4
+      ports:
+        - "8085:8085"
+      environment:
+        PROFILE: "default"
+        SERVER_PORT: "8085"
+        CONFIGSERVER_URI: "http://configserver:8888"
+        EUREKASERVER_URI: "http://eurekaserver:8761/eureka/"
+        EUREKASERVER_PORT:   "8761"
+        CONFIGSERVER_PORT:   "8888"
+        DATABASESERVER_PORT: "5432"
+        ENCRYPT_KEY:       "IMSYMMETRIC"
+  organizationservice2:
+      image: johncarnell/tmx-organization-service:chapter4
+      ports:
+        - "8086:8086"
+      environment:
+        PROFILE: "default"
+        SERVER_PORT: "8085"
+        CONFIGSERVER_URI: "http://configserver:8888"
+        EUREKASERVER_URI: "http://eurekaserver:8761/eureka/"
+        EUREKASERVER_PORT:   "8761"
+        CONFIGSERVER_PORT:   "8888"
+        DATABASESERVER_PORT: "5432"
+        ENCRYPT_KEY:       "IMSYMMETRIC"

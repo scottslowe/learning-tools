@@ -1,0 +1,16 @@
+*~
+#*
+*#
+.#*
+.classpath
+.project
+.settings
+.springBeans
+.gradle
+build
+bin
+/target/
+git.properties
+.idea
+*.iml
+.factorypath

@@ -1,0 +1,22 @@
+// Spring Roo 1.2.2.RELEASE [rev 7d75659] log opened at 2012-07-28 23:34:35
+project --topLevelPackage com.oreilly.springdata.roo --projectName roo-spring-data-jpa --java 6 --packaging WAR
+jpa setup --provider HIBERNATE --database HYPERSONIC_IN_MEMORY 
+entity jpa --class ~.domain.Address --activeRecord false
+field string --fieldName street --notNull
+field string --fieldName city --notNull
+field string --fieldName country --notNull
+embeddable --class ~.domain.EmailAddress
+field string --fieldName address --notNull
+entity jpa --class ~.domain.Customer --activeRecord false
+field string --fieldName firstName --notNull
+field string --fieldName lastName --notNull
+field embedded --fieldName emailAddress --type ~.domain.EmailAddress
+field set --fieldName addresses --type ~.domain.Address --cardinality ONE_TO_MANY
+field reference --fieldName customer --type ~.domain.Customer --class ~.domain.Address
+repository jpa --interface ~.repository.AddressRepository --entity ~.domain.Address
+repository jpa --interface ~.repository.CustomerRepository --entity ~.domain.Customer
+web mvc setup
+web mvc scaffold --class ~.web.AddressController --backingType ~.domain.Address
+web mvc scaffold --class ~.web.CustomerController --backingType ~.domain.Customer
+exit
+// Spring Roo 1.2.2.RELEASE [rev 7d75659] log closed at 2012-07-28 23:59:24

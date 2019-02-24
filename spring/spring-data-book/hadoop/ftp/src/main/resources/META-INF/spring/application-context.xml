@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:file="http://www.springframework.org/schema/integration/file"
+	xmlns:hdp="http://www.springframework.org/schema/hadoop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:hadoop="http://www.springframework.org/schema/hadoop"
+	xmlns:int-ftp="http://www.springframework.org/schema/integration/ftp"
+	xsi:schemaLocation="http://www.springframework.org/schema/integration/ftp http://www.springframework.org/schema/integration/ftp/spring-integration-ftp-2.1.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+		http://www.springframework.org/schema/integration/file http://www.springframework.org/schema/integration/file/spring-integration-file.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/hadoop http://www.springframework.org/schema/hadoop/spring-hadoop.xsd
+		http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/integration
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd">
+
+
+	<context:property-placeholder location="ftp.properties,hadoop.properties"/>
+
+	<hdp:configuration>
+		fs.default.name=${hd.fs}
+	</hdp:configuration>
+	
+	<bean id="ftpClientFactory" class="org.springframework.integration.ftp.session.DefaultFtpSessionFactory">
+		<property name="host" value="${ftp.host}"/>
+		<property name="port" value="${ftp.port}"/>
+		<property name="username" value="${ftp.username}"/>
+		<property name="password" value="${ftp.password}"/>
+	</bean>
+	
+	<int:channel id="filesIn"/>
+	
+	<int-ftp:inbound-channel-adapter id="inFtpAdapter"
+				channel="filesIn"  
+				cache-sessions="false"
+				session-factory="ftpClientFactory"
+				filename-pattern="*.txt" 
+				auto-create-local-directory="true"
+				delete-remote-files="false"
+				remote-directory="${ftp.remoteDirectory}"				
+				local-directory="${ftp.localDirectory}">
+	    <int:poller fixed-rate="5000"/>
+	</int-ftp:inbound-channel-adapter>
+
+	
+	<int:outbound-channel-adapter id="outHdfsAdapter" channel="filesIn" ref="fsShellWritingMessagingHandler"/>
+	
+	<bean id="fsShellWritingMessagingHandler" class="com.oreilly.springdata.hadoop.ftp.FsShellWritingMessageHandler">
+		<constructor-arg value="${ftp.destinationHdfsDirectory}"/>
+		<constructor-arg ref="hadoopConfiguration"/>
+	</bean>
+	
+	<!-- 
+	<int:service-activator input-channel="filesIn"
+		                   output-channel="filesOut"
+                           ref="handler"/>
+	
+	<bean id="handler" class="com.oreilly.springdata.hadoop.ftp.CustomFileHandler"/>
+	-->
+	<!-- inner not working
+	<int:outbound-channel-adapter id="filesIn">
+		<bean class="com.oreilly.springdata.hadoop.ftp.FsShellWritingMessageHandler">
+			<constructor-arg value="/user/mpollack/tmp/output"/>
+			<constructor-arg ref="hadoopConfiguration"/>
+		</bean>
+	</int:outbound-channel-adapter>
+	-->
+	
+
+	
+	
+
+
+</beans>

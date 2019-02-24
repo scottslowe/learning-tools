@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:hdp="http://www.springframework.org/schema/hadoop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:int-stream="http://www.springframework.org/schema/integration/stream"
+	xmlns:int-ip="http://www.springframework.org/schema/integration/ip"
+	xmlns:int-jmx="http://www.springframework.org/schema/integration/jmx"
+	xmlns:int-http="http://www.springframework.org/schema/integration/http"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:util="http://www.springframework.org/schema/util"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xsi:schemaLocation="http://www.springframework.org/schema/integration/http http://www.springframework.org/schema/integration/http/spring-integration-http-2.2.xsd
+		http://www.springframework.org/schema/integration/ip http://www.springframework.org/schema/integration/ip/spring-integration-ip.xsd
+		http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.1.xsd
+		http://www.springframework.org/schema/integration/jmx http://www.springframework.org/schema/integration/jmx/spring-integration-jmx.xsd
+		http://www.springframework.org/schema/integration/stream http://www.springframework.org/schema/integration/stream/spring-integration-stream-2.1.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.1.xsd
+		http://www.springframework.org/schema/hadoop http://www.springframework.org/schema/hadoop/spring-hadoop.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd">
+
+
+
+	<import resource="controlbus-context.xml"/>
+	
+	<context:property-placeholder location="classpath:hadoop.properties,classpath:syslog.properties"/>
+	
+	<hdp:configuration register-url-handler="false">
+		fs.default.name=${hd.fs}
+	</hdp:configuration>
+	
+	<bean id="hadoopFs" class="org.springframework.data.hadoop.fs.FileSystemFactoryBean">
+		<property name="configuration" ref="hadoopConfiguration"/>
+	</bean>
+	
+ 	<int-ip:tcp-connection-factory id="syslogListener" 
+  								   type="server"
+  								   port="${syslog.tcp.port}"
+  								   deserializer="lfDeserializer" />
+
+    <int-ip:tcp-inbound-channel-adapter id="tcpAdapter" channel="syslogChannel" connection-factory="syslogListener" />
+
+ 	<bean id="lfDeserializer" class="com.oreilly.springdata.integration.ip.syslog.ByteArrayLfSerializer"/>
+		
+	<int:chain id="TLHadoop" input-channel="syslogChannel">
+	  <int:transformer ref="sysLogTransformer"/>
+      <int:object-to-string-transformer/>
+      <int:outbound-channel-adapter ref="hdfsWritingMessageHandler"/>
+	</int:chain>
+	
+	
+    <bean id="sysLogTransformer" class="com.oreilly.springdata.integration.ip.syslog.SyslogTransformer" />
+	 
+	<bean id="hdfsWritingMessageHandler" class="com.oreilly.springdata.hadoop.streaming.HdfsWritingMessageHandler">
+		<constructor-arg ref="hdfsWriterFactory"/>
+	</bean>
+	
+	<bean id="hdfsWriterFactory" class="com.oreilly.springdata.hadoop.streaming.HdfsTextFileWriterFactory">
+		<constructor-arg ref="hadoopFs"/>
+	    <property name="basePath" value="${syslog.hdfs.basePath}"/>
+		<property name="baseFilename" value="${syslog.hdfs.baseFilename}"/>
+		<property name="fileSuffix" value="${syslog.hdfs.fileSuffix}"/>
+		<property name="rolloverThresholdInBytes" value="${syslog.hdfs.rolloverThresholdInBytes}"/>
+	</bean>
+
+</beans>

@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: specialroutesservice
+  profiles:
+    active:
+      default
+  cloud:
+    config:
+      enabled: true

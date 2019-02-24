@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:batch="http://www.springframework.org/schema/batch"
+	xmlns:hdp="http://www.springframework.org/schema/hadoop"
+	xmlns:mongo="http://www.springframework.org/schema/data/mongo"	
+	xsi:schemaLocation="http://www.springframework.org/schema/beans 
+	http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+	http://www.springframework.org/schema/batch 
+	http://www.springframework.org/schema/batch/spring-batch-2.1.xsd
+	http://www.springframework.org/schema/data/mongo http://www.springframework.org/schema/data/mongo/spring-mongo.xsd	
+	http://www.springframework.org/schema/hadoop http://www.springframework.org/schema/hadoop/spring-hadoop.xsd">
+
+
+
+	<!--  TODO copy part-00000 files from ./data directory to hdfs  -->
+	
+	<bean id="dataSource" class="org.springframework.jdbc.datasource.SingleConnectionDataSource">
+		<property name="driverClassName" value="org.h2.Driver" />
+		<property name="url" value="jdbc:h2:tcp://localhost/mem:sbia_ch02" />
+		<property name="username" value="sa" />
+		<property name="password" value="" />
+		<property name="suppressClose" value="true" />
+	</bean>
+		
+	<job id="exportProducts" xmlns="http://www.springframework.org/schema/batch">
+		<step id="readWriteProducts">
+			<tasklet>
+				<chunk reader="hdfsReader" processor="processor" writer="jdbcWriter" commit-interval="3" skip-limit="5">
+					<skippable-exception-classes>
+						<include class="org.springframework.batch.item.file.FlatFileParseException" />
+					</skippable-exception-classes>
+				</chunk>
+				<listeners>
+					<listener ref="jdbcSkipListener" />
+				</listeners>
+			</tasklet>			
+		</step>
+	</job>
+	
+	
+	<bean id="jdbcSkipListener" class="com.oreilly.springdata.batch.item.DatabaseSkipListener">
+		<constructor-arg name="datasource" ref="dataSource" />
+	</bean>
+   <!-- 
+	<bean class="org.springframework.batch.core.scope.StepScope">
+		<property name="proxyTargetClass" value="true"/>
+	</bean>
+	
+	-->
+	
+	<bean id="hdfsReader" class="org.springframework.batch.item.file.MultiResourceItemReader" scope="step" >
+		<property name="resources" value="#{jobParameters['hdfsSourceDirectory']}"/>
+		<!-- register scope step but can't proxy  org.springframework.batch.item.file.MultiResourceItemReader
+		<property name="resources" value="#{jobParameters['hdfsSourceDirectory']}"/>
+		-->
+		<property name="delegate" ref="flatFileItemReader"/>
+	</bean>
+	
+	<bean id="flatFileItemReader" class="org.springframework.batch.item.file.FlatFileItemReader">
+		<property name="lineMapper">
+			<bean class="org.springframework.batch.item.file.mapping.DefaultLineMapper">
+				<property name="lineTokenizer">
+					<bean class="org.springframework.batch.item.file.transform.DelimitedLineTokenizer">
+						<property name="names" value="id,name,description,price" />
+					</bean>
+				</property>
+				<property name="fieldSetMapper">
+					<bean class="com.oreilly.springdata.batch.item.file.ProductFieldSetMapper"/>
+				</property>
+				<!-- 
+					<bean class="com.manning.sbia.ch01.batch.ProductFieldSetMapper" />
+				</property>
+				-->
+			</bean>
+		</property>
+	</bean>
+	
+		
+	<bean id="processor" class="com.oreilly.springdata.batch.item.ProductProcessor"/>
+ 
+	
+	<!-- 
+	<bean id="productFieldSetMapper" class="org.springframework.batch.item.file.mapping.BeanWrapperFieldSetMapper">
+		<property name="prototypeBeanName" value="product"/>	
+	</bean>
+	
+	<bean id="product" class="com.oreilly.springdata.batch.domain.Product" scope="prototype"/>
+	-->
+	
+	<bean id="jdbcWriter" class="org.springframework.batch.item.database.JdbcBatchItemWriter">
+		<property name="itemSqlParameterSourceProvider">
+			<!-- 
+			<bean class="com.oreilly.springdata.batch.item.database.FieldSetSqlParameterSourceProvider"/>
+			-->
+			<bean class="org.springframework.batch.item.database.BeanPropertyItemSqlParameterSourceProvider"/>			
+		</property>
+		<property name="sql" value="INSERT INTO PRODUCT (ID, NAME, PRICE) VALUES (:id, :name, :price)"/>
+		<property name="dataSource" ref="dataSource"/>
+	</bean>
+	
+	
+	<bean id="writer" class="com.manning.sbia.ch01.batch.ProductJdbcItemWriter">
+		<constructor-arg ref="dataSource" />
+	</bean>
+	
+	<!-- 
+	<bean id="mongoWriter" class="com.oreilly.springdata.batch.item.mongodb.MongoItemWriter">
+  	  <constructor-arg ref="mongoTemplate"/>
+  	  <property name="collectionName" value="products"/>
+  	</bean>
+  	
+  	<bean id="mongoTemplate" class="org.springframework.data.mongodb.core.MongoTemplate">
+	  	<constructor-arg name="mongoDbFactory" ref="mongoDbFactory"/>	  	
+	  	<constructor-arg name="mongoConverter" ref="mappingConverter"/>  	
+  	</bean>
+  	
+  	  	
+	<mongo:mongo host="localhost" port="27017"/>
+  	<mongo:db-factory dbname="test"/>
+  	  	
+  	<mongo:mapping-converter>
+	  <mongo:custom-converters>	  
+	    <mongo:converter>
+	      <bean class="com.oreilly.springdata.batch.item.mongodb.FieldSetConverter"/>
+	    </mongo:converter>	    
+	  </mongo:custom-converters>
+	</mongo:mapping-converter>
+  	-->
+  
+
+</beans>

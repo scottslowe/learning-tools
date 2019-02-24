@@ -1,0 +1,29 @@
+language: java
+cache:
+  directories:
+  - $HOME/.m2
+jdk:
+- oraclejdk8
+sudo: required
+services:
+  - docker
+notifications:
+  slack: teamcarnell:zhTADgjsb7yJ5RPEd7LPNFwI
+  email:
+  - carnell28@gmail.com
+  on_success: always
+  on_failure: always
+env:
+  global:
+  - secure: tNcrHZo8APi0tTjjbwd0l6XTOE5Hvb/sNX34OEpgu+LAZt/75lO6ZMzav0f+7bwXAe3t0DN2nPcfP1v/mq1hW2yACm0z7Ndkisemxg1HtNg1SWljY5t5vLSB/ReTPFMqheuX/qk5PiLOGpdNqzx6c7Ux8euIuXKZinf2jR3PZCyisq6iS77EArGt8Ux5Mx/8SeqVrst83xgrCTy5rtr9LwKoAhJiaHnkCfPdL9SBubIDLd/raG8QyjqGc36kTk2+a9mTpZwmLjT+ZeYKB8K+WD8trhf1PZ2slPgFgeGKaRGtC4Gh5V/O5UXT2kh11Pk4btnnY3+UIZpXiNFxDNXpa7N0sx3SlNI60wGYinRyauvXF2WZMQqbAEmFbDX/dtrdav/UNBXYkLHI26EajzHjwanEC7dGzUnyc8TDHXtHLxsFLirz3SrkwAuZ4zoF2S25Me3/OPQxPjQzFMNPwvygXH8mjEuQusdkiKIcSz6mHJLWcDTFMAOJ42pelgBf6LC3vdZFgCRzUJNTyjTKSkUKQjzC08OTaHaiQJ83V9xW0e66X942ZRRbumqprmLN7VvQDYZsEqbz62iA40asrtzDsk5guFRQULLbct1lu00nggj0OGlLhaWF7lNoRIDGO4G2Vumm4gWZLLkL/ocLkO0iL3YwgJI3sMFwJj+wfrQnJeM=
+  - secure: sJ739GpPg3CQHV2OnFaSnzncXJjMwbK1kPLrYZYcYWWvYlDuSXnTAJdu+QGhPcth2mkXPN9326edAgc3sbV7qKyZz7atiFLhKOZ0n4AwcgC1POKkgBJ8qPSIzkg29WpzbCDHy4JjUg7AZgHNnX1iIN0mYlIuu//hdLcZu1Q/Vjs3FNi8eQICI38C/99FqYWMQIEOwl2gY0fbfcsjczL8YLkKAsOaKewYUCAImSXG0/99oE7H3qgJ5DLv+Hq6rWZ7cT3oSrcYlCaPEcmf3/2ij93m7J08Gu9h0Hs5Rtmtau+Tuf1oPBe6fgkIwHkyaVoSD57TJo/L5SONZF0d4OGo+LIXicfUN0xkv38ltF+Do2/1dRbGt/awXirjN/WCS4QnK/pxiSfxjIuMO6rwYt4uBiiyqNDHwKY+8yv8Kr9SxgLpofIEKiINinrc4Jf/I9UFZlux+qRFLFvD1+wnFslwVf036NgZmiiLzNAthvqRkS09h4g+lAvnLi8/VIEl2MZhyWz5z4Atz6uz2EIA8XGdXmmBEq9q3slyf6hiZ5oNnOxy24qZgZbiw2Brjzkijb0nPOzmtcG/epXitceaK2BosRbA5HAuBkN6wXyVUwk/e9pbIIlxXVe+AjK5KQQXSFLK3aU27G4fta5YjbruElHN17hATSfD3vf2/PREHW2QkDA=
+script:
+  - docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+  - mvn clean package docker:build
+  - docker push johncarnell/tmx-licensing-service:chapter6
+  - docker push johncarnell/tmx-organization-service:chapter6
+  - docker push johncarnell/tmx-orgservice-new:chapter6
+  - docker push johncarnell/tmx-confsvr:chapter6
+  - docker push johncarnell/tmx-eurekasvr:chapter6
+  - docker push johncarnell/tmx-zuulsvr:chapter6
+  - docker push johncarnell/tmx-specialroutes-service:chapter6

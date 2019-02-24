@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:int="http://www.springframework.org/schema/integration"
+	xmlns:file="http://www.springframework.org/schema/integration/file"
+	xmlns:hdp="http://www.springframework.org/schema/hadoop"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:hadoop="http://www.springframework.org/schema/hadoop"
+	xsi:schemaLocation="http://www.springframework.org/schema/integration http://www.springframework.org/schema/integration/spring-integration.xsd
+		http://www.springframework.org/schema/integration/file http://www.springframework.org/schema/integration/file/spring-integration-file.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/hadoop http://www.springframework.org/schema/hadoop/spring-hadoop.xsd
+		http://www.springframework.org/schema/context/spring-context.xsd http://www.springframework.org/schema/integration
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.1.xsd">
+
+
+	<context:property-placeholder location="hadoop.properties,polling.properties"/>
+
+	<hdp:configuration id="hadoopConfiguration">
+		fs.default.name=${hd.fs}
+	</hdp:configuration>
+	
+	<int:channel id="filesIn"/>
+	
+	<file:inbound-channel-adapter id="inFileAdapter"
+								  channel="filesIn"
+	                              directory="${polling.directory}" 
+	                              filename-pattern="${polling.fileNamePattern}">
+	                              
+		<int:poller id="poller" fixed-delay="${polling.fixedDelay}"  />
+	</file:inbound-channel-adapter>
+
+
+	<int:outbound-channel-adapter id="outHdfsAdapter" 
+								  channel="filesIn"
+								  ref="fsShellWritingMessagingHandler"/>
+	
+	<bean id="fsShellWritingMessagingHandler" 
+	      class="com.oreilly.springdata.hadoop.filepolling.FsShellWritingMessageHandler">
+		<constructor-arg value="${polling.destinationHdfsDirectory}"/>
+		<constructor-arg ref="hadoopConfiguration"/>
+	</bean>
+	
+
+	<!-- 
+	<int:service-activator input-channel="filesIn"
+						   output-channel="filesOut"
+	                       ref="handler"/>
+
+	<bean id="handler" class="com.oreilly.springdata.hadoop.filepolling.CustomFileHandler"/>
+	-->
+	
+		
+
+	
+	<int:channel id="loggingChannel">
+		<int:queue/>
+		<int:interceptors>
+			<int:wire-tap channel="logger"/>
+		</int:interceptors>
+	</int:channel>	
+	<int:logging-channel-adapter id="logger" level="INFO"/>
+	
+	
+	
+</beans>

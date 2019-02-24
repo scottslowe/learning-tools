@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/hadoop"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	  http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	  http://www.springframework.org/schema/hadoop http://www.springframework.org/schema/hadoop/spring-hadoop.xsd">
+
+	<context:property-placeholder location="hadoop.properties,hive.properties"/>
+
+	<configuration>
+		fs.default.name=${hd.fs}
+		mapred.job.tracker=${mapred.job.tracker}
+	</configuration>
+
+	<hive-server port="${hive.port}"
+				 properties-location="hive-server.properties"/>
+
+	<hive-client-factory host="${hive.host}" port="${hive.port}"/>
+	 
+	<!--  not working now -->
+	
+	<hive-runner id="hiveRunner" run-at-startup="false" >
+		<script location="apache-log-simple.hql">
+			<arguments>
+				hiveContribJar=${app.repo}/hive-contrib-0.8.1.jar
+				localInPath="${app.home}/data/apache.log"		
+			</arguments>
+		</script>
+	</hive-runner>
+	
+	<!-- 
+	<hive-template id="hiveTemplate"/>	
+	 
+	<beans:bean id="analysisService" class="com.oreilly.springdata.hadoop.hive.AnalysisService">
+		<beans:constructor-arg name="hiveOperations" ref="hiveTemplate"/>
+		<beans:property name="hiveContribJar" value="${app.repo}/hive-contrib-0.8.1.jar"/>
+		<beans:property name="scriptResource" value="classpath:apache-log-simple.hql"/>
+		<beans:property name="localInPath" value="file://${app.home}/data/apache.log"/>
+	</beans:bean>	
+	-->
+	
+</beans:beans>

@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/hadoop"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/hadoop http://www.springframework.org/schema/hadoop/spring-hadoop.xsd">
+
+
+	<context:property-placeholder location="hadoop.properties"/>
+
+	<configuration>
+	  fs.default.name=${hd.fs}
+	</configuration>
+
+	<job id="wordcountJob"
+	     input-path="${wordcount.input.path}" 
+	     output-path="${wordcount.output.path}" 
+		 mapper="org.apache.hadoop.examples.WordCount.TokenizerMapper"
+		 reducer="org.apache.hadoop.examples.WordCount.IntSumReducer"/>
+
+	<script id="setupScript" location="copy-files.groovy">
+		<property name="localSourceFile" value="${app.home}/${localSourceFile}"/>
+		<property name="inputDir" value="${wordcount.input.path}"/>
+		<property name="outputDir" value="${wordcount.output.path}"/>
+	</script>	
+ 
+	<job-runner id="runner" run-at-startup="true"
+		pre-action="setupScript"
+		job-ref="wordcountJob" />	  
+	
+</beans:beans>

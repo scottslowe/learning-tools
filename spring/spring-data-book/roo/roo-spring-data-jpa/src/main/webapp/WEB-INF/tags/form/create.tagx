@@ -1,0 +1,61 @@
+<jsp:root xmlns:c="http://java.sun.com/jsp/jstl/core" xmlns:fn="http://java.sun.com/jsp/jstl/functions" xmlns:util="urn:jsptagdir:/WEB-INF/tags/util" xmlns:form="http://www.springframework.org/tags/form" xmlns:jsp="http://java.sun.com/JSP/Page" xmlns:spring="http://www.springframework.org/tags" version="2.0">
+  <jsp:output omit-xml-declaration="yes"/>
+  
+  <jsp:directive.attribute name="id" type="java.lang.String" required="true" rtexprvalue="true" description="The identifier for this tag (do not change!)"/>
+  <jsp:directive.attribute name="modelAttribute" type="java.lang.String" required="true" rtexprvalue="true" description="The name of the model attribute for form binding"/>
+  <jsp:directive.attribute name="path" type="java.lang.String" required="true" rtexprvalue="true" description="Specify the relative URL path (wit leading /)" />
+  <jsp:directive.attribute name="compositePkField" type="java.lang.String" required="false" rtexprvalue="true" description="The field name of the composite primary key (only used if a composite PK is present in the form backing object)" />
+  <jsp:directive.attribute name="multipart" type="java.lang.Boolean" required="false" rtexprvalue="true" description="Indicate if this is a multipart form (default: false)" />
+  <jsp:directive.attribute name="label" type="java.lang.String" required="false" rtexprvalue="true" description="The label used for this object, will default to a message bundle if not supplied"/>
+  <jsp:directive.attribute name="render" type="java.lang.Boolean" required="false" rtexprvalue="true" description="Indicate if the contents of this tag and all enclosed tags should be rendered (default 'true')" />
+  <jsp:directive.attribute name="openPane" type="java.lang.Boolean" required="false" rtexprvalue="true" description="Control if the title pane is opened or closed by default (default: true)"/>
+  <jsp:directive.attribute name="z" type="java.lang.String" required="false" description="Used for checking if element has been modified (to recalculate simply provide empty string value)"/>
+	
+  <c:if test="${empty render or render}">
+    <c:if test="${empty label}">
+      <spring:message code="label_${fn:toLowerCase(fn:substringAfter(id,'_'))}" var="label" htmlEscape="false" />
+    </c:if>
+    <c:set var="enctype" value="application/x-www-form-urlencoded"/>
+    <c:if test="${multipart}">
+      <c:set var="enctype" value="multipart/form-data"/>
+    </c:if>
+    <spring:message arguments="${label}" code="entity_create" var="title_msg" htmlEscape="false" />
+    <util:panel id="${id}" title="${title_msg}" openPane="${openPane}">
+      <spring:url value="${path}" var="form_url"/>
+      <c:set var="jsCall" value=""/>
+      <c:if test="${not empty compositePkField}">
+      	<c:set var="jsCall" value="encodePk()" />
+      </c:if>
+      <form:form action="${form_url}" method="POST" modelAttribute="${modelAttribute}" enctype="${enctype}" onsubmit="${jsCall}">
+        <form:errors cssClass="errors" delimiter="&lt;p/&gt;"/>
+        <c:if test="${not empty compositePkField}">
+          <form:hidden id="_${fn:escapeXml(compositePkField)}_id" path="${fn:escapeXml(compositePkField)}" />
+          <script type="text/javascript">
+          <![CDATA[
+            dojo.require("dojox.encoding.base64");
+            function encodePk() {
+              var obj = new Object();
+              dojo.query("input[name^=\"${compositePkField}.\"]").forEach(function(node, index, nodelist){
+                obj[node.name.substring('${compositePkField}'.length + 1)] = node.value;
+              });
+              var json = dojo.toJson(obj);
+              var tokArr = [];
+              for (var i = 0; i < json.length; i++) {
+                tokArr.push(json.charCodeAt(i));
+              }
+              var encoded = dojox.encoding.base64.encode(tokArr);
+              dojo.byId('_${fn:escapeXml(compositePkField)}_id').value = encoded;
+            }
+          ]]>
+          </script>
+        </c:if>
+        <jsp:doBody />
+        <div class="submit" id="${fn:escapeXml(id)}_submit">
+          <spring:message code="button_save" var="save_button" htmlEscape="false" />
+          <script type="text/javascript">Spring.addDecoration(new Spring.ValidateAllDecoration({elementId:'proceed', event:'onclick'}));</script>
+          <input id="proceed" type="submit" value="${fn:escapeXml(save_button)}"/>
+        </div>
+      </form:form>
+    </util:panel>
+  </c:if>
+</jsp:root>

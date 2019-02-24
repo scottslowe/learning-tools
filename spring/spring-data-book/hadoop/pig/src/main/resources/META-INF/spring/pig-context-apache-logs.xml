@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/hadoop"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	  http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	  http://www.springframework.org/schema/hadoop http://www.springframework.org/schema/hadoop/spring-hadoop.xsd">
+
+
+	<context:property-placeholder location="hadoop.properties,pig-analysis.properties"/>
+
+	<configuration>
+		fs.default.name=${hd.fs}
+		mapred.job.tracker=${mapred.job.tracker}
+	</configuration>
+
+	<pig-factory id="pigFactory" job-name="apacheLogAnalysis"/>
+
+	<script id="hdfsScript" location="copy-files.groovy">
+		<property name="localSourceFile" value="${pig.localSourceFile}"/>
+		<property name="inputDir" value="${pig.inputPath}"/>
+		<property name="outputDir" value="${pig.outputPath}"/>
+	</script>	
+	
+	<pig-runner id="pigRunner" pig-factory-ref="pigFactory"
+				pre-action="hdfsScript"
+				run-at-startup="true" >
+		<script location="apache-log-simple.pig">
+			<arguments>
+				piggybanklib=${pig.piggybanklib}	
+				inputPath=${pig.inputPath}	
+				outputPath=${pig.outputPath}	
+			</arguments>
+		</script>					
+	</pig-runner>	
+
+	
+	
+</beans:beans>

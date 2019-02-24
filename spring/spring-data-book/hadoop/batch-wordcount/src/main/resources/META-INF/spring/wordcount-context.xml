@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans 
+	xmlns="http://www.springframework.org/schema/hadoop"
+	xmlns:beans="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:batch="http://www.springframework.org/schema/batch"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xsi:schemaLocation="http://www.springframework.org/schema/batch http://www.springframework.org/schema/batch/spring-batch.xsd
+	http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+	http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
+	http://www.springframework.org/schema/hadoop http://www.springframework.org/schema/hadoop/spring-hadoop.xsd">
+
+	<context:property-placeholder location="classpath:batch.properties,classpath:hadoop.properties"
+			ignore-resource-not-found="true" ignore-unresolvable="true" />
+
+	<!-- required since Hadoop Job is a class not an interface and we need to use a Job with step scope to access #{jobParameters['...']} -->
+	<beans:bean class="org.springframework.batch.core.scope.StepScope">
+		<beans:property name="proxyTargetClass" value="true"/>
+	</beans:bean>
+
+	<batch:job id="job1">
+		<batch:step id="import" next="wordcount">
+			<batch:tasklet ref="scriptTasklet"/>
+		</batch:step>
+			
+		<batch:step id="wordcount">
+			<batch:tasklet ref="wordcount-tasklet" />
+		</batch:step>
+	</batch:job>
+
+	
+	<job-tasklet id="wordcount-tasklet" job-ref="wordcountJob"/>
+
+	<job id="wordcountJob"
+		 input-path="#{jobParameters['mr.input']}" 
+		 output-path="#{jobParameters['mr.output']}"  
+		 mapper="org.apache.hadoop.examples.WordCount.TokenizerMapper"
+		 reducer="org.apache.hadoop.examples.WordCount.IntSumReducer"
+		 scope="step" />
+
+
+	<script-tasklet id="scriptTasklet" script-ref="hdfsScript" scope="step">
+
+	</script-tasklet>
+
+	<script id="hdfsScript" location="copy-files.groovy">
+		<property name="localSourceFile" value="${app.home}/data/nietzsche-chapter-1.txt"/>
+		<property name="hdfsInputDir" value="/user/gutenberg/input/word/"/>
+		<property name="hdfsOutputDir" value="/user/gutenberg/output/word/"/>
+	</script>
+	
+<!--	
+	<script id="hdfsScript" location="copy-files.groovy" scope="step">
+		<property name="localSourceFile" value="#{jobParameters['localData']}"/>
+		<property name="hdfsInputDir" value="#{jobParameters['mr.input']}"/>
+		<property name="hdfsOutputDir" value="#{jobParameters['mr.output']}"/>
+	</script>	
+		 
+ 	<script id="script" location="cp-data.js" scope="step">
+		<property name="inputPath" value="#{jobParameters['mr.input']}" />
+		<property name="outputPath" value="#{jobParameters['mr.output']}" />
+		<property name="localResource" value="data/nietzsche-chapter-1.txt" />
+	</script>
+
+		<script language="javascript" id="script" scope="step">
+if (fsh.test(input)) fsh.rmr(input)
+if (fsh.test(output)) fsh.rmr(output)
+fsh.mkdir(input);
+fsh.put("data/nietzsche-chapter-1.txt", input)
+		<property name="input" value="#{jobParameters['mr.input']}"/>			
+		<property name="output" value="#{jobParameters['mr.output']}"/>
+	</script>	
+ 
+	<script id="hdfsScript" language="javascript" location="cp-data.js" scope="step">
+		<property name="inputPath" value="#{jobParameters['mr.input']}" />
+		<property name="outputPath" value="#{jobParameters['mr.output']}" />
+		<property name="localResource" value="#{jobParameters['localData']}" />
+	</script>
+-->	
+</beans:beans>
+

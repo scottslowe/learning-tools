@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:hdp="http://www.springframework.org/schema/hadoop"
+	xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:task="http://www.springframework.org/schema/task"
+	xsi:schemaLocation="http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.1.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/hadoop http://www.springframework.org/schema/hadoop/spring-hadoop.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+	<context:property-placeholder location="hadoop.properties"/>
+
+	<hdp:configuration>
+		fs.default.name=${hd.fs}
+	</hdp:configuration>
+
+	<hdp:job id="wordcountJob"
+		input-path="${wordcount.input.path}" 
+		output-path="${wordcount.output.path}" 
+		mapper="org.apache.hadoop.examples.WordCount.TokenizerMapper"
+		reducer="org.apache.hadoop.examples.WordCount.IntSumReducer"/>
+
+
+	<hdp:script id="setupScript" location="copy-data.js">
+		<hdp:property name="inputPath" value="${wordcount.input.path}" />
+		<hdp:property name="outputPath" value="${wordcount.output.path}" />
+		<hdp:property name="localResource" value="${local.data}" />
+	</hdp:script>
+	
+	<hdp:job-runner id="runner"
+		pre-action="setupScript"
+		job-ref="wordcountJob" />	 
+					
+	<bean id="jobDetail" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject" ref="runner" />
+		<property name="targetMethod" value="call" />
+	</bean>
+
+	<bean id="cronTrigger" class="org.springframework.scheduling.quartz.CronTriggerBean">
+		<property name="jobDetail" ref="jobDetail" />
+		<!-- run every 30 seconds on the 3rd second -->
+		<property name="cronExpression" value="3/30 * * * * ?" />
+	</bean>
+
+	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="triggers" ref="cronTrigger"/>
+	</bean>
+
+</beans>
+
