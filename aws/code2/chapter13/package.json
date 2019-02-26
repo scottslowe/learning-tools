@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "aws-sdk": "2.369.0",
+    "docopt": "0.6.2",
+    "moment": "2.22.2"
+  },
+  "devDependencies": {
+    "eslint": "5.9.0"
+  },
+  "scripts": {
+    "test": "eslint ."
+  },
+  "private": true
+}

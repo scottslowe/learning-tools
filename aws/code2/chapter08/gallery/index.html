@@ -1,0 +1,17 @@
+<html>
+	<head>
+		<title>Simple S3 Gallery</title>
+	</head>
+	<body>
+		<h1>Simple S3 Gallery</h1>
+		<h2>Upload</h2>
+			<form action="/upload" method="post" enctype="multipart/form-data">
+    			<p><input type="file" name="file"></p>
+    			<p><input type="submit" value="Upload"></p>
+			</form>
+		<h2>Images</h2>
+		{{#Objects}}
+  			<p><img src="https://s3.amazonaws.com/{{Bucket}}/{{Key}}" width="400px" /></p>
+		{{/Objects}}
+	</body>
+</html>

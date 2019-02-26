@@ -1,0 +1,18 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS in Action: chapter 5 (firewall for IRC server)'
+Parameters:
+  VPC:
+    Description: 'Just select the one and only default VPC.'
+    Type: 'AWS::EC2::VPC::Id'
+Resources:
+  SecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'Enables access to IRC server'
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 6667
+        ToPort: 6667
+        CidrIp: '0.0.0.0/0'

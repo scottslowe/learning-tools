@@ -1,0 +1,11 @@
+{
+  "dependencies": {
+    "aws-sdk": "2.169.0",
+    "express": "4.16.2",
+    "body-parser": "1.18.2",
+    "multiparty": "4.1.3",
+    "uuid": "3.1.0",
+    "assert-plus": "1.0.0"
+  },
+  "private": true
+}

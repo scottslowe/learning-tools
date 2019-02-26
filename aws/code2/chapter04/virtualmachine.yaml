@@ -1,0 +1,74 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS in Action: chapter 4'
+Parameters:
+  KeyName:
+    Description: 'Key Pair name'
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Default: mykey
+  VPC:
+    Description: 'Just select the one and only default VPC'
+    Type: 'AWS::EC2::VPC::Id'
+  Subnet:
+    Description: 'Just select one of the available subnets'
+    Type: 'AWS::EC2::Subnet::Id'
+  InstanceType:
+    Description: Select one of the possible instance types'
+    Type: String
+    Default: 't2.micro'
+    AllowedValues: ['t2.micro', 't2.small', 't2.medium']
+Mappings:
+  RegionMap:
+    'ap-south-1':
+      AMI: 'ami-2ed19c41'
+    'eu-west-3':
+      AMI: 'ami-c8a017b5'
+    'eu-west-2':
+      AMI: 'ami-e3051987'
+    'eu-west-1':
+      AMI: 'ami-760aaa0f'
+    'ap-northeast-2':
+      AMI: 'ami-fc862292'
+    'ap-northeast-1':
+      AMI: 'ami-2803ac4e'
+    'sa-east-1':
+      AMI: 'ami-1678037a'
+    'ca-central-1':
+      AMI: 'ami-ef3b838b'
+    'ap-southeast-1':
+      AMI: 'ami-dd7935be'
+    'ap-southeast-2':
+      AMI: 'ami-1a668878'
+    'eu-central-1':
+      AMI: 'ami-e28d098d'
+    'us-east-1':
+      AMI: 'ami-6057e21a'
+    'us-east-2':
+      AMI: 'ami-aa1b34cf'
+    'us-west-1':
+      AMI: 'ami-1a033c7a'
+    'us-west-2':
+      AMI: 'ami-32d8124a'
+Resources:
+  SecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'My security group'
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+      - CidrIp: '0.0.0.0/0'
+        FromPort: 22
+        IpProtocol: tcp
+        ToPort: 22
+  VM:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      ImageId: !FindInMap [RegionMap, !Ref 'AWS::Region', AMI]
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      SecurityGroupIds: [!Ref SecurityGroup]
+      SubnetId: !Ref Subnet
+Outputs:
+  PublicName:
+    Value: !GetAtt 'VM.PublicDnsName'
+    Description: 'Public name (connect via SSH as user ec2-user)'

@@ -1,0 +1,242 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS in Action: chapter 15 (Load Balancer)'
+Parameters:
+  KeyName:
+    Description: 'Key Pair name'
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Default: mykey
+  NumberOfVirtualMachines:
+    Description: 'Number of virtual machines'
+    Type: Number
+    Default: 2
+    MinValue: 2
+    MaxValue: 4
+Mappings:
+  RegionMap:
+    'ap-south-1':
+      AMI: 'ami-2ed19c41'
+    'eu-west-3':
+      AMI: 'ami-c8a017b5'
+    'eu-west-2':
+      AMI: 'ami-e3051987'
+    'eu-west-1':
+      AMI: 'ami-760aaa0f'
+    'ap-northeast-2':
+      AMI: 'ami-fc862292'
+    'ap-northeast-1':
+      AMI: 'ami-2803ac4e'
+    'sa-east-1':
+      AMI: 'ami-1678037a'
+    'ca-central-1':
+      AMI: 'ami-ef3b838b'
+    'ap-southeast-1':
+      AMI: 'ami-dd7935be'
+    'ap-southeast-2':
+      AMI: 'ami-1a668878'
+    'eu-central-1':
+      AMI: 'ami-e28d098d'
+    'us-east-1':
+      AMI: 'ami-6057e21a'
+    'us-east-2':
+      AMI: 'ami-aa1b34cf'
+    'us-west-1':
+      AMI: 'ami-1a033c7a'
+    'us-west-2':
+      AMI: 'ami-32d8124a'
+Resources:
+  VPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: '172.31.0.0/16'
+      EnableDnsHostnames: true
+  InternetGateway:
+    Type: 'AWS::EC2::InternetGateway'
+    Properties: {}
+  VPCGatewayAttachment:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+  SubnetA:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      AvailabilityZone: !Select [0, !GetAZs '']
+      CidrBlock: '172.31.38.0/24'
+      VpcId: !Ref VPC
+  SubnetB:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      AvailabilityZone: !Select [1, !GetAZs '']
+      CidrBlock: '172.31.37.0/24'
+      VpcId: !Ref VPC
+  RouteTable:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      VpcId: !Ref VPC
+  RouteTableAssociationA:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref SubnetA
+      RouteTableId: !Ref RouteTable
+  RouteTableAssociationB:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      SubnetId: !Ref SubnetB
+      RouteTableId: !Ref RouteTable
+  RoutePublicNATToInternet:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      RouteTableId: !Ref RouteTable
+      DestinationCidrBlock: '0.0.0.0/0'
+      GatewayId: !Ref InternetGateway
+    DependsOn: VPCGatewayAttachment
+  NetworkAcl:
+    Type: 'AWS::EC2::NetworkAcl'
+    Properties:
+      VpcId: !Ref VPC
+  SubnetNetworkAclAssociationA:
+    Type: 'AWS::EC2::SubnetNetworkAclAssociation'
+    Properties:
+      SubnetId: !Ref SubnetA
+      NetworkAclId: !Ref NetworkAcl
+  SubnetNetworkAclAssociationB:
+    Type: 'AWS::EC2::SubnetNetworkAclAssociation'
+    Properties:
+      SubnetId: !Ref SubnetB
+      NetworkAclId: !Ref NetworkAcl
+  NetworkAclEntryIngress:
+    Type: 'AWS::EC2::NetworkAclEntry'
+    Properties:
+      NetworkAclId: !Ref NetworkAcl
+      RuleNumber: 100
+      Protocol: -1
+      RuleAction: allow
+      Egress: false
+      CidrBlock: '0.0.0.0/0'
+  NetworkAclEntryEgress:
+    Type: 'AWS::EC2::NetworkAclEntry'
+    Properties:
+      NetworkAclId: !Ref NetworkAcl
+      RuleNumber: 100
+      Protocol: -1
+      RuleAction: allow
+      Egress: true
+      CidrBlock: '0.0.0.0/0'
+  LoadBalancerSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'alb-sg'
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+      - CidrIp: '0.0.0.0/0'
+        FromPort: 80
+        IpProtocol: tcp
+        ToPort: 80
+  LoadBalancer:
+    Type: 'AWS::ElasticLoadBalancingV2::LoadBalancer'
+    Properties:
+      Scheme: 'internet-facing'
+      SecurityGroups:
+      - !Ref LoadBalancerSecurityGroup
+      Subnets:
+      - !Ref SubnetA
+      - !Ref SubnetB
+      Type: application
+    DependsOn: 'VPCGatewayAttachment'
+  Listener:
+    Type: 'AWS::ElasticLoadBalancingV2::Listener'
+    Properties:
+      DefaultActions:
+      - TargetGroupArn: !Ref TargetGroup
+        Type: forward
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 80
+      Protocol: HTTP
+  TargetGroup:
+    Type: 'AWS::ElasticLoadBalancingV2::TargetGroup'
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: '/index.html'
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      UnhealthyThresholdCount: 2
+      Matcher:
+        HttpCode: '200-299'
+      Port: 80
+      Protocol: HTTP
+      VpcId: !Ref VPC
+  WebServerSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'awsinaction-sg'
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+      - CidrIp: '0.0.0.0/0'
+        FromPort: 22
+        IpProtocol: tcp
+        ToPort: 22
+      - SourceSecurityGroupId: !Ref LoadBalancerSecurityGroup
+        FromPort: 80
+        IpProtocol: tcp
+        ToPort: 80
+  LaunchConfiguration:
+    Type: 'AWS::AutoScaling::LaunchConfiguration'
+    Metadata:
+      'AWS::CloudFormation::Init':
+        config:
+          packages:
+            yum:
+              httpd: []
+          files:
+            '/tmp/config':
+              content: |
+                #!/bin/bash -ex
+                PRIVATE_IP=`curl -s http://169.254.169.254/latest/meta-data/local-ipv4`
+                echo "<html><head><title>$PRIVATE_IP</title></head><body><h1>$PRIVATE_IP</h1></body></html>" > index.html
+              mode: '000500'
+              owner: root
+              group: root
+          commands:
+            '01_config':
+              command: '/tmp/config'
+              cwd: '/var/www/html'
+          services:
+            sysvinit:
+              httpd:
+                enabled: true
+                ensureRunning: true
+    Properties:
+      AssociatePublicIpAddress: true
+      ImageId: !FindInMap [RegionMap, !Ref 'AWS::Region', AMI]
+      InstanceMonitoring: false
+      InstanceType: 't2.micro'
+      SecurityGroups:
+      - !Ref WebServerSecurityGroup
+      KeyName: !Ref KeyName
+      UserData:
+        'Fn::Base64': !Sub |
+          #!/bin/bash -x
+          /opt/aws/bin/cfn-init -v --stack ${AWS::StackName} --resource LaunchConfiguration --region ${AWS::Region}
+          /opt/aws/bin/cfn-signal -e $? --stack ${AWS::StackName} --resource AutoScalingGroup --region ${AWS::Region}
+  AutoScalingGroup:
+    Type: 'AWS::AutoScaling::AutoScalingGroup'
+    Properties:
+      LaunchConfigurationName: !Ref LaunchConfiguration
+      MinSize: !Ref NumberOfVirtualMachines
+      MaxSize: !Ref NumberOfVirtualMachines
+      DesiredCapacity: !Ref NumberOfVirtualMachines
+      TargetGroupARNs:
+      - !Ref TargetGroup
+      VPCZoneIdentifier:
+      - !Ref SubnetA
+      - !Ref SubnetB
+    CreationPolicy:
+      ResourceSignal:
+        Timeout: 'PT10M'
+    DependsOn: 'VPCGatewayAttachment'
+Outputs:
+  URL:
+    Value: !Sub 'http://${LoadBalancer.DNSName}'
+    Description: 'Load Balancer URL'

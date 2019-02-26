@@ -1,0 +1,197 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS in Action: chapter 13 (DynamoDB tables with load balancing)'
+Resources:
+  RoleScaling:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: 'application-autoscaling.amazonaws.com'
+          Action: 'sts:AssumeRole'
+      Policies:
+      - PolicyName: scaling
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - 'dynamodb:DescribeTable'
+            - 'dynamodb:UpdateTable'
+            - 'cloudwatch:PutMetricAlarm'
+            - 'cloudwatch:DescribeAlarms'
+            - 'cloudwatch:DeleteAlarms'
+            Resource: '*'
+  TableUser:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: 'todo-user'
+      AttributeDefinitions:
+      - AttributeName: uid
+        AttributeType: S
+      KeySchema:
+      - AttributeName: uid
+        KeyType: HASH
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+  TableUserWriteScalableTarget:
+    Type: 'AWS::ApplicationAutoScaling::ScalableTarget'
+    Properties:
+      MaxCapacity: 20
+      MinCapacity: 5
+      ResourceId: !Sub 'table/${TableUser}'
+      RoleARN: !GetAtt 'RoleScaling.Arn'
+      ScalableDimension: 'dynamodb:table:WriteCapacityUnits'
+      ServiceNamespace: dynamodb
+  TableUserReadScalableTarget:
+    Type: 'AWS::ApplicationAutoScaling::ScalableTarget'
+    Properties:
+      MaxCapacity: 20
+      MinCapacity: 5
+      ResourceId: !Sub 'table/${TableUser}'
+      RoleARN: !GetAtt 'RoleScaling.Arn'
+      ScalableDimension: 'dynamodb:table:ReadCapacityUnits'
+      ServiceNamespace: dynamodb
+  TableUserWriteScalingPolicy:
+    Type: 'AWS::ApplicationAutoScaling::ScalingPolicy'
+    Properties:
+      PolicyName: TableUserWriteScalingPolicy
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref TableUserWriteScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 50.0
+        ScaleInCooldown: 600
+        ScaleOutCooldown: 60
+        PredefinedMetricSpecification:
+          PredefinedMetricType: DynamoDBWriteCapacityUtilization
+  TableUserReadScalingPolicy:
+    Type: 'AWS::ApplicationAutoScaling::ScalingPolicy'
+    Properties:
+      PolicyName: TableUserReadScalingPolicy
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref TableUserReadScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 50.0
+        ScaleInCooldown: 600
+        ScaleOutCooldown: 60
+        PredefinedMetricSpecification:
+          PredefinedMetricType: DynamoDBReadCapacityUtilization
+  TableTask:
+    Type: 'AWS::DynamoDB::Table'
+    Properties:
+      TableName: 'todo-task'
+      AttributeDefinitions:
+      - AttributeName: uid
+        AttributeType: S
+      - AttributeName: tid
+        AttributeType: N
+      - AttributeName: category
+        AttributeType: S
+      KeySchema:
+      - AttributeName: uid
+        KeyType: HASH
+      - AttributeName: tid
+        KeyType: RANGE
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+      GlobalSecondaryIndexes:
+      - IndexName: 'category-index'
+        KeySchema:
+        - AttributeName: 'category'
+          KeyType: HASH
+        - AttributeName: 'tid'
+          KeyType: RANGE
+        Projection:
+          ProjectionType: ALL
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
+  TableTaskWriteScalableTarget:
+    Type: 'AWS::ApplicationAutoScaling::ScalableTarget'
+    Properties:
+      MaxCapacity: 20
+      MinCapacity: 5
+      ResourceId: !Sub 'table/${TableTask}'
+      RoleARN: !GetAtt 'RoleScaling.Arn'
+      ScalableDimension: 'dynamodb:table:WriteCapacityUnits'
+      ServiceNamespace: dynamodb
+  TableTaskReadScalableTarget:
+    Type: 'AWS::ApplicationAutoScaling::ScalableTarget'
+    Properties:
+      MaxCapacity: 20
+      MinCapacity: 5
+      ResourceId: !Sub 'table/${TableTask}'
+      RoleARN: !GetAtt 'RoleScaling.Arn'
+      ScalableDimension: 'dynamodb:table:ReadCapacityUnits'
+      ServiceNamespace: dynamodb
+  TableTaskWriteScalingPolicy:
+    Type: 'AWS::ApplicationAutoScaling::ScalingPolicy'
+    Properties:
+      PolicyName: TableTaskWriteScalingPolicy
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref TableTaskWriteScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 50.0
+        ScaleInCooldown: 600
+        ScaleOutCooldown: 60
+        PredefinedMetricSpecification:
+          PredefinedMetricType: DynamoDBWriteCapacityUtilization
+  TableTaskReadScalingPolicy:
+    Type: 'AWS::ApplicationAutoScaling::ScalingPolicy'
+    Properties:
+      PolicyName: TableTaskReadScalingPolicy
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref TableTaskReadScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 50.0
+        ScaleInCooldown: 600
+        ScaleOutCooldown: 60
+        PredefinedMetricSpecification:
+          PredefinedMetricType: DynamoDBReadCapacityUtilization
+  IndexCategoryWriteScalableTarget:
+    Type: 'AWS::ApplicationAutoScaling::ScalableTarget'
+    Properties:
+      MaxCapacity: 20
+      MinCapacity: 5
+      ResourceId: !Sub 'table/${TableTask}/index/category-index'
+      RoleARN: !GetAtt 'RoleScaling.Arn'
+      ScalableDimension: 'dynamodb:index:WriteCapacityUnits'
+      ServiceNamespace: dynamodb
+  IndexCategoryReadScalableTarget:
+    Type: 'AWS::ApplicationAutoScaling::ScalableTarget'
+    Properties:
+      MaxCapacity: 20
+      MinCapacity: 5
+      ResourceId: !Sub 'table/${TableTask}/index/category-index'
+      RoleARN: !GetAtt 'RoleScaling.Arn'
+      ScalableDimension: 'dynamodb:index:ReadCapacityUnits'
+      ServiceNamespace: dynamodb
+  IndexCategoryWriteScalingPolicy:
+    Type: 'AWS::ApplicationAutoScaling::ScalingPolicy'
+    Properties:
+      PolicyName: IndexCategoryWriteScalingPolicy
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref IndexCategoryWriteScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 50.0
+        ScaleInCooldown: 600
+        ScaleOutCooldown: 60
+        PredefinedMetricSpecification:
+          PredefinedMetricType: DynamoDBWriteCapacityUtilization
+  IndexCategoryReadScalingPolicy:
+    Type: 'AWS::ApplicationAutoScaling::ScalingPolicy'
+    Properties:
+      PolicyName: IndexCategoryReadScalingPolicy
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref IndexCategoryReadScalableTarget
+      TargetTrackingScalingPolicyConfiguration:
+        TargetValue: 50.0
+        ScaleInCooldown: 600
+        ScaleOutCooldown: 60
+        PredefinedMetricSpecification:
+          PredefinedMetricType: DynamoDBReadCapacityUtilization

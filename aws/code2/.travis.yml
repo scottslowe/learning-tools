@@ -1,0 +1,17 @@
+---
+language: python
+env:
+  global:
+  - secure: "kAjnO67jxXM0qCxC/1q/JrN7cdO9hYflS3njwECSEOyX2fPiknU9bypCrC3j/4+hXb8fu0qe0oeqH90RBc7C5olsKDAKP9AqJomQhT4L7zwJmSp0tNy/5BiUjoAQ0NGYq80/cXZxjhBSa5uWAln0cvWiHg6h6xsEsRsLyQLyHS1VyazPNQS/pL4RGLjiT831tJYI/qbmYnnXIcobP7Rdv1ViwnfOMg5uCP0Jh6I+cIt7Uxh5biu3RMx+hsX9FoJRYDYVYGngaPey/tPoYSR/Sg81HOItlDwnjk1422gcTvDtw7g/1FvWqBoQlzRDBQroLcdyhlqEiXThrlLMPvCSOsHHYnFBtv3fVs69wQRSMcJf/Ow36yeX+qnbiVNo1unFya8bb1w5HVaVD7rlUXXV00sxezClhWrIq4u7VQ4VbiMFcC350nWeZpjn8PpJonoufmvId/WDu+DBPTCiHDH/F6IKQ6vI4EWooLcptDB4GThdq/1SqWU5RpjXIn/eIqEpIwOlbnF9nfNQm9kvwcqmmj7Wa1QPX5qyB93IW+EhIdUNHa/lNL+SD69/EVo4UtA7JOxcXV/2W40xg5cdRj12WLZ/828jZIdRmYpoAetLE4dkg9VrgZrtP5hK5wRRdJ9YoNKDLNeu0jAsosvsNXKTpFDXHrEsOWYKmZBWsq6WKfg=" # AWS_ACCESS_KEY_ID=xyz
+  - secure: "i6uExuWCf2/i2lk9HpkpqKNaDpUxQ9v5lh3oimYvYsfRNTXUBN2AaF8it0xATyyBYKIO/+e6hiMHWTcR82k/aqekVQUhL6J0YVW6c26nb8KrItYSPGpVtMz0qssbcTJrL7G7lzj9BC2/oHPycPtqSHu1sTEtmvM1lsicymlA9vLqBW8mlJVLF6BagTDEfCHTvD2MxqwEtSEDb52wXjPMSkWd4J4ujNpJYPH14hCl3I6gv2M9spwiWwJtDSQWd4rgMSehpIDI6Yct6QV6qiJY4QP/Exhq6ptiP4rTTiSBIwYwenugdEoF/4iL1kb3hNY1r5B+IDXyLmphYhJKZt5289P5/KI+92F7Sdf6IZMsOjOLsEbzMimMAf9+QSzCXwdPtG6L3P433/ItBg3JzBnzWekSEKUYwhhDlsNKJfpk9KgINBOcZfuGgW3LikbxbI8iJompmVmbV0wu42Y7g8JHWnr1yWVTFtifvgK4n5qoPvlpzzX+JY4tJOic6KgT2B+22j7sPvPqaZMXwQe9qAgWNPygaYvO8DaI6iQBKbOXDnwONzdzFU6A8wB6G8cP8YuurJZD7kzOWYbg4ERtVajO+DG9A41id47DON7K4jVLht14Q41L2nPBqiGfWCT21CoUhmwNjNuvYXC51VCSk+Rxq20cozFI85DBhBjV44SlY38=" # AWS_SECRET_ACCESS_KEY=xyz
+  - 'AWS_DEFAULT_REGION=us-east-1'
+python:
+- '2.7'
+install:
+- 'pip install yamllint==1.13.0'
+- 'pip install awscli==1.16.69'
+- 'sudo apt-get install -y shellcheck'
+script:
+- 'yamllint .'
+- 'find . -type f -name ''*.sh'' | while read file; do set -ex && shellcheck -s bash "$file"; done'
+- 'if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then find . -type f \( -name ''*.yml'' -o -name ''*.yaml'' \) -a ! -name ''.*'' | while read file; do set -ex && aws cloudformation validate-template --template-body "file://$file" > /dev/null; done; fi'

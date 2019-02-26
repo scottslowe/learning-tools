@@ -1,0 +1,14 @@
+{
+ "dependencies": {
+  "aws-sdk": "2.369.0",
+  "uuid": "3.3.2",
+  "node-webshot": "1.0.3"
+ },
+ "devDependencies": {
+  "eslint": "5.9.0"
+ },
+ "scripts": {
+  "test": "eslint ."
+ },
+ "private": true
+}

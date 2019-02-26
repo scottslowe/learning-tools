@@ -1,0 +1,11 @@
+---
+extends: default
+rules:
+  indentation:
+    indent-sequences: false
+  line-length:
+    max: 999
+  comments:
+    min-spaces-from-content: 1
+ignore: |
+  node_modules/

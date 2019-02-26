@@ -1,0 +1,87 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'AWS in Action: chapter 6 (firewall 4)'
+Parameters:
+  KeyName:
+    Description: 'Key Pair name'
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Default: mykey
+  VPC:
+    Description: 'Just select the one and only default VPC'
+    Type: 'AWS::EC2::VPC::Id'
+  Subnet:
+    Description: 'Just select one of the available subnets'
+    Type: 'AWS::EC2::Subnet::Id'
+  IpForSSH:
+    Description: 'Your public IP address to allow SSH access'
+    Type: String
+    AllowedPattern: '^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$'
+    ConstraintDescription: 'Enter a valid IPv4 address'
+Mappings:
+  RegionMap:
+    'ap-south-1':
+      AMI: 'ami-2ed19c41'
+    'eu-west-3':
+      AMI: 'ami-c8a017b5'
+    'eu-west-2':
+      AMI: 'ami-e3051987'
+    'eu-west-1':
+      AMI: 'ami-760aaa0f'
+    'ap-northeast-2':
+      AMI: 'ami-fc862292'
+    'ap-northeast-1':
+      AMI: 'ami-2803ac4e'
+    'sa-east-1':
+      AMI: 'ami-1678037a'
+    'ca-central-1':
+      AMI: 'ami-ef3b838b'
+    'ap-southeast-1':
+      AMI: 'ami-dd7935be'
+    'ap-southeast-2':
+      AMI: 'ami-1a668878'
+    'eu-central-1':
+      AMI: 'ami-e28d098d'
+    'us-east-1':
+      AMI: 'ami-6057e21a'
+    'us-east-2':
+      AMI: 'ami-aa1b34cf'
+    'us-west-1':
+      AMI: 'ami-1a033c7a'
+    'us-west-2':
+      AMI: 'ami-32d8124a'
+Resources:
+  SecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: 'Learn how to protect your EC2 Instance.'
+      VpcId: !Ref VPC
+      Tags:
+      - Key: Name
+        Value: 'AWS in Action: chapter 6 (firewall)'
+      # allowing inbound ICMP traffic
+      SecurityGroupIngress:
+      - IpProtocol: icmp
+        FromPort: '-1'
+        ToPort: '-1'
+        CidrIp: '0.0.0.0/0'
+      # allowing inbound SSH traffic
+      - IpProtocol: tcp
+        FromPort: '22'
+        ToPort: '22'
+        CidrIp: !Sub '${IpForSSH}/32'
+  Instance:
+    Type: 'AWS::EC2::Instance'
+    Properties:
+      ImageId: !FindInMap [RegionMap, !Ref 'AWS::Region', AMI]
+      InstanceType: 't2.micro'
+      KeyName: !Ref KeyName
+      SecurityGroupIds:
+      - !Ref SecurityGroup
+      SubnetId: !Ref Subnet
+      Tags:
+      - Key: Name
+        Value: 'AWS in Action: chapter 6 (firewall)'
+Outputs:
+  PublicName:
+    Value: !Sub ${Instance.PublicDnsName}
+    Description: 'Public name of EC2 Instance (connect via SSH as user ec2-user)'
