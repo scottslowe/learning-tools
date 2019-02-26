@@ -1,0 +1,8 @@
+{
+	"dependencies": {
+		"aws-sdk": "2.1.18",
+		"node-uuid": "1.4.3",
+		"webshot": "0.16.0"
+	},
+	"private": true
+}

@@ -1,0 +1,239 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Description": "AWS in Action: chapter 8 (NFS)",
+	"Parameters": {
+		"KeyName": {
+			"Description": "Key Pair name",
+			"Type": "AWS::EC2::KeyPair::KeyName",
+			"Default": "mykey"
+		},
+		"VPC": {
+			"Description": "Just select the one and only default VPC",
+			"Type": "AWS::EC2::VPC::Id"
+		},
+		"Subnet": {
+			"Description": "Just select one of the available subnets",
+			"Type": "AWS::EC2::Subnet::Id"
+		}
+	},
+	"Mappings": {
+		"EC2RegionMap": {
+			"ap-northeast-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-cbf90ecb"},
+			"ap-southeast-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-68d8e93a"},
+			"ap-southeast-2": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-fd9cecc7"},
+			"eu-central-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-a8221fb5"},
+			"eu-west-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-a10897d6"},
+			"sa-east-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-b52890a8"},
+			"us-east-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-1ecae776"},
+			"us-west-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-d114f295"},
+			"us-west-2": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-e7527ed7"}
+		}
+	},
+	"Resources": {
+		"SecurityGroupClient": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Properties": {
+				"GroupDescription": "My client security group",
+				"VpcId": {"Ref": "VPC"}
+			}
+		},
+		"SecurityGroupServer": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Properties": {
+				"GroupDescription": "My server security group",
+				"VpcId": {"Ref": "VPC"},
+				"SecurityGroupIngress": [{
+					"SourceSecurityGroupId": {"Ref": "SecurityGroupClient"},
+					"FromPort": 111,
+					"IpProtocol": "tcp",
+					"ToPort": 111
+				}, {
+					"SourceSecurityGroupId": {"Ref": "SecurityGroupClient"},
+					"FromPort": 111,
+					"IpProtocol": "udp",
+					"ToPort": 111
+				}, {
+					"SourceSecurityGroupId": {"Ref": "SecurityGroupClient"},
+					"FromPort": 2049,
+					"IpProtocol": "tcp",
+					"ToPort": 2049
+				}, {
+					"SourceSecurityGroupId": {"Ref": "SecurityGroupClient"},
+					"FromPort": 2049,
+					"IpProtocol": "udp",
+					"ToPort": 2049
+				}]
+			}
+		},
+		"SecurityGroupCommon": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Properties": {
+				"GroupDescription": "My security group",
+				"VpcId": {"Ref": "VPC"},
+				"SecurityGroupIngress": [{
+					"CidrIp": "0.0.0.0/0",
+					"FromPort": 22,
+					"IpProtocol": "tcp",
+					"ToPort": 22
+				}]
+			}
+		},
+		"InstanceProfile": {
+			"Type": "AWS::IAM::InstanceProfile",
+			"Properties": {
+				"Path": "/",
+				"Roles": [{"Ref": "Role"}]
+			}
+		},
+		"Role": {
+			"Type": "AWS::IAM::Role",
+			"Properties": {
+				"AssumeRolePolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [{
+						"Effect": "Allow",
+						"Principal": {
+							"Service": ["ec2.amazonaws.com"]
+						},
+						"Action": ["sts:AssumeRole"]
+					}]
+				},
+				"Path": "/",
+				"Policies": [{
+					"PolicyName": "ec2",
+					"PolicyDocument": {
+						"Version": "2012-10-17",
+						"Statement": [{
+							"Sid": "Stmt1425388787000",
+							"Effect": "Allow",
+							"Action": ["ec2:DescribeVolumes", "ec2:CreateSnapshot"],
+							"Resource": ["*"]
+						}]
+					}
+				}]
+			}
+		},
+		"Server": {
+			"Type": "AWS::EC2::Instance",
+			"Properties": {
+				"IamInstanceProfile": {"Ref": "InstanceProfile"},
+				"ImageId": {"Fn::FindInMap": ["EC2RegionMap", {"Ref": "AWS::Region"}, "AmazonLinuxAMIHVMEBSBacked64bit"]},
+				"InstanceType": "m3.medium",
+				"KeyName": {"Ref": "KeyName"},
+				"SecurityGroupIds": [{"Ref": "SecurityGroupCommon"}, {"Ref": "SecurityGroupServer"}],
+				"SubnetId": {"Ref": "Subnet"},
+				"BlockDeviceMappings": [{
+					"DeviceName": "/dev/xvda",
+					"Ebs": {
+						"VolumeSize": "8",
+						"VolumeType": "gp2"
+					}
+				}, {
+					"DeviceName": "/dev/xvdb",
+					"VirtualName": "ephemeral0"
+				}],
+				"UserData": {"Fn::Base64": {"Fn::Join": ["", [
+					"#!/bin/bash -ex\n",
+					"export REGION=\"", {"Ref": "AWS::Region"}, "\"\n",
+					"curl -s https://s3.amazonaws.com/awsinaction/chapter8/nfs-server-install.sh | bash -ex\n",
+					"/opt/aws/bin/cfn-signal --success true '", {"Ref": "WaitConditionHandle"}, "'\n"
+				]]}}
+			}
+		},
+		"Volume": {
+			"Type": "AWS::EC2::Volume",
+			"Properties": {
+				"AvailabilityZone": {"Fn::GetAtt": ["Server", "AvailabilityZone"]},
+				"Size": "5",
+				"VolumeType": "gp2"
+			}
+		},
+		"VolumeAttachment": {
+			"Type": "AWS::EC2::VolumeAttachment",
+			"Properties": {
+				"Device": "/dev/xvdf",
+				"InstanceId": {"Ref": "Server"},
+				"VolumeId": {"Ref": "Volume"}
+			}
+		},
+		"WaitConditionHandle": {
+			"Type": "AWS::CloudFormation::WaitConditionHandle",
+			"Properties": {
+			}
+		},
+		"WaitCondition": {
+			"Type": "AWS::CloudFormation::WaitCondition",
+			"Properties": {
+				"Count": "1",
+				"Handle": {"Ref": "WaitConditionHandle"},
+				"Timeout": "600"
+			}
+		},
+		"Client1": {
+			"Type": "AWS::EC2::Instance",
+			"Properties": {
+				"ImageId": {"Fn::FindInMap": ["EC2RegionMap", {"Ref": "AWS::Region"}, "AmazonLinuxAMIHVMEBSBacked64bit"]},
+				"InstanceType": "t2.micro",
+				"KeyName": {"Ref": "KeyName"},
+				"SecurityGroupIds": [{"Ref": "SecurityGroupCommon"}, {"Ref": "SecurityGroupClient"}],
+				"SubnetId": {"Ref": "Subnet"},
+				"UserData": {"Fn::Base64": {"Fn::Join": ["", [
+					"#!/bin/bash -ex\n",
+					"yum -y install nfs-utils nfs-utils-lib\n",
+					"mkdir /mnt/nfs\n",
+					"echo \"", {"Fn::GetAtt": ["Server", "PublicDnsName"]}, ":/media/ephemeral0 /mnt/nfs nfs rw 0 0\" >> /etc/fstab\n",
+					"mount -a\n",
+					"/opt/aws/bin/cfn-signal -e $? --stack ", {"Ref": "AWS::StackName"}, " --resource Client1 --region ", {"Ref": "AWS::Region"}, "\n"
+				]]}}
+			},
+			"CreationPolicy": {
+				"ResourceSignal": {
+					"Timeout": "PT10M"
+				}
+			},
+			"DependsOn": "WaitCondition"
+		},
+		"Client2": {
+			"Type": "AWS::EC2::Instance",
+			"Properties": {
+				"ImageId": {"Fn::FindInMap": ["EC2RegionMap", {"Ref": "AWS::Region"}, "AmazonLinuxAMIHVMEBSBacked64bit"]},
+				"InstanceType": "t2.micro",
+				"KeyName": {"Ref": "KeyName"},
+				"SecurityGroupIds": [{"Ref": "SecurityGroupCommon"}, {"Ref": "SecurityGroupClient"}],
+				"SubnetId": {"Ref": "Subnet"},
+				"UserData": {"Fn::Base64": {"Fn::Join": ["", [
+					"#!/bin/bash -ex\n",
+					"yum -y install nfs-utils nfs-utils-lib\n",
+					"mkdir /mnt/nfs\n",
+					"echo \"", {"Fn::GetAtt": ["Server", "PublicDnsName"]}, ":/media/ephemeral0 /mnt/nfs nfs rw 0 0\" >> /etc/fstab\n",
+					"mount -a\n",
+					"/opt/aws/bin/cfn-signal -e $? --stack ", {"Ref": "AWS::StackName"}, " --resource Client2 --region ", {"Ref": "AWS::Region"}, "\n"
+				]]}}
+			},
+			"CreationPolicy": {
+				"ResourceSignal": {
+					"Timeout": "PT10M"
+				}
+			},
+			"DependsOn": "WaitCondition"
+		}
+	},
+	"Outputs": {
+		"ServerPublicName": {
+			"Value": {"Fn::GetAtt": ["Server", "PublicDnsName"]},
+			"Description": "Public name (connect via SSH as user ec2-user)"
+		},
+		"VolumeId": {
+			"Value": {"Ref": "Volume"},
+			"Description": "Volume id"
+		},
+		"Client1PublicName": {
+			"Value": {"Fn::GetAtt": ["Client1", "PublicDnsName"]},
+			"Description": "Public name (connect via SSH as user ec2-user)"
+		},
+		"Client2PublicName": {
+			"Value": {"Fn::GetAtt": ["Client2", "PublicDnsName"]},
+			"Description": "Public name (connect via SSH as user ec2-user)"
+		}
+	}
+}

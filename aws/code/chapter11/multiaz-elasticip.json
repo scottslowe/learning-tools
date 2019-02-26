@@ -1,0 +1,450 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Description": "AWS in Action: chapter 11 (Jenkins (CI server) running with Auto Scaling Group over multiple AZs)",
+	"Parameters": {
+		"KeyName": {
+			"Description": "Key Pair name",
+			"Type": "AWS::EC2::KeyPair::KeyName",
+			"Default": "mykey"
+		},
+		"JenkinsAdminPassword": {
+			"Description": "Password for Jenkins admin user",
+			"Type": "String",
+			"AllowedPattern" : "[a-zA-Z0-9]*",
+			"MinLength" : "8",
+			"MaxLength" : "42"
+		}
+	},
+	"Mappings": {
+		"EC2RegionMap": {
+			"ap-northeast-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-cbf90ecb"},
+			"ap-southeast-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-68d8e93a"},
+			"ap-southeast-2": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-fd9cecc7"},
+			"eu-central-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-a8221fb5"},
+			"eu-west-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-a10897d6"},
+			"sa-east-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-b52890a8"},
+			"us-east-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-1ecae776"},
+			"us-west-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-d114f295"},
+			"us-west-2": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-e7527ed7"}
+		}
+	},
+	"Resources": {
+		"VPC": {
+			"Type": "AWS::EC2::VPC",
+			"Properties": {
+				"EnableDnsSupport": "true",
+				"EnableDnsHostnames": "true",
+				"CidrBlock": "10.0.0.0/16",
+				"Tags": [
+					{
+						"Key": "Name",
+						"Value": "jenkins-multiaz"
+					}
+				]
+			}
+		},
+		"SubnetA": {
+			"Type": "AWS::EC2::Subnet",
+			"Properties": {
+				"VpcId": {
+					"Ref": "VPC"
+				},
+				"AvailabilityZone": {"Fn::Select": ["0", {"Fn::GetAZs": ""}]},
+				"CidrBlock": "10.0.0.0/24",
+				"Tags": [
+					{
+						"Key": "Name",
+						"Value": "jenkins-multiaz"
+					}
+				]
+			}
+		},
+		"SubnetB": {
+			"Type": "AWS::EC2::Subnet",
+			"Properties": {
+				"VpcId": {
+					"Ref": "VPC"
+				},
+				"AvailabilityZone": {"Fn::Select": ["1", {"Fn::GetAZs": ""}]},
+				"CidrBlock": "10.0.1.0/24",
+				"Tags": [
+					{
+						"Key": "Name",
+						"Value": "jenkins-multiaz"
+					}
+				]
+			}
+		},
+		"InternetGateway": {
+			"Type": "AWS::EC2::InternetGateway",
+			"Properties": {
+				"Tags": [
+					{
+						"Key": "Name",
+						"Value": "jenkins-multiaz"
+					}
+				]
+			}
+		},
+		"GatewayToInternet": {
+			"Type": "AWS::EC2::VPCGatewayAttachment",
+			"Properties": {
+				"VpcId": {
+					"Ref": "VPC"
+				},
+				"InternetGatewayId": {
+					"Ref": "InternetGateway"
+				}
+			}
+		},
+		"RouteTable": {
+			"Type": "AWS::EC2::RouteTable",
+			"Properties": {
+				"VpcId": {
+					"Ref": "VPC"
+				},
+				"Tags": [
+					{
+						"Key": "Name",
+						"Value": "jenkins-multiaz"
+					}
+				]
+			}
+		},
+		"InternetRoute": {
+			"Type": "AWS::EC2::Route",
+			"Properties": {
+				"RouteTableId": {
+					"Ref": "RouteTable"
+				},
+				"DestinationCidrBlock": "0.0.0.0/0",
+				"GatewayId": {
+					"Ref": "InternetGateway"
+				}
+			},
+			"DependsOn": "GatewayToInternet"
+		},
+		"RouteTableAssociationA": {
+			"Type": "AWS::EC2::SubnetRouteTableAssociation",
+			"Properties": {
+				"SubnetId": {
+					"Ref": "SubnetA"
+				},
+				"RouteTableId": {
+					"Ref": "RouteTable"
+				}
+			}
+		},
+		"RouteTableAssociationB": {
+			"Type": "AWS::EC2::SubnetRouteTableAssociation",
+			"Properties": {
+				"SubnetId": {
+					"Ref": "SubnetB"
+				},
+				"RouteTableId": {
+					"Ref": "RouteTable"
+				}
+			}
+		},
+		"NetworkAcl": {
+			"Type": "AWS::EC2::NetworkAcl",
+			"Properties": {
+				"VpcId": {
+					"Ref": "VPC"
+				},
+				"Tags": [
+					{
+						"Key": "Name",
+						"Value": "jenkins-multiaz"
+					}
+				]
+			}
+		},
+		"NetworkAceSSH": {
+			"Type": "AWS::EC2::NetworkAclEntry",
+			"Properties": {
+				"NetworkAclId": {
+					"Ref": "NetworkAcl"
+				},
+				"RuleNumber": "10",
+				"Protocol": "6",
+				"RuleAction": "allow",
+				"Egress": "false",
+				"CidrBlock": "0.0.0.0/0",
+				"PortRange": {
+					"From": "22",
+					"To": "22"
+				}
+			}
+		},
+		"NetworkAceJenkinsHTTP": {
+			"Type": "AWS::EC2::NetworkAclEntry",
+			"Properties": {
+				"NetworkAclId": {
+					"Ref": "NetworkAcl"
+				},
+				"RuleNumber": "11",
+				"Protocol": "6",
+				"RuleAction": "allow",
+				"Egress": "false",
+				"CidrBlock": "0.0.0.0/0",
+				"PortRange": {
+					"From": "8080",
+					"To": "8080"
+				}
+			}
+		},
+		"NetworkAceNTP": {
+			"Type": "AWS::EC2::NetworkAclEntry",
+			"Properties": {
+				"NetworkAclId": {
+					"Ref": "NetworkAcl"
+				},
+				"RuleNumber": "20",
+				"Protocol": "17",
+				"RuleAction": "allow",
+				"Egress": "false",
+				"CidrBlock": "0.0.0.0/0",
+				"PortRange": {
+					"From": "123",
+					"To": "123"
+				}
+			}
+		},
+		"NetworkAceICMP": {
+			"Type": "AWS::EC2::NetworkAclEntry",
+			"Properties": {
+				"NetworkAclId": {
+					"Ref": "NetworkAcl"
+				},
+				"RuleNumber": "30",
+				"Protocol": "1",
+				"RuleAction": "allow",
+				"Egress": "false",
+				"CidrBlock": "0.0.0.0/0",
+				"Icmp": {
+					"Code": "-1",
+					"Type": "-1"
+				}
+			}
+		},
+		"NetworkAceHighPortsTCP": {
+			"Type": "AWS::EC2::NetworkAclEntry",
+			"Properties": {
+				"NetworkAclId": {
+					"Ref": "NetworkAcl"
+				},
+				"RuleNumber": "40",
+				"Protocol": "6",
+				"RuleAction": "allow",
+				"Egress": "false",
+				"CidrBlock": "0.0.0.0/0",
+				"PortRange": {
+					"From": "1024",
+					"To": "65535"
+				}
+			}
+		},
+		"NetworkAceHighPortsUDP": {
+			"Type": "AWS::EC2::NetworkAclEntry",
+			"Properties": {
+				"NetworkAclId": {
+					"Ref": "NetworkAcl"
+				},
+				"RuleNumber": "41",
+				"Protocol": "17",
+				"RuleAction": "allow",
+				"Egress": "false",
+				"CidrBlock": "0.0.0.0/0",
+				"PortRange": {
+					"From": "1024",
+					"To": "65535"
+				}
+			}
+		},
+		"NetworkAceEgress": {
+			"Type": "AWS::EC2::NetworkAclEntry",
+			"Properties": {
+				"NetworkAclId": {
+					"Ref": "NetworkAcl"
+				},
+				"RuleNumber": "10",
+				"Protocol": "-1",
+				"RuleAction": "allow",
+				"Egress": "true",
+				"CidrBlock": "0.0.0.0/0",
+				"PortRange": {
+					"From": "0",
+					"To": "65535"
+				}
+			}
+		},
+		"NetworkAclAssociationA": {
+			"Type": "AWS::EC2::SubnetNetworkAclAssociation",
+			"Properties": {
+				"SubnetId": {
+					"Ref": "SubnetA"
+				},
+				"NetworkAclId": {
+					"Ref": "NetworkAcl"
+				}
+			}
+		},
+		"NetworkAclAssociationB": {
+			"Type": "AWS::EC2::SubnetNetworkAclAssociation",
+			"Properties": {
+				"SubnetId": {
+					"Ref": "SubnetB"
+				},
+				"NetworkAclId": {
+					"Ref": "NetworkAcl"
+				}
+			}
+		},
+		"SecurityGroupJenkins": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Properties": {
+				"GroupDescription": "SecurityGroupforjenkins",
+				"VpcId": {
+					"Ref": "VPC"
+				},
+				"Tags": [
+					{
+						"Key": "Name",
+						"Value": "jenkins-multiaz"
+					}
+				],
+				"SecurityGroupIngress": [
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "22",
+						"ToPort": "22",
+						"CidrIp": "0.0.0.0/0"
+					},
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "8080",
+						"ToPort": "8080",
+						"CidrIp": "0.0.0.0/0"
+					},
+					{
+						"IpProtocol": "icmp",
+						"FromPort": "-1",
+						"ToPort": "-1",
+						"CidrIp": "0.0.0.0/0"
+					}
+				]
+			}
+		},
+		"IamRole": {
+			"Type": "AWS::IAM::Role",
+			"Properties": {
+				"AssumeRolePolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [
+						{
+							"Effect": "Allow",
+							"Principal": {"Service": ["ec2.amazonaws.com"]
+						},
+							"Action": ["sts:AssumeRole"]
+						}
+					]
+				},
+				"Path": "/",
+				"Policies": [
+					{
+						"PolicyName": "root",
+						"PolicyDocument": {
+							"Version": "2012-10-17",
+							"Statement": [
+								{
+									"Action": ["ec2:AssociateAddress"],
+									"Resource": ["*"],
+									"Effect": "Allow"
+								}
+							]
+						}
+					}
+				]
+			}
+		},
+		"IamInstanceProfile": {
+			"Type": "AWS::IAM::InstanceProfile",
+			"Properties": {
+				"Path": "/",
+				"Roles": [{"Ref": "IamRole"}]
+			}
+		},
+		"ElasticIP": {
+			"Type": "AWS::EC2::EIP",
+			"Properties": {
+				"Domain": "vpc"
+			},
+			"DependsOn": "GatewayToInternet"
+		},
+		"LaunchConfiguration": {
+			"Type": "AWS::AutoScaling::LaunchConfiguration",
+			"Properties": {
+				"InstanceMonitoring": false,
+				"IamInstanceProfile": {"Ref": "IamInstanceProfile"},
+				"ImageId": {"Fn::FindInMap": ["EC2RegionMap", {"Ref": "AWS::Region"}, "AmazonLinuxAMIHVMEBSBacked64bit"]},
+				"KeyName": {"Ref": "KeyName"},
+				"SecurityGroups": [{"Ref": "SecurityGroupJenkins"}],
+				"AssociatePublicIpAddress": true,
+				"InstanceType": "t2.micro",
+				"UserData": {
+					"Fn::Base64": {
+						"Fn::Join": [
+							"",
+							[
+								"#!/bin/bash -ex\n",
+								"aws configure set default.region ", {"Ref": "AWS::Region"},"\n",
+								"INSTANCE_ID=`curl -s http://169.254.169.254/latest/meta-data/instance-id`\n",
+								"aws ec2 associate-address --instance-id $INSTANCE_ID --allocation-id ", {"Fn::GetAtt": ["ElasticIP", "AllocationId"]}, "\n",
+								"wget http://pkg.jenkins-ci.org/redhat/jenkins-1.616-1.1.noarch.rpm\n",
+								"rpm --install jenkins-1.616-1.1.noarch.rpm\n",
+								"sed -i -e 's/JENKINS_ARGS=\\\"\\\"/JENKINS_ARGS=\\\"--argumentsRealm.passwd.admin=", {"Ref": "JenkinsAdminPassword"}, " --argumentsRealm.roles.admin=admin\\\"/g' /etc/sysconfig/jenkins\n",
+								"echo \"<?xml version='1.0' encoding='UTF-8'?><hudson><version>1.0</version><useSecurity>true</useSecurity><authorizationStrategy class=\\\"hudson.security.FullControlOnceLoggedInAuthorizationStrategy\\\"/><securityRealm class=\\\"hudson.security.LegacySecurityRealm\\\"/></hudson>\" > /var/lib/jenkins/config.xml\n",
+								"service jenkins start\n"
+							]
+						]
+					}
+				}
+			}
+		},
+		"AutoScalingGroup": {
+			"Type": "AWS::AutoScaling::AutoScalingGroup",
+			"Properties": {
+				"LaunchConfigurationName": {"Ref": "LaunchConfiguration"},
+				"Tags": [
+					{
+						"Key": "Name",
+						"Value": "jenkins-elasticip",
+						"PropagateAtLaunch": true
+					}
+				],
+				"DesiredCapacity": 1,
+				"MinSize": 1,
+				"MaxSize": 1,
+				"VPCZoneIdentifier": [{"Ref": "SubnetA"}, {"Ref": "SubnetB"}],
+				"HealthCheckGracePeriod": 600,
+				"HealthCheckType": "EC2"
+			},
+			"DependsOn": "GatewayToInternet"
+		}
+	},
+	"Outputs": {
+		"JenkinsURL": {
+			"Description": "URL to access web interface of Jenkins server.",
+			"Value": {"Fn::Join": ["", ["http://", {"Ref": "ElasticIP"}, ":8080"]]}
+		},
+		"User": {
+			"Description": "Administrator user for Jenkins.",
+			"Value": "admin"
+		},
+		"Password": {
+			"Description": "Password for Jenkins administrator user.",
+			"Value": {"Ref": "JenkinsAdminPassword"}
+		}
+	}
+}

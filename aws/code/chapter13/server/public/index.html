@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Imagery | AWS in Action: chapter 13</title> 
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+  </head>
+  <body>
+    <div id="new" class="collapse">
+      <h1>New image</h1>
+      <p><a href="#">Create a new image</a></p>
+    </div>
+    <div id="upload" class="collapse">
+      <h1>Upload</h1>
+      <p><blockquote></blockquote></p>
+      <form method="post" action="/image/blank/upload" enctype="multipart/form-data">
+        <input name="file" type="file" accept="image/*"> 
+        <input type="submit" value="Upload">
+      </form>
+    </div>
+    <div id="view" class="collapse">
+      <h1>View</h1>
+      <p><blockquote></blockquote></p>
+      <p><img src=""></p>
+      <p><a href="#" class="refresh">Refresh</a> - <a href="/">New image</a></p>
+    </div>
+    <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

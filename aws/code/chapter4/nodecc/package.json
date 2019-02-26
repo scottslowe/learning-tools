@@ -1,0 +1,8 @@
+{
+	"dependencies": {
+		"aws-sdk": "2.1.18",
+		"blessed": "0.0.51",
+		"jmespath": "0.10.0"
+	},
+	"private": true
+}

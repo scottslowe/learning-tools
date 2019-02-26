@@ -1,0 +1,116 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Description": "AWS in Action: chapter 5 (OpenSwan acting as VPN IPSec endpoint)",
+	"Parameters": {
+		"KeyName": {
+			"Description": "key for SSH access",
+			"Type": "AWS::EC2::KeyPair::KeyName",
+			"ConstraintDescription": "Must be the name of an existing key pair."
+		},
+		"VPC": {
+			"Description": "Just select the one and only default VPC.",
+			"Type": "AWS::EC2::VPC::Id"
+		},
+		"Subnet": {
+			"Description": "Just select one of the available subnets.",
+			"Type": "AWS::EC2::Subnet::Id"
+		},
+		"IPSecSharedSecret": {
+			"Description": "The shared secret key for IPSec.",
+			"Type": "String"
+		},
+		"VPNUser": {
+			"Description": "The VPN user.",
+			"Type": "String"
+		},
+		"VPNPassword": {
+			"Description": "The VPN password.",
+			"Type": "String"
+		}
+	},
+	"Mappings": {
+		"EC2RegionMap": {
+			"ap-northeast-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-cbf90ecb"},
+			"ap-southeast-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-68d8e93a"},
+			"ap-southeast-2": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-fd9cecc7"},
+			"eu-central-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-a8221fb5"},
+			"eu-west-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-a10897d6"},
+			"sa-east-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-b52890a8"},
+			"us-east-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-1ecae776"},
+			"us-west-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-d114f295"},
+			"us-west-2": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-e7527ed7"}
+		}
+	},
+	"Resources": {
+		"EC2Instance": {
+			"Type": "AWS::EC2::Instance",
+			"Properties": {
+				"InstanceType": "t2.micro",
+				"SecurityGroupIds": [{"Ref": "InstanceSecurityGroup"}],
+				"KeyName": {"Ref": "KeyName"},
+				"ImageId": {"Fn::FindInMap": ["EC2RegionMap", {"Ref": "AWS::Region"}, "AmazonLinuxAMIHVMEBSBacked64bit"]},
+				"SubnetId": {"Ref": "Subnet"},
+				"UserData": {"Fn::Base64": {"Fn::Join": ["", [
+					"#!/bin/bash -ex\n",
+					"export IPSEC_PSK=", {"Ref": "IPSecSharedSecret"}, "\n",
+					"export VPN_USER=", {"Ref": "VPNUser"}, "\n",
+					"export VPN_PASSWORD=", {"Ref": "VPNPassword"}, "\n",
+					"export STACK_NAME=", {"Ref": "AWS::StackName"}, "\n",
+					"export REGION=", {"Ref": "AWS::Region"}, "\n",
+					"curl -s https://raw.githubusercontent.com/AWSinAction/code/master/chapter5/vpn-setup.sh | bash -ex\n"
+				]]}}
+			}
+		},
+		"InstanceSecurityGroup": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Properties": {
+				"GroupDescription": "Enable access to VPN server",
+				"VpcId": {"Ref": "VPC"},
+				"SecurityGroupIngress": [
+					{
+						"IpProtocol": "tcp",
+						"FromPort": "22",
+						"ToPort": "22",
+						"CidrIp": "0.0.0.0/0"
+					},
+					{
+						"IpProtocol": "udp",
+						"FromPort": "500",
+						"ToPort": "500",
+						"CidrIp": "0.0.0.0/0"
+					},
+					{
+						"IpProtocol": "udp",
+						"FromPort": "1701",
+						"ToPort": "1701",
+						"CidrIp": "0.0.0.0/0"
+					},
+					{
+						"IpProtocol": "udp",
+						"FromPort": "4500",
+						"ToPort": "4500",
+						"CidrIp": "0.0.0.0/0"
+					}
+				]
+			}
+		}
+	},
+	"Outputs": {
+		"ServerIP": {
+			"Description": "Public IP address of the vpn server",
+			"Value": {"Fn::GetAtt": ["EC2Instance", "PublicIp"]}
+		},
+		"IPSecSharedSecret": {
+			"Description": "The shared key for the VPN connection (IPSec)",
+			"Value": {"Ref": "IPSecSharedSecret"}
+		},
+		"VPNUser": {
+			"Description": "The username for the vpn connection",
+			"Value": {"Ref": "VPNUser"}
+		},
+		"VPNPassword": {
+			"Description": "The password for the vpn connection",
+			"Value": {"Ref": "VPNPassword"}
+		}
+	}
+}

@@ -1,0 +1,4 @@
+{
+	"QueueUrl": "https://queue.amazonaws.com/123456789/url2png",
+	"Bucket": "url2png-YourName"
+}

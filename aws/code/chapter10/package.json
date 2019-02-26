@@ -1,0 +1,8 @@
+{
+	"dependencies": {
+		"aws-sdk": "2.1.29",
+		"docopt": "0.6.2",
+		"moment": "2.10.3"
+	},
+	"private": true
+}

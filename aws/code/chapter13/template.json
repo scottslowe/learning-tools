@@ -1,0 +1,395 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "AWS in Action: chapter 13",
+  "Parameters": {
+    "KeyName": {
+      "Description": "Key Pair name",
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "Default": "mykey"
+    }
+  },
+  "Resources": {
+    "Bucket": {
+      "Type": "AWS::S3::Bucket",
+      "Properties": {
+        "BucketName": {"Fn::Join": ["-", ["imagery", {"Ref": "AWS::AccountId"}]]},
+        "WebsiteConfiguration": {
+          "ErrorDocument": "error.html",
+          "IndexDocument": "index.html"
+        }
+      }
+    },
+    "Table": {
+      "Type": "AWS::DynamoDB::Table",
+      "Properties": {
+        "AttributeDefinitions": [{
+          "AttributeName": "id",
+          "AttributeType": "S"
+        }],
+        "KeySchema": [{
+          "AttributeName": "id",
+          "KeyType": "HASH"
+        }],
+        "ProvisionedThroughput": {
+          "ReadCapacityUnits": 1,
+          "WriteCapacityUnits": 1
+        },
+        "TableName": "imagery-image"
+      }
+    },
+    "SQSDLQueue": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "QueueName": "message-dlq"
+      }
+    },
+    "SQSQueue": {
+      "Type": "AWS::SQS::Queue",
+      "Properties": {
+        "QueueName": "message",
+        "RedrivePolicy": {
+          "deadLetterTargetArn": {"Fn::GetAtt": ["SQSDLQueue", "Arn"]},
+          "maxReceiveCount": 10
+        }
+      }
+    },
+    "WorkerInstanceProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Path": "/",
+        "Roles": [{"Ref": "WorkerRole"}]
+      }
+    },
+    "WorkerRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": ["ec2.amazonaws.com"]
+            },
+            "Action": ["sts:AssumeRole"]
+          }]
+        },
+        "Path": "/",
+        "Policies": [{
+          "PolicyName": "sqs",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [{
+              "Sid": "Stmt1425388787000",
+                "Effect": "Allow",
+                "Action": [
+                  "sqs:ChangeMessageVisibility",
+                  "sqs:DeleteMessage",
+                  "sqs:ReceiveMessage"
+                ],
+                "Resource": {"Fn::GetAtt": ["SQSQueue", "Arn"]}
+            }]
+          }
+        }, {
+          "PolicyName": "cloudwatch",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [{
+              "Sid": "Stmt1425388787000",
+                "Effect": "Allow",
+                "Action": [
+                  "cloudwatch:PutMetricData"
+                ],
+                "Resource": "*"
+            }]
+          }
+        }, {
+          "PolicyName": "s3-elasticbeanstalk",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [{
+              "Sid": "Stmt1425388787000",
+                "Effect": "Allow",
+                "Action": [
+                  "s3:Get*",
+                  "s3:List*",
+                  "s3:PutObject"
+                ],
+                "Resource": [
+                  {"Fn::Join": ["", ["arn:aws:s3:::elasticbeanstalk-*-", {"Ref": "AWS::AccountId"}, "/*"]]},
+                  {"Fn::Join": ["", ["arn:aws:s3:::elasticbeanstalk-*-", {"Ref": "AWS::AccountId"}, "-*/*"]]}
+                ]
+            }]
+          }
+        }, {
+          "PolicyName": "s3-image",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [{
+              "Sid": "Stmt1425388787000",
+                "Effect": "Allow",
+                "Action": [
+                  "s3:GetObject",
+                  "s3:PutObject",
+                  "s3:PutObjectAcl"
+                ],
+                "Resource": [
+                  {"Fn::Join": ["", ["arn:aws:s3:::", {"Ref": "Bucket"}, "/*"]]}
+                ]
+            }]
+          }
+        }, {
+          "PolicyName": "dynamodb",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [{
+              "Sid": "Stmt1425388787000",
+                "Effect": "Allow",
+                "Action": [
+                  "dynamodb:GetItem",
+                  "dynamodb:UpdateItem"
+                ],
+                "Resource": {"Fn::Join": ["", ["arn:aws:dynamodb:", {"Ref": "AWS::Region"}, ":", {"Ref": "AWS::AccountId"}, ":table/", {"Ref": "Table"}]]}
+            }]
+          }
+        }]
+      }
+    },
+    "EBWorkerConfigurationTemplate": {
+      "Type": "AWS::ElasticBeanstalk::ConfigurationTemplate",
+      "Properties": {
+        "ApplicationName": {"Ref": "EBWorkerApplication"},
+        "Description": "Imagery worker: AWS in Action: chapter 13",
+        "SolutionStackName": "64bit Amazon Linux 2015.03 v1.4.6 running Node.js",
+        "OptionSettings": [{
+          "Namespace": "aws:autoscaling:launchconfiguration",
+          "OptionName": "EC2KeyName",
+          "Value": {"Ref": "KeyName"}
+        }, {
+          "Namespace": "aws:autoscaling:launchconfiguration",
+          "OptionName": "IamInstanceProfile",
+          "Value": {"Ref": "WorkerInstanceProfile"}
+        }, {
+          "Namespace": "aws:elasticbeanstalk:sqsd",
+          "OptionName": "WorkerQueueURL",
+          "Value": {"Ref": "SQSQueue"}
+        }, {
+          "Namespace": "aws:elasticbeanstalk:sqsd",
+          "OptionName": "HttpPath",
+          "Value": "/sqs"
+        }, {
+          "Namespace": "aws:elasticbeanstalk:container:nodejs",
+          "OptionName": "NodeCommand",
+          "Value": "node worker.js"
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "ImageQueue",
+          "Value": {"Ref": "SQSQueue"}
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "ImageBucket",
+          "Value": {"Ref": "Bucket"}
+        }]
+      }
+    },
+    "EBWorkerEnvironment": {
+      "Type": "AWS::ElasticBeanstalk::Environment",
+      "Properties": {
+        "ApplicationName": {"Ref": "EBWorkerApplication"},
+        "Description": "Imagery worker: AWS in Action: chapter 13",
+        "TemplateName": {"Ref": "EBWorkerConfigurationTemplate"},
+        "VersionLabel": {"Ref": "EBWorkerApplicationVersion"},
+        "Tier": {
+          "Type": "SQS/HTTP",
+          "Name": "Worker",
+          "Version": "1.0"
+        }
+      }
+    },
+    "EBWorkerApplication": {
+      "Type": "AWS::ElasticBeanstalk::Application",
+      "Properties": {
+        "ApplicationName": "imagery-worker",
+        "Description": "Imagery worker: AWS in Action: chapter 13"
+      }
+    },
+    "EBWorkerApplicationVersion": {
+      "Type": "AWS::ElasticBeanstalk::ApplicationVersion",
+      "Properties": {
+        "ApplicationName": {"Ref": "EBWorkerApplication"},
+        "Description": "Imagery worker: AWS in Action: chapter 13",
+        "SourceBundle": {
+          "S3Bucket": "awsinaction",
+          "S3Key": "chapter13/build/worker.zip"
+        }
+      }
+    },
+    "ServerInstanceProfile": {
+      "Type": "AWS::IAM::InstanceProfile",
+      "Properties": {
+        "Path": "/",
+        "Roles": [{"Ref": "ServerRole"}]
+      }
+    },
+    "ServerRole": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Version": "2012-10-17",
+          "Statement": [{
+            "Effect": "Allow",
+            "Principal": {
+              "Service": ["ec2.amazonaws.com"]
+            },
+            "Action": ["sts:AssumeRole"]
+          }]
+        },
+        "Path": "/",
+        "Policies": [{
+          "PolicyName": "sqs",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [{
+              "Sid": "Stmt1425388787000",
+                "Effect": "Allow",
+                "Action": [
+                  "sqs:SendMessage"
+                ],
+                "Resource": {"Fn::GetAtt": ["SQSQueue", "Arn"]}
+            }]
+          }
+        }, {
+          "PolicyName": "cloudwatch",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [{
+              "Sid": "Stmt1425388787000",
+                "Effect": "Allow",
+                "Action": [
+                  "cloudwatch:PutMetricData"
+                ],
+                "Resource": "*"
+            }]
+          }
+        }, {
+          "PolicyName": "s3-elasticbeanstalk",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [{
+              "Sid": "Stmt1425388787000",
+                "Effect": "Allow",
+                "Action": [
+                  "s3:Get*",
+                  "s3:List*",
+                  "s3:PutObject"
+                ],
+                "Resource": [
+                  {"Fn::Join": ["", ["arn:aws:s3:::elasticbeanstalk-*-", {"Ref": "AWS::AccountId"}, "/*"]]},
+                  {"Fn::Join": ["", ["arn:aws:s3:::elasticbeanstalk-*-", {"Ref": "AWS::AccountId"}, "-*/*"]]}
+                ]
+            }]
+          }
+        }, {
+          "PolicyName": "s3-image",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [{
+              "Sid": "Stmt1425388787000",
+                "Effect": "Allow",
+                "Action": [
+                  "s3:PutObject"
+                ],
+                "Resource": [
+                  {"Fn::Join": ["", ["arn:aws:s3:::", {"Ref": "Bucket"}, "/*"]]}
+                ]
+            }]
+          }
+        }, {
+          "PolicyName": "dynamodb",
+          "PolicyDocument": {
+            "Version": "2012-10-17",
+            "Statement": [{
+              "Sid": "Stmt1425388787000",
+                "Effect": "Allow",
+                "Action": [
+                  "dynamodb:GetItem",
+                  "dynamodb:PutItem",
+                  "dynamodb:UpdateItem"
+                ],
+                "Resource": {"Fn::Join": ["", ["arn:aws:dynamodb:", {"Ref": "AWS::Region"}, ":", {"Ref": "AWS::AccountId"}, ":table/", {"Ref": "Table"}]]}
+            }]
+          }
+        }]
+      }
+    },
+    "EBServerConfigurationTemplate": {
+      "Type": "AWS::ElasticBeanstalk::ConfigurationTemplate",
+      "Properties": {
+        "ApplicationName": {"Ref": "EBServerApplication"},
+        "Description": "Imagery server: AWS in Action: chapter 13",
+        "SolutionStackName": "64bit Amazon Linux 2015.03 v1.4.6 running Node.js",
+        "OptionSettings": [{
+          "Namespace": "aws:autoscaling:asg",
+          "OptionName": "MinSize",
+          "Value": "2"
+        }, {
+          "Namespace": "aws:autoscaling:launchconfiguration",
+          "OptionName": "EC2KeyName",
+          "Value": {"Ref": "KeyName"}
+        }, {
+          "Namespace": "aws:autoscaling:launchconfiguration",
+          "OptionName": "IamInstanceProfile",
+          "Value": {"Ref": "ServerInstanceProfile"}
+        }, {
+          "Namespace": "aws:elasticbeanstalk:container:nodejs",
+          "OptionName": "NodeCommand",
+          "Value": "node server.js"
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "ImageQueue",
+          "Value": {"Ref": "SQSQueue"}
+        }, {
+          "Namespace": "aws:elasticbeanstalk:application:environment",
+          "OptionName": "ImageBucket",
+          "Value": {"Ref": "Bucket"}
+        }, {
+          "Namespace": "aws:elasticbeanstalk:container:nodejs:staticfiles",
+          "OptionName": "/public",
+          "Value": "/public"
+        }]
+      }
+    },
+    "EBServerEnvironment": {
+      "Type": "AWS::ElasticBeanstalk::Environment",
+      "Properties": {
+        "ApplicationName": {"Ref": "EBServerApplication"},
+        "Description": "Imagery server: AWS in Action: chapter 13",
+        "TemplateName": {"Ref": "EBServerConfigurationTemplate"},
+        "VersionLabel": {"Ref": "EBServerApplicationVersion"}
+      }
+    },
+    "EBServerApplication": {
+      "Type": "AWS::ElasticBeanstalk::Application",
+      "Properties": {
+        "ApplicationName": "imagery-server",
+        "Description": "Imagery server: AWS in Action: chapter 13"
+      }
+    },
+    "EBServerApplicationVersion": {
+      "Type": "AWS::ElasticBeanstalk::ApplicationVersion",
+      "Properties": {
+        "ApplicationName": {"Ref": "EBServerApplication"},
+        "Description": "Imagery server: AWS in Action: chapter 13",
+        "SourceBundle": {
+          "S3Bucket": "awsinaction",
+          "S3Key": "chapter13/build/server.zip"
+        }
+      }
+    }
+  },
+  "Outputs": {
+    "EndpointURL": {
+      "Value": {"Fn::GetAtt": ["EBServerEnvironment", "EndpointURL"]},
+      "Description": "Load Balancer URL"
+    }
+  }
+}

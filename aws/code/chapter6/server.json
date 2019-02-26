@@ -1,0 +1,114 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Description": "AWS in Action: chapter 6 (IAM role)",
+	"Parameters": {
+		"KeyName": {
+			"Description": "Key Pair name",
+			"Type": "AWS::EC2::KeyPair::KeyName",
+			"Default": "mykey"
+		},
+		"VPC": {
+			"Description": "Just select the one and only default VPC",
+			"Type": "AWS::EC2::VPC::Id"
+		},
+		"Subnet": {
+			"Description": "Just select one of the available subnets",
+			"Type": "AWS::EC2::Subnet::Id"
+		},
+		"Lifetime": {
+			"Description": "Lifetime in minutes (2-59)",
+			"Type": "Number",
+			"Default": "2",
+			"MinValue": "2",
+			"MaxValue": "59"
+		}
+	},
+	"Mappings": {
+		"EC2RegionMap": {
+			"ap-northeast-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-cbf90ecb"},
+			"ap-southeast-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-68d8e93a"},
+			"ap-southeast-2": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-fd9cecc7"},
+			"eu-central-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-a8221fb5"},
+			"eu-west-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-a10897d6"},
+			"sa-east-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-b52890a8"},
+			"us-east-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-1ecae776"},
+			"us-west-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-d114f295"},
+			"us-west-2": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-e7527ed7"}
+		}
+	},
+	"Resources": {
+		"SecurityGroup": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Properties": {
+				"GroupDescription": "My security group",
+				"VpcId": {"Ref": "VPC"},
+				"SecurityGroupIngress": [{
+					"CidrIp": "0.0.0.0/0",
+					"FromPort": 22,
+					"IpProtocol": "tcp",
+					"ToPort": 22
+				}]
+			}
+		},
+		"InstanceProfile": {
+			"Type": "AWS::IAM::InstanceProfile",
+			"Properties": {
+				"Path": "/",
+				"Roles": [{"Ref": "Role"}]
+			}
+		},
+		"Role": {
+			"Type": "AWS::IAM::Role",
+			"Properties": {
+				"AssumeRolePolicyDocument": {
+					"Version": "2012-10-17",
+					"Statement": [{
+						"Effect": "Allow",
+						"Principal": {
+							"Service": ["ec2.amazonaws.com"]
+						},
+						"Action": ["sts:AssumeRole"]
+					}]
+				},
+				"Path": "/",
+				"Policies": [{
+					"PolicyName": "ec2",
+					"PolicyDocument": {
+						"Version": "2012-10-17",
+						"Statement": [{
+							"Sid": "Stmt1425388787000",
+							"Effect": "Allow",
+							"Action": ["ec2:StopInstances"],
+							"Resource": ["*"],
+							"Condition": {
+								"StringEquals": {"ec2:ResourceTag/aws:cloudformation:stack-id": {"Ref": "AWS::StackId"}}
+							}
+						}]
+					}
+				}]
+			}
+		},
+		"Server": {
+			"Type": "AWS::EC2::Instance",
+			"Properties": {
+				"IamInstanceProfile": {"Ref": "InstanceProfile"},
+				"ImageId": {"Fn::FindInMap": ["EC2RegionMap", {"Ref": "AWS::Region"}, "AmazonLinuxAMIHVMEBSBacked64bit"]},
+				"InstanceType": "t2.micro",
+				"KeyName": {"Ref": "KeyName"},
+				"SecurityGroupIds": [{"Ref": "SecurityGroup"}],
+				"SubnetId": {"Ref": "Subnet"},
+				"UserData": {"Fn::Base64": {"Fn::Join": ["", [
+					"#!/bin/bash -ex\n",
+					"INSTANCEID=`curl -s http://169.254.169.254/latest/meta-data/instance-id`\n",
+					"echo \"aws --region ", {"Ref": "AWS::Region"}, " ec2 stop-instances --instance-ids $INSTANCEID\" | at now + ", {"Ref": "Lifetime"} ," minutes\n"
+				]]}}
+			}
+		}
+	},
+	"Outputs": {
+		"PublicName": {
+			"Value": {"Fn::GetAtt": ["Server", "PublicDnsName"]},
+			"Description": "Public name (connect via SSH as user ec2-user)"
+		}
+	}
+}

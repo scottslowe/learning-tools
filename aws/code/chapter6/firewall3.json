@@ -1,0 +1,77 @@
+{
+	"AWSTemplateFormatVersion": "2010-09-09",
+	"Description": "AWS in Action: chapter 6 (firewall 3)",
+	"Parameters": {
+		"KeyName": {
+			"Description": "Key Pair name",
+			"Type": "AWS::EC2::KeyPair::KeyName",
+			"Default": "mykey"
+		},
+		"VPC": {
+			"Description": "Just select the one and only default VPC",
+			"Type": "AWS::EC2::VPC::Id"
+		},
+		"Subnet": {
+			"Description": "Just select one of the available subnets",
+			"Type": "AWS::EC2::Subnet::Id"
+		}
+	},
+	"Mappings": {
+		"EC2RegionMap": {
+			"ap-northeast-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-cbf90ecb"},
+			"ap-southeast-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-68d8e93a"},
+			"ap-southeast-2": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-fd9cecc7"},
+			"eu-central-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-a8221fb5"},
+			"eu-west-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-a10897d6"},
+			"sa-east-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-b52890a8"},
+			"us-east-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-1ecae776"},
+			"us-west-1": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-d114f295"},
+			"us-west-2": {"AmazonLinuxAMIHVMEBSBacked64bit": "ami-e7527ed7"}
+		}
+	},
+	"Resources": {
+		"SecurityGroup": {
+			"Type": "AWS::EC2::SecurityGroup",
+			"Properties": {
+				"GroupDescription": "My security group",
+				"VpcId": {"Ref": "VPC"}
+			}
+		},
+		"AllowInboundICMP": {
+			"Type": "AWS::EC2::SecurityGroupIngress",
+			"Properties": {
+				"GroupId": {"Ref": "SecurityGroup"},
+				"IpProtocol": "icmp",
+				"FromPort": "-1",
+				"ToPort": "-1",
+				"CidrIp": "0.0.0.0/0"
+			}
+		},
+		"AllowInboundSSH": {
+			"Type": "AWS::EC2::SecurityGroupIngress",
+			"Properties": {
+				"GroupId": {"Ref": "SecurityGroup"},
+				"IpProtocol": "tcp",
+				"FromPort": "22",
+				"ToPort": "22",
+				"CidrIp": "0.0.0.0/0"
+			}
+		},
+		"Server": {
+			"Type": "AWS::EC2::Instance",
+			"Properties": {
+				"ImageId": {"Fn::FindInMap": ["EC2RegionMap", {"Ref": "AWS::Region"}, "AmazonLinuxAMIHVMEBSBacked64bit"]},
+				"InstanceType": "t2.micro",
+				"KeyName": {"Ref": "KeyName"},
+				"SecurityGroupIds": [{"Ref": "SecurityGroup"}],
+				"SubnetId": {"Ref": "Subnet"}
+			}
+		}
+	},
+	"Outputs": {
+		"PublicName": {
+			"Value": {"Fn::GetAtt": ["Server", "PublicDnsName"]},
+			"Description": "Public name (connect via SSH as user ec2-user)"
+		}
+	}
+}
