@@ -1,0 +1,54 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::<BUCKET>/public/*",
+                "arn:aws:s3:::<BUCKET>/private/index/${cognito-identity.amazonaws.com:sub}/*",
+                "arn:aws:s3:::<BUCKET>/private/content/${cognito-identity.amazonaws.com:sub}/*",
+                "arn:aws:s3:::<BUCKET>/private/thumbnail/${cognito-identity.amazonaws.com:sub}/*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutObject",
+                "s3:DeleteObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::<BUCKET>/public/content/${cognito-identity.amazonaws.com:sub}/*",
+                "arn:aws:s3:::<BUCKET>/private/content/${cognito-identity.amazonaws.com:sub}/*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:UpdateItem"
+            ],
+            "Resource": "arn:aws:dynamodb:<REGION>:<AWS_ACCOUNT_ID>:table/<DYNAMODB_TABLE>",
+            "Condition": {
+                "ForAllValues:StringEquals": {
+                    "dynamodb:LeadingKeys": [
+                        "${cognito-identity.amazonaws.com:sub}"
+                    ],
+                    "dynamodb:Attributes": [
+                        "title",
+                        "description"
+                    ]
+                },
+                "StringEqualsIfExists": {
+                    "dynamodb:Select": "SPECIFIC_ATTRIBUTES",
+                    "dynamodb:ReturnValues": [
+                        "NONE",
+                        "UPDATED_OLD",
+                        "UPDATED_NEW"
+                    ]
+                }
+            }
+        }
+    ]
+}

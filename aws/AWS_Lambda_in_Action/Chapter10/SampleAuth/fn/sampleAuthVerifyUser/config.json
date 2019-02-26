@@ -1,0 +1,14 @@
+{
+  "AWS_ACCOUNT_ID": "024700040865",
+  "REGION": "us-east-1",
+  "BUCKET": "danilop-sampleauth",
+  "MAX_AGE": "10",
+  "DDB_TABLE": "SampleAuthUsers",
+  "IDENTITY_POOL_NAME": "SampleAuth",
+  "DEVELOPER_PROVIDER_NAME": "login.danilop.net",
+  "EXTERNAL_NAME": "My Authentication",
+  "EMAIL_SOURCE": "dpoccia@gmail.com",
+  "VERIFICATION_PAGE": "http://danilop-sampleauth.s3.amazonaws.com/verify.html",
+  "RESET_PAGE": "http://danilop-sampleauth.s3.amazonaws.com/resetPassword.html",
+  "IDENTITY_POOL_ID": "us-east-1:3909a295-f5f8-4d6b-97ea-994ed4d324dd"
+}

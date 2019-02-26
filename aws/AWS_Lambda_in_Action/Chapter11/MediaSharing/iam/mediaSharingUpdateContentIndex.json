@@ -1,0 +1,29 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "s3:PutObject"
+            ],
+            "Resource": [
+                "arn:aws:s3:::danilop-media-sharing/public/index/*",
+                "arn:aws:s3:::danilop-media-sharing/private/index/*"
+            ]
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "dynamodb:Query",
+                "dynamodb:GetRecords",
+                "dynamodb:GetShardIterator",
+                "dynamodb:DescribeStream",
+                "dynamodb:ListStreams"
+            ],
+            "Resource": [
+                "arn:aws:dynamodb:us-east-1:024700040865:table/MediaSharing",
+                "arn:aws:dynamodb:us-east-1:024700040865:table/MediaSharing/*"
+            ]
+        }
+    ]
+}

@@ -1,0 +1,38 @@
+<html lang="en">
+  <head>
+    <title>Greetings on Demand - AWS Lambda in Action</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- JQuery - required by Boostrap -->
+    <script src="https://code.jquery.com/jquery-1.12.0.min.js"></script>
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" integrity="sha384-1q8mTJOASx8j1Au+a5WDVnPi2lkFfwwEAa8hDDdjZlpLegxhjVME1fgjWPGmkzs7" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" integrity="sha384-fLW2N01lMqjakBkx3l/M9EahuwpSfeNvV63J5ezn3uZzapT0u7EYsXMjQV+0En5r" crossorigin="anonymous">
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" integrity="sha384-0mSbJDEHialfmuBBQP6A4Qrprq5OVfW37PRR3j5ELqxss1yVqOtnepnHVP9aJ7xS" crossorigin="anonymous"></script>
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.2.32.min.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <div class="jumbotron">
+        <h2>AWS Lambda in Action</h2>
+        <h1>Greetings on Demand</h1>
+        <p>This is an example of calling an AWS Lambda function
+          from a web page via JavaScript.</p>
+        <p>Instead of a static "Hello World" sample, here you can provide
+            a name, and you will receive your greetings.</p>
+        <p>Try without a name, too.</p>
+      </div>
+      <form role="form" id="greetingsForm">
+        <div class="form-group">
+          <label for="name">Name:</label>
+          <input type="text" class="form-control" id="name">
+        </div>
+        <button type="submit" class="btn btn-default" id="submitButton">Greet</button>
+      </form>
+      <div id="result">
+      </div>
+    </div>
+    <!-- This is where AWS Lambda is invoked -->
+    <script src="greetings.js"></script>
+  </body>
+</html>

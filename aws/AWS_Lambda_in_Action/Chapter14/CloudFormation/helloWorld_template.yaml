@@ -1,0 +1,16 @@
+Resources:
+  HelloWorldFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: |
+          exports.handler = (event, context, callback) => {
+            callback(null, 'Hello World from AWS CloudFormation!');
+          };
+      Description: A sample Hello World function deployed by AWS CloudFormation
+      FunctionName: helloWordFromCF
+      Handler: index.handler
+      MemorySize: 256
+      Role: arn:aws:iam::123412341234:role/lambda_basic_execution
+      Runtime: nodejs4.3
+      Timeout: 10

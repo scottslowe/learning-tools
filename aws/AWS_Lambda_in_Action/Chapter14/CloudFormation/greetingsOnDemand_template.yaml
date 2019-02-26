@@ -1,0 +1,14 @@
+Resources:
+  GreetingsOnDemandFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        S3Bucket: danilop-functions
+        S3Key: code/greetingsOnDemand-v1.zip
+      Description: Say your name and you'll be greeted
+      FunctionName: greetingsOnDemandFromCF
+      Handler: greetingsOnDemand.handler
+      MemorySize: 256
+      Role: arn:aws:iam::123412341234:role/lambda_basic_execution
+      Runtime: nodejs4.3
+      Timeout: 10
