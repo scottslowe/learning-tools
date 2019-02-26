@@ -1,0 +1,42 @@
+<project name="HadoopCookbook" default="build" basedir=".">
+	<description>
+        simple example build file
+    </description>
+	<!-- set global properties for this build -->
+	<property name="src" location="src" />
+	<property name="build" location="build" />
+	<property name="hadoop.home" location="/Users/srinath/playground/hadoop-book/hadoop-1.0.0" />
+
+	<target name="init">
+		<!-- Create the time stamp -->
+		<tstamp />
+		<!-- Create the build directory structure used by compile -->
+		<mkdir dir="${build}" />
+		<mkdir dir="${build}/classes" />
+
+	</target>
+
+	<target name="compile" depends="init" description="compile the source ">
+		<!-- Compile the java code from ${src} into ${build} -->
+		<javac srcdir="${src}" destdir="${build}/classes" includeantruntime="false">
+			<classpath>
+				<fileset dir="${hadoop.home}/lib">
+					<include name="**/*.jar" />
+				</fileset>
+				<fileset dir="${hadoop.home}">
+					<include name="hadoop-core-*.jar" />
+				</fileset>
+			</classpath>
+		</javac>
+	</target>
+
+	<target name="build" depends="compile" description="generate the distribution">
+		<!-- Build the jar file -->
+		<jar jarfile="${build}/lib/hadoop-cookbook-chapter1.jar" basedir="${build}/classes" />
+	</target>
+
+	<target name="clean" description="clean up">
+		<!-- Delete the ${build} and ${dist} directory trees -->
+		<delete dir="${build}" />
+	</target>
+</project>

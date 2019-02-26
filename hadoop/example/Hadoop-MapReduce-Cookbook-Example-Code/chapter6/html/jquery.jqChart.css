@@ -1,0 +1,29 @@
+.ui-jqchart {
+    position: relative;
+}
+
+.ui-jqchart-tooltip {
+    position:absolute;
+    white-space: nowrap;
+
+    padding: .2em .4em;
+    z-index:9999;
+
+    border: 1px solid #dddddd;
+    color: #333333;
+    background: #eeeeee;    
+
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px; 
+    border-radius: 4px; 
+
+    -o-box-shadow: 0 0 5px #aaa;
+	-moz-box-shadow: 0 0 5px #aaa;
+	-webkit-box-shadow: 0 0 5px #aaa;
+	box-shadow: 0 0 5px #aaa;
+}
+
+* html .ui-jqchart-tooltip {
+	background-image: none;
+}
+body .ui-jqchart-tooltip { border-width:2px; }

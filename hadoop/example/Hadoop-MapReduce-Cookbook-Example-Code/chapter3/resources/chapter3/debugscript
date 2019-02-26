@@ -1,0 +1,10 @@
+LOG_FILE=/Users/srinath/playground/hadoop-book/hadoop-1.0.0/error.log
+/bin/pwd
+
+echo "Run the script" >> $LOG_FILE
+
+echo $script >> $LOG_FILE
+echo $stdout >> $LOG_FILE
+echo $stderr >> $LOG_FILE
+echo $syslog >> $LOG_FILE
+echo $jobconf >> $LOG_FILE

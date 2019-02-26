@@ -1,0 +1,20 @@
+This directory contains tools for generating code snippets for the book and
+testing that they are as expected.
+
+Example invocations:
+
+# First set the location of the Hadoop installation you are testing
+# You need to have an unpacked copy of Hadoop in this directory
+export HADOOP_HOME=~/dev/hadoop-1.0.0/
+
+# From the top level
+mvn verify -Phadoop.version=1.0.0
+
+# From the snippet directory
+mvn verify
+
+# Run against a pseudo cluster (you need to start it first)
+mvn verify -DargLine="-Dexample.mode=pseudo"
+
+# Run the examples from chapter 2 only
+mvn verify -DargLine="-Dexample.chapters=ch02"

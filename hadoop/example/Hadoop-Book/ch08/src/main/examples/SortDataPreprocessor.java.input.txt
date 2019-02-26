@@ -1,0 +1,2 @@
+hadoop jar hadoop-examples.jar SortDataPreprocessor input/ncdc/all \
+  input/ncdc/all-seq

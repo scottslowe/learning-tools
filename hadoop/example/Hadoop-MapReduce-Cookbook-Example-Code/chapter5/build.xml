@@ -1,0 +1,106 @@
+<project name="HadoopCookbook" basedir=".">
+	<description>
+        simple example build file
+    </description>
+	<!-- set global properties for this build -->
+	<property name="src" location="src" />
+	<property name="build" location="build" />
+	<property name="hadoop.home" location="/Users/srinath/playground/hadoop-book/hadoop-1.0.0" />
+	<property name="hbase.home" location="/Users/srinath/playground/hadoop-book/hbase-0.92.1" />
+	<property name="mahout.home" location="/Users/srinath/playground/hadoop-book/mahout-distribution-0.6" />
+
+	<path id="hbase.path">
+		<pathelement path="${classpath}" />
+		<fileset dir="${hadoop.home}/lib">
+			<include name="**/*.jar" />
+		</fileset>
+		<fileset dir="${hadoop.home}">
+			<include name="hadoop-core-*.jar" />
+		</fileset>
+		<fileset dir="${hbase.home}/lib">
+			<include name="**/*.jar" />
+		</fileset>
+		<fileset dir="${hbase.home}">
+			<include name="hbase-*.jar" />
+		</fileset>
+	</path>
+	
+	<path id="mahout.path">
+		<pathelement path="${classpath}" />
+		<fileset dir="${hadoop.home}/lib">
+			<include name="**/*.jar" />
+		</fileset>
+		<fileset dir="${hadoop.home}">
+			<include name="hadoop-core-*.jar" />
+		</fileset>
+		<fileset dir="${mahout.home}/lib">
+			<include name="**/*.jar" />
+		</fileset>
+		<fileset dir="${mahout.home}">
+			<include name="mahout-*.jar" />
+		</fileset>
+	</path>
+
+
+	<target name="init">
+		<!-- Create the time stamp -->
+		<tstamp />
+		<!-- Create the build directory structure used by compile -->
+		<mkdir dir="${build}" />
+		<mkdir dir="${build}/classes" />
+
+	</target>
+
+
+	<target name="hbase-build" depends="init" description="compile the source">
+		<!-- Compile the java code from ${src} into ${build} -->
+		<javac srcdir="${src}" destdir="${build}/classes" includeantruntime="false" excludes="chapter5/KMeanSample.java">
+			<classpath>
+				<path refid="hbase.path" />
+			</classpath>
+		</javac>
+		<jar jarfile="${build}/lib/hadoop-cookbookchapter5.jar" basedir="${build}/classes" />
+	</target>
+
+	<target name="mahout-build" depends="init" description="compile the source ">
+		<!-- Compile the java code from ${src} into ${build} -->
+		<javac srcdir="${src}" destdir="${build}/classes" includeantruntime="false" includes="chapter5/KMeanSample.java">
+			<classpath>
+				<path refid="mahout.path" />
+			</classpath>
+		</javac>
+		<jar jarfile="${build}/lib/hadoop-cookbook-chapter5.jar" basedir="${build}/classes" />
+	</target>
+
+	<target name="hbase-run-javaclient" depends="hbase-build" description="compile the source ">
+		<java classname="chapter5.HBaseClient">
+			<classpath>
+				<pathelement location="${build}/classes" />
+				<path refid="hbase.path" />
+			</classpath>
+		</java>
+	</target>
+
+	<target name="hbase-sample1-upload" depends="hbase-build" description="compile the source ">
+		<java classname="chapter5.HDIDataUploader">
+			<classpath>
+				<pathelement location="${build}/classes" />
+				<path refid="hbase.path" />
+			</classpath>
+		</java>
+	</target>
+
+	<target name="clean" description="clean up">
+		<!-- Delete the ${build} and ${dist} directory trees -->
+		<delete dir="${build}" />
+	</target>
+	<target name="kmean-run" description="clean up">
+		<java classname="chapter5.KMeanSample">
+			<classpath>
+				<pathelement location="${build}/classes" />
+				<path refid="mahout.path" />
+			</classpath>
+		</java>
+	</target>
+
+</project>

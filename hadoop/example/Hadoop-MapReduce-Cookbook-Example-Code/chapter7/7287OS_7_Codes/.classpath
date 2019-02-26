@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/home/thilina/Software/hadoop-1.0.4/hadoop-core-1.0.4.jar"/>
+	<classpathentry kind="lib" path="/home/thilina/Software/hadoop-1.0.4/lib/commons-cli-1.2.jar"/>
+	<classpathentry kind="lib" path="/home/thilina/Software/hbase-0.90.6/hbase-0.90.6.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

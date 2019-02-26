@@ -1,0 +1,1 @@
+hadoop jar hadoop-examples.jar LookupRecordByTemperature output-hashmapsort -100

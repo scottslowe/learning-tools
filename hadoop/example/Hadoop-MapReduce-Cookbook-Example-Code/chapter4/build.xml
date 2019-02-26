@@ -1,0 +1,25 @@
+<project name="C4LogProcessor" default="compile" basedir=".">
+	<property name="build" location="build" />
+	<property environment="env"/>
+	
+	<path id="hadoop-classpath">
+		<fileset dir="${env.HADOOP_HOME}/lib">
+			<include name="**/*.jar" />
+		</fileset>
+		<fileset dir="${env.HADOOP_HOME}">
+			<include name="hadoop-*.jar" />
+		</fileset>
+	</path>
+
+	<target name="compile">
+		<mkdir dir="${build}" />
+		<javac includeantruntime="false" srcdir="src" destdir="${build}">
+			<classpath refid="hadoop-classpath"/>
+		</javac>
+		<jar jarfile="C4LogProcessor.jar" basedir="${build}"/>
+	</target>		
+
+	<target name="clean">
+		<delete dir="${build}" />
+	</target>
+</project>
