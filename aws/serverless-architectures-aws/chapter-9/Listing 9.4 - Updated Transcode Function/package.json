@@ -1,0 +1,20 @@
+{
+  "name": "transcode-video",
+  "version": "1.0.0",
+  "description": "This Lambda function will create a job to transcode videos uploaded to an S3 bucket",
+  "main": "index.js",
+  "scripts": {
+    "test": "run-local-lambda --file index.js --event tests/event.json",
+    "deploy": "aws lambda update-function-code --function-name transcode-video-firebase-update --zip-file fileb://Lambda-Deployment.zip",
+    "predeploy": "zip -r Lambda-Deployment.zip * -x *.zip *.log"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.3.2",
+    "firebase": "^3.3.0"
+  },
+  "author": "Peter Sbarski",
+  "license": "BSD-2-Clause",
+  "devDependencies": {
+    "run-local-lambda": "^1.1.0"
+  }
+}

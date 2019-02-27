@@ -1,0 +1,11 @@
+service: aws-python-alexa-skill
+
+provider:
+ name: aws
+ runtime: python2.7
+
+functions:
+ luckyNumber:
+   handler: handler.lucky_number
+   events:
+     - alexaSkill

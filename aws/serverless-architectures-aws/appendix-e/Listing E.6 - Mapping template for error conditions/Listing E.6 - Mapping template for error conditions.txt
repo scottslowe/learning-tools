@@ -1,0 +1,6 @@
+#set ($message = $util.parseJson($input.path('$.errorMessage')))
+{
+   "code" : "$message.code",
+   "message" : $message.message,
+   "encoding" : "$message.encoding"
+}

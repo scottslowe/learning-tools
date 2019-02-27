@@ -1,0 +1,47 @@
+{
+  "Comment": "An example of the Amazon States Language using a parallel state to execute three branches at the same time.",
+  "StartAt": "Parallel",
+  "States": {
+    "Parallel": {
+      "Type": "Parallel",
+      "Next": "Final State",
+      "Branches": [
+       {
+          "StartAt": "Transform 1",
+          "States": {
+            "Transform 1": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:us-east-1:038221756127:function:StepFunctions_Step1",
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Transform 2",
+          "States": {
+            "Transform 2": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:us-east-1:038221756127:function:StepFunctions_Step2",
+              "End": true
+            }
+          }
+        },
+        {
+          "StartAt": "Transform 3",
+          "States": {
+            "Transform 3": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:us-east-1:038221756127:function:StepFunctions_Step3",
+              "End": true
+            }
+          }
+        }
+      ]
+    },
+    "Final State": {
+      "Type": "Task",
+      "Resource": "arn:aws:lambda:us-east-1:038221756127:function:StepFunctions_Final",
+      "End": true
+    }
+  }
+}

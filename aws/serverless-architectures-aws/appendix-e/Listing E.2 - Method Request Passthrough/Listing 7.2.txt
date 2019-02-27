@@ -1,0 +1,31 @@
+{
+	'body-json': '{}',
+	params: {
+		path: {},
+		querystring: {
+			encoding: 'some-encoding'
+		},
+		header: {}										
+	},
+	'stage-variables': {},
+	context: {
+		'account-id': '038221756127',
+		'api-id': 'tlzyo7a7o9',
+		'api-key': 'test-invoke-api-key',
+		'authorizer-principal-id': '',
+		caller: '038221756127',
+		'cognito-authentication-provider': '',
+		'cognito-authentication-type': '',
+		'cognito-identity-id': '',
+		'cognito-identity-pool-id': '',
+		'http-method': 'GET',
+		stage: 'test-invoke-stage',
+		'source-ip': 'test-invoke-source-ip',
+		user: '038221756127',
+		'user-agent': 'Apache-HttpClient/4.3.4 (java 1.5)',
+		'user-arn': 'arn:aws:iam::038221756127:root',
+		'request-id': 'test-invoke-request',
+		'resource-id': 'e3r6ou',
+		'resource-path': '/videos'
+	}
+}

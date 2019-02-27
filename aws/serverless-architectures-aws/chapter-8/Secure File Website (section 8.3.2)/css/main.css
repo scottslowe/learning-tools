@@ -1,0 +1,71 @@
+
+
+/* ==========================================================================
+   Author's custom styles
+   ========================================================================== */
+#auth0-logout {
+	display: none;
+}
+
+#user-profile {
+	display: none;
+}
+
+#video-list-container {
+	text-align: center;
+	padding: 30px 0 30px;
+}
+
+#video-template {
+	display: none;
+}
+
+.video-card {
+	background-color: #000;
+	padding: 20px 10px 20px 10px;
+	box-shadow: #111 1px 1px 10px;
+	margin-bottom: 30px;
+	height: 320px;
+	cursor: pointer;
+}
+
+#upload-video-button {
+    display: none;
+    margin-bottom: 30px;
+}
+
+.btn-file {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-file input[type=file] {
+    position: absolute;
+    top: 0;
+    right: 0;
+    min-width: 100%;
+    min-height: 100%;
+    font-size: 100px;
+    text-align: right;
+    filter: alpha(opacity=0);
+    opacity: 0;
+    outline: none;
+    background: white;
+    cursor: inherit;
+    display: block;
+}
+
+#upload-progress {
+    display: none;
+}
+
+#video-list-container {
+    text-align: center;
+    padding: 30px 0 30px;
+}
+
+.progress {
+    background: #1a1a1a;
+    margin-top: 6px;
+    margin-bottom: 36px;
+}

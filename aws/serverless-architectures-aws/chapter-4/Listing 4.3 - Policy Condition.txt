@@ -1,0 +1,8 @@
+"Condition": {
+   	"DateLessThan": {
+        	"aws:CurrentTime": "2016-10-12T12:00:00Z"
+        },
+        "IpAddress": {
+               "aws:SourceIp": "127.0.0.1"
+        }
+   }

@@ -1,0 +1,12 @@
+service: aws-node-iot-event
+
+provider:
+ name: aws
+ runtime: nodejs4.3
+
+functions:
+ log:
+   handler: handler.log
+   events:
+     - iot:
+         sql: "SELECT * FROM 'mybutton'"

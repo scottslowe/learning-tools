@@ -1,0 +1,22 @@
+{
+ "Version": "2008-10-17",
+ "Id": "MyID",
+ "Statement": [
+  {
+   "Sid": "ExampleID",
+   "Effect": "Allow",
+   "Principal": {
+     "AWS": "*"
+   },
+   "Action": [
+    "SQS:SendMessage"								
+   ],
+   "Resource": "SQS-ARN",
+   "Condition": {
+      "ArnLike": {
+      "aws:SourceArn": "arn:aws:s3:*:*:YOUR_BUCKET_NAME"
+    }
+   }
+  }
+ ]
+}

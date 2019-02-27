@@ -1,0 +1,15 @@
+#set($inputRoot = $input.path('$'))
+{
+  "domain" : "$inputRoot.baseUrl",
+  "bucket" : "$inputRoot.bucket",
+  "files" : [
+    #foreach($elem in $inputRoot.urls)
+     {
+        "filename" : "$elem.Key",
+        "eTag" : $elem.ETag,
+        "size" : "$elem.Size"
+      }
+    #if($foreach.hasNext),#end
+    #end
+    ]
+}

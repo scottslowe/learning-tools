@@ -1,0 +1,17 @@
+
+
+/* ==========================================================================
+   Author's custom styles
+   ========================================================================== */
+#auth0-logout {
+	display: none;
+}
+
+#user-profile {
+	display: none;
+}
+
+#profilepicture {
+	height: 20px;
+	width: 20px;
+}

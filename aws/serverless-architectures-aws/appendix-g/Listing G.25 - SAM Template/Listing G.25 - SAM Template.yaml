@@ -1,0 +1,13 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  SamFunctionTest:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: index.handler
+      Runtime: nodejs4.3
+      CodeUri: function.zip
+      Timeout: 25
+      Environment:
+        Variables:
+          HELLO_SAM: Hello World and Sam!

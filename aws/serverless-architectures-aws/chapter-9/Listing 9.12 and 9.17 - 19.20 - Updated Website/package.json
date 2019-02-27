@@ -1,0 +1,19 @@
+{
+  "name": "24-hour-video",
+  "version": "1.0.0",
+  "description": "The 24 Hour Video Website",
+  "main": "index.js",
+  "local-web-server": {
+  	"port": 8100,
+  	"forbid": "*.json"
+  },
+  "scripts": {
+  	"start": "ws",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Peter Sbarski",
+  "license": "ISC",
+  "devDependencies": {
+    "local-web-server": "^1.1.0"
+  }
+}

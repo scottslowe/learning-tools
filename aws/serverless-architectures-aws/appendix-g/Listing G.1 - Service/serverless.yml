@@ -1,0 +1,11 @@
+service: users
+
+functions:   
+ usersCreate:
+   events:   
+     - http: post users/create
+ usersCreate:
+   events:
+     - http: delete users/delete
+
+resource:
