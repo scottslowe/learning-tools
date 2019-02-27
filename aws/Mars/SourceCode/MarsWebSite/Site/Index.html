@@ -1,0 +1,200 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Cloud training, .Net Development training">
+    <meta name="author" content="">
+
+    <title>From Zero to Hero: Cloud and more</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.9/css/all.css" integrity="sha384-5SOiIsAziJl6AWe0HWRKTXlfcSHKmYV4RBF18PPJ173Kzn7jzMyFuTtk8JA7QQG1" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+    <!--ref: https://github.com/a8m/angular-filter-->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-filter/0.5.17/angular-filter.min.js"></script>
+    <style>
+        body {
+            font-size: 16px;
+        }
+
+        h1 {
+            color: #08a3ca;
+        }
+
+        img {
+            height: 50px;
+            width: 50px;
+        }
+
+        i {
+            font-size: 20px;
+            vertical-align: middle;
+        }
+
+        .narrow-padding {
+            padding-top: 5px;
+            padding-left: 1px;
+            padding-right: 1px;
+            padding-bottom: 5px;
+        }
+
+        .course-name {
+            line-height: 50px;
+            margin-left: 10px;
+        }
+
+        .main {
+            height: 600px;
+        }
+
+        .job-list {
+            height: 600px;
+            overflow-y: scroll;
+        }
+
+        .job-count {
+            font-size: 12px;
+        }
+
+        .job {
+            padding: 10px 5px;
+        }
+
+        .job-title {
+            text-decoration: underline;
+            font-weight: bold;
+        }
+
+        .job-attr {
+            font-size: 14px;
+        }
+
+        .job-summary {
+            font-size: 12px;
+        }
+
+        .close-job {
+            cursor: pointer;
+        }
+
+        .no-jobs {
+            text-align: center;
+            padding: 20px 5px;
+        }
+
+        .job-search {
+            width: 20px;
+            height: 20px;
+        }
+    </style>
+</head>
+    <body>       
+        <div style="margin-left:10px" class="container" ng-app="myApp" ng-controller="customersCtrl">          
+            <div ng-include="'header.html'"></div>
+            <div ng-include="'news.html'"></div>
+            <div class="row main">
+                <div class="col-xs-6">
+                    <div ng-repeat="(key, value) in courses | orderBy : '-category'| groupBy: 'category'">
+                        <h4>{{ key }}</h4>
+                        <div ng-repeat="course in value | orderBy : 'name' | lowercase " class="row">
+                            <div class="col-xs-1" style="width:50px">
+                                <img src="site/img/{{course.key}}.png" alt="{{course.name}}" />
+                            </div>
+                            <div class="col-xs-10 course-name">
+                                <a href="course.html?course={{course.name}}&path={{course.key}}&isEnrolled={{course.isEnrolled}}"> {{course.name}} </a>
+                                <i ng-if="course.isEnrolled" class="fab fa-rendact fa-xs"></i>
+                                <a href="#" keywords="aws" ng-click="searchJobs(course.keywords)">
+                                    <img src="site/img/job-search.png" class="job-search" title="job search" />
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-xs-6" ng-if="jobs">
+                    <div>
+                        <span class="job-count" ng-bind-template="{{ jobCount }} Jobs ({{ keywords }})"></span>
+                        <i class="fa fa-window-close pull-right close-job" aria-hidden="true" ng-click="closeJobList()"></i>
+                    </div>
+                    <div class="pull-right job-list" ng-if="jobs.length > 0">
+                        <div class="job" ng-repeat="job in jobs">
+                            <div class="job-title">
+                                <a href="{{ ::job.url }}" target="_blank" ng-bind="::job.title"></a>
+                            </div>
+                            <div class="job-attr" ng-bind-template="{{ ::job.company }} - {{ ::job.location }}"></div>
+                            <div class="job-summary" ng-bind="::job.summary"></div>
+                        </div>
+                    </div>
+                    <div class="no-jobs" ng-if="jobs.length == 0">
+                        Currently no jobs related to this course!
+                    </div>
+                </div>   
+            </div>                        
+
+            <div class="row">
+                <div class="col-xs-12" >
+                    <i class="fas fa-users" style="color:#08a3ca"></i>  Development Contributors: <a href="https://github.com/victorguo1">Victor</a> <a href="https://github.com/fredwong-it">Fred</a>
+                </div>
+            </div>
+        </div>
+        <script>
+            var app = angular.module('myApp', ['angular.filter']);
+
+            // controller
+            app.controller('customersCtrl', function ($scope, $http, $q) {
+                $http.get("User").then(function (response) {
+                    $scope.user = response.data.trim();
+                });
+
+                const promiseCourses = $http.get("Courses");
+                const promiseEnrollment = $http.get("Enrollment");
+
+                // wait for courses and enrollment promises
+                $q.all([promiseCourses, promiseEnrollment]).then(res => {
+                    const coursesData = JSON.parse(res[0].data);
+                    const enrollmentsData = JSON.parse(res[1].data);
+                    const courses = [];
+
+                    // merge the result from courses and enrollment
+                    for (let cd of coursesData) {
+                        courses.push({
+                            key: cd.RowKey,
+                            name: cd.PartitionKey,
+                            isEnrolled: enrollmentsData.find((o) => o.RowKey === cd.PartitionKey) !== undefined,
+                            keywords: cd.keywords,
+                            category: cd.category
+                        });
+                    }
+
+                    $scope.courses = courses;
+                });
+
+                $scope.searchJobs = (keywords) => {
+                    const location = 'toronto';
+                    const url = `Jobs?keywords=${keywords}&locaion=${location}`
+
+                    $scope.keywords = keywords;
+
+                    $http.get(url).then(res => {
+                        $scope.jobs = res.data;
+                        $scope.jobCount = res.data.length;
+                    });
+                }
+
+                $scope.closeJobList = () => {
+                    $scope.jobs = null;
+                }
+            });
+        </script>
+    </body>
+
+</html>

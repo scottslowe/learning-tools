@@ -1,0 +1,192 @@
+﻿<!DOCTYPE html>
+<html lang="en" ng-app="myApp" ng-controller="customersCtrl">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>{{course}},from Zero to Hero</title>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.9/css/all.css" integrity="sha384-5SOiIsAziJl6AWe0HWRKTXlfcSHKmYV4RBF18PPJ173Kzn7jzMyFuTtk8JA7QQG1" crossorigin="anonymous">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.min.js"></script>
+
+    <style>
+        body {
+            font-size: 16px;
+        }
+        h1 {            
+            color: #08a3ca;
+        }
+
+        .fileImage {
+            height: 50px;
+            width: 50px;
+        }
+
+        i {
+            font-size: 20px;
+            vertical-align: middle;
+        }
+
+        .floating-box {
+            display: inline-block;
+        }
+
+        .narrow-padding {
+            padding-top: 5px;
+            padding-left: 1px;
+            padding-right: 1px;
+            padding-bottom: 5px;
+        }
+
+        .course-name {
+            line-height: 50px;
+            margin-left: 10px;
+        }
+
+        .course-name h4 {
+            display: inline;
+        }
+    </style>
+    <base href="/">
+</head>
+<body>
+    
+    <div style="margin-left:10px" class="container" >
+        <div ng-include="'header.html'"></div>
+
+        <div class="row">
+            <div class="col-xs-1 "  style=" width:50px">
+                <img class="fileImage" src="site/img/{{root}}.png" />  
+            </div>
+            <div class="col-xs-9 course-name">
+                <h4>{{course}}</h4> 
+                <i ng-if="isEnrolled" class="fab fa-rendact fa-xs"></i>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-xs-1" style="width:30px">
+                <a href="index" target="_self"> <i class="fas fa-home"></i> </a>
+            </div>
+             
+            <div id="breadcrumb" class="col-xs-11" style="height:40px;font-weight:bold">start</div>
+        </div>
+
+        <div ng-include="courseDescriptiontemplateUrl()"></div>
+
+        <div class="row" ng-repeat="x in dirOrFiles | orderBy : ['Type', 'Name'] ">
+                <ngif ng-if="x.Type == 'directory'">
+                    <div class="col-xs-1" style="width:45px">
+                        <i class="fas fa-folder-open"></i>
+                    </div>
+                    <div class="col-xs-5 narrow-padding">
+                        <a class="floating-box" ng-click="getSubfolders(x.Path)">{{x.Name}} </a><img class="floating-box" src="site/img/{{x.IsRecent}}.png"  />
+                    </div>
+                    <div class="col-xs-4 narrow-padding">
+                        {{x.LastModifiedDate}}
+                    </div>
+                    <div class="col-xs-1">
+                        
+                    </div>
+                </ngif>
+                <ngif ng-if="x.Type == 'file'">
+                    <div class="col-xs-1" style="width:45px">
+                        <i class="far fa-file" ></i> 
+                    </div>
+                    <div class="col-xs-5 narrow-padding">
+                        <a class="floating-box" href="getfile/{{x.Path}}/{{x.Name}}" target="_blank">{{x.Name}} </a>&nbsp;&nbsp; <img class="floating-box" src="site/img/{{x.IsRecent}}.png" /> 
+                    </div>
+                    <div class="col-xs-3 narrow-padding">
+                        {{x.LastModifiedDate}}
+                    </div>
+                    <div class="col-xs-2 narrow-padding">
+                         {{x.Size}}   
+                    </div>
+                </ngif>
+            </div>
+        </div> 
+    
+    <script>
+         var app = angular.module('myApp', []);
+         app.config(['$locationProvider', function ($locationProvider) {
+             $locationProvider.html5Mode(true);
+         }]);
+
+         app.controller('customersCtrl', function ($scope, $http, $location,$compile) {
+             $http.get("User").then(function (response) {
+                 $scope.user = response.data.trim();
+             });
+
+             $scope.course = $location.search()['course'];
+             $scope.isEnrolled = JSON.parse($location.search()['isEnrolled']);
+             var path = $location.search()['path'];
+             $scope.path = path;
+             $scope.root = getRoot(path);
+             $scope.folders = getFolders(path);
+
+             $scope.courseDescriptiontemplateUrl = function () {
+                 return $scope.root + "_desc.html";
+             }
+
+             $http.get("Services/" + path).then(function (response) {
+                 $scope.dirOrFiles = JSON.parse(response.data);                
+             });
+
+             $scope.getSubfolders = function (path) {
+                $http.get("Services/" + path).then(function (response) {
+                    $scope.dirOrFiles = JSON.parse(response.data);
+                 });
+                 appendBreadcrumb($scope, $compile, path);
+             } 
+
+             appendBreadcrumb($scope, $compile, path);
+         });
+
+
+         function getRoot(path) {
+             var folders = getFolders(path);
+             return folders[0];
+         }
+
+         function getFolders(path) {
+             var folders = path.split("-");
+             return folders;
+         }
+
+         function appendBreadcrumb(scope,compile, path) {
+             var course = scope.course;
+             var folders = path.split("-");
+             
+             //Get the element that we want to append to
+             var divRoot = angular.element(document.getElementById("breadcrumb"));
+             divRoot.empty();
+             var currentLink = folders[0];
+             for (i = 0; i < folders.length; i++) {
+                 var linkHtml;
+                 if (i < folders.length - 1 ) { 
+                    linkHtml = "<a ng-click='getSubfolders(&apos;" + currentLink + "&apos;)'>" + folders[i] + " / " + "</a>  ";
+                 } else {
+                     linkHtml = "<span>" + folders[i] + "</span> ";
+                 }
+                 var subLink = angular.element(linkHtml);
+                 divRoot.append(subLink);
+
+                 currentLink = currentLink + "-" + folders[i + 1];                 
+             }
+             compile(divRoot.contents())(scope);
+         }
+    </script>
+
+</body>
+
+</html>

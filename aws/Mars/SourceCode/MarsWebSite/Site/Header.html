@@ -1,0 +1,26 @@
+﻿<style>
+    .header-h1 {
+        display: inline-block
+    }
+
+    .header-img {
+        width: initial;
+        height: initial;
+        margin: 0px 10px;
+    }
+</style>
+
+<div class="row">
+    <div target="_self" class="col-sm-8">
+        <a href="/Index" target="_self">
+            <img class="header-img" src="site/img/cloud.png" />
+        </a>        
+        <h1 class="header-h1">From Zero to Hero!</h1>
+    </div>
+    <div class="col-sm-4" style="line-height: 69px;">
+        <div ng-if="user==''"><a target="_self" href="/.auth/login/microsoftaccount/callback">Login</a> </div>
+        <div ng-if="!user==''" class="pull-right">Hello {{user}}!&nbsp;&nbsp;&nbsp;
+        <a target="_self" href="/.auth/logout?post_logout_redirect_uri=/EndSession">Logout</a></div>
+        &nbsp;<a href="site/content/LoginHelp.pdf">Help</a>
+    </div>
+</div>
