@@ -1,0 +1,69 @@
+{
+  "TableName": "MysfitsTable",
+  "ProvisionedThroughput": {
+    "ReadCapacityUnits": 5,
+    "WriteCapacityUnits": 5
+  },
+  "AttributeDefinitions": [
+    {
+      "AttributeName": "MysfitId",
+      "AttributeType": "S"
+    },
+    {
+      "AttributeName": "GoodEvil",
+      "AttributeType": "S"
+    },
+    {
+      "AttributeName": "LawChaos",
+      "AttributeType": "S"
+    }
+  ],
+  "KeySchema": [
+    {
+      "AttributeName": "MysfitId",
+      "KeyType": "HASH"
+    }
+  ],
+  "GlobalSecondaryIndexes": [
+    {
+      "IndexName": "LawChaosIndex",
+      "KeySchema": [
+        {
+          "AttributeName": "LawChaos",
+          "KeyType": "HASH"
+        },
+        {
+          "AttributeName": "MysfitId",
+          "KeyType": "RANGE"
+        }
+      ],
+      "Projection": {
+        "ProjectionType": "ALL"
+      },
+      "ProvisionedThroughput": {
+        "ReadCapacityUnits": 5,
+        "WriteCapacityUnits": 5
+      }
+    },
+    {
+      "IndexName": "GoodEvilIndex",
+      "KeySchema": [
+        {
+          "AttributeName": "GoodEvil",
+          "KeyType": "HASH"
+        },
+        {
+          "AttributeName": "MysfitId",
+          "KeyType": "RANGE"
+        }
+      ],
+      "Projection": {
+        "ProjectionType": "ALL"
+      },
+      "ProvisionedThroughput": {
+        "ReadCapacityUnits": 5,
+        "WriteCapacityUnits": 5
+      }
+    }
+  ]
+}

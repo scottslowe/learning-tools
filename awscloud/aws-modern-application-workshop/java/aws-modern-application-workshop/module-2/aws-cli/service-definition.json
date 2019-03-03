@@ -1,0 +1,30 @@
+{
+  "serviceName": "MythicalMysfits-Service",
+  "cluster": "MythicalMysfits-Cluster",
+  "launchType": "FARGATE",
+  "deploymentConfiguration": {
+    "maximumPercent": 200,
+    "minimumHealthyPercent": 0
+  },
+  "desiredCount": 1,
+  "networkConfiguration": {
+    "awsvpcConfiguration": {
+      "assignPublicIp": "DISABLED",
+      "securityGroups": [
+        "REPLACE_ME_SECURITY_GROUP_ID"
+      ],
+      "subnets": [
+        "REPLACE_ME_PRIVATE_SUBNET_ONE",
+        "REPLACE_ME_PRIVATE_SUBNET_TWO"
+      ]
+    }
+  },
+  "taskDefinition": "mythicalmysfitsservice",
+  "loadBalancers": [
+    {
+      "containerName": "MythicalMysfits-Service",
+      "containerPort": 8080,
+      "targetGroupArn": "REPLACE_ME_NLB_TARGET_GROUP_ARN"
+    }
+  ]
+}

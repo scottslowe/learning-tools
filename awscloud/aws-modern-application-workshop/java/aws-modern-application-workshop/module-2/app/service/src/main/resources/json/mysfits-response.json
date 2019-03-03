@@ -1,0 +1,70 @@
+{
+  "mysfits": [
+    {
+      "mysfitId": "4e53920c-505a-4a90-a694-b9300791f0ae",
+      "name": "Evangeline",
+      "species": "Chimera",
+      "age": 43,
+      "description": "Evangeline is the global sophisticate of the mythical world. You’d be hard pressed to find a more seductive, charming, and mysterious companion with a love for neoclassical architecture, and a degree in medieval studies. Don’t let her beauty and brains distract you. While her mane may always be perfectly coifed, her tail is ever-coiled and ready to strike. Careful not to let your guard down, or you may just find yourself spiraling into a dazzling downfall of dizzying dimensions.",
+      "goodevil": "Evil",
+      "lawchaos": "Lawful",
+      "thumbImageUri": "https://www.mythicalmysfits.com/images/chimera_thumb.png",
+      "profileImageUri": "https://www.mythicalmysfits.com/images/chimera_hover.png"
+    },
+    {
+      "mysfitId": "2b473002-36f8-4b87-954e-9a377e0ccbec",
+      "name": "Pauly",
+      "species": "Cyclops",
+      "age": 2,
+      "description": "Naturally needy and tyrannically temperamental, Pauly the infant cyclops is searching for a parental figure to call friend. Like raising any precocious tot, there may be occasional tantrums of thunder, lightning, and 100 decibel shrieking. Sooth him with some Mandrake root and you’ll soon wonder why people even bother having human children. Gaze into his precious eye and fall in love with this adorable tyke.",
+      "goodevil": "Neutral",
+      "lawchaos": "Lawful",
+      "thumbImageUri": "https://www.mythicalmysfits.com/images/cyclops_thumb.png",
+      "profileImageUri": "https://www.mythicalmysfits.com/images/cyclops_hover.png"
+    },
+    {
+      "mysfitId": "0e37d916-f960-4772-a25a-01b762b5c1bd",
+      "name": "CoCo",
+      "species": "Dragon",
+      "age": 501,
+      "description": "CoCo wears sunglasses at night. His hobbies include dressing up for casual nights out, accumulating debt, and taking his friends on his back for a terrifying ride through the mesosphere after a long night of revelry, where you pick up the bill, of course. For all his swagger, CoCo has a heart of gold. His loyalty knows no bounds, and once bonded, you’ve got a wingman (literally) for life.",
+      "goodevil": "Good",
+      "lawchaos": "Chaotic",
+      "thumbImageUri": "https://www.mythicalmysfits.com/images/dragon_thumb.png",
+      "profileImageUri": "https://www.mythicalmysfits.com/images/dragon_hover.png"
+    },
+    {
+      "mysfitId": "da5303ae-5aba-495c-b5d6-eb5c4a66b941",
+      "name": "Gretta",
+      "species": "Gorgon",
+      "age": 31,
+      "description": "Young, fun, and perfectly mischievous, Gorgon is mostly tail. She's currently growing her horns and hoping for wings like those of her high-flying counterparts. In the meantime, she dons an umbrella and waits for gusts of wind to transport her across space-time. She likes to tell jokes in fluent Parseltongue, read the evening news, and shoot fireworks across celestial lines. If you like high-risk, high-reward challenges, Gorgon will be the best pet you never knew you wanted.",
+      "goodevil": "Evil",
+      "lawchaos": "Neutral",
+      "thumbImageUri": "https://www.mythicalmysfits.com/images/gorgon_thumb.png",
+      "profileImageUri": "https://www.mythicalmysfits.com/images/gorgon_hover.png"
+    },
+    {
+      "mysfitId": "b41ff031-141e-4a8d-bb56-158a22bea0b3",
+      "name": "Snowflake",
+      "species": "Yeti",
+      "age": 13,
+      "description": "While Snowflake is a snowman, the only abomination is that he hasn’t been adopted yet. Snowflake is curious, playful, and loves to bound around in the snow. He likes winter hikes, hide and go seek, and all things Christmas. He can get a bit agitated when being scolded or having his picture taken and can occasionally cause devastating avalanches, so we don’t recommend him for beginning pet owners. However, with love, care, and a lot of ice, Snowflake will make a wonderful companion.",
+      "goodevil": "Evil",
+      "lawchaos": "Neutral",
+      "thumbImageUri": "https://www.mythicalmysfits.com/images/yeti_thumb.png",
+      "profileImageUri": "https://www.mythicalmysfits.com/images/yeti_hover.png"
+    },
+    {
+      "mysfitId": "3f0f196c-4a7b-43af-9e29-6522a715342d",
+      "name": "Gary",
+      "species": "Kraken",
+      "age": 2709,
+      "description": "Gary loves to have a good time. His motto? “I just want to dance.” Give Gary a disco ball, a DJ, and a hat that slightly obscures the vision from his top eye, and Gary will dance the year away which, at his age, is like one night in humanoid time. If you're looking for a low-maintenance, high-energy creature companion that never sheds and always shreds, Gary is just the kraken for you.",
+      "goodevil": "Neutral",
+      "lawchaos": "Chaotic",
+      "thumbImageUri": "https://www.mythicalmysfits.com/images/kraken_thumb.png",
+      "profileImageUri": "https://www.mythicalmysfits.com/images/kraken_hover.png"
+    }
+  ]
+}

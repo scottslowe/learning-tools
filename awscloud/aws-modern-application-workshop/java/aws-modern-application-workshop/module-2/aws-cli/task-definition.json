@@ -1,0 +1,32 @@
+{
+  "family": "mythicalmysfitsservice",
+  "cpu": "256",
+  "memory": "512",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "executionRoleArn": "REPLACE_ME_ECS_SERVICE_ROLE_ARN",
+  "taskRoleArn": "REPLACE_ME_ECS_TASK_ROLE_ARN",
+  "containerDefinitions": [
+    {
+      "name": "MythicalMysfits-Service",
+      "image": "REPLACE_ME_IMAGE_TAG_USED_IN_ECR_PUSH",
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "protocol": "http"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "mythicalmysfits-logs",
+          "awslogs-region": "REPLACE_ME_REGION",
+          "awslogs-stream-prefix": "awslogs-mythicalmysfits-service"
+        }
+      },
+      "essential": true
+    }
+  ]
+}
