@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <!--
+    A registration page where users who wish you use Mythical Mysfits can
+    register with the email address and a password.  The JavaScript below
+    uses the Amazon Cognito JavaScript SDK in order to integrate with the service.
+  -->
+  <head>
+    <title>Register for Mythical Mysfits</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="js/aws-cognito-sdk.min.js"></script>
+    <script src="js/amazon-cognito-identity.min.js"></script>
+  </head>
+  <body style="background-color:#EBEBEB">
+    <br>
+    <div style="text-align: center">
+      <img src="https://www.mythicalmysfits.com/images/mysfits_banner.gif" width="800px" align="center">
+    </div>
+    <div class="container">
+      <h3>Register for Mythical Mysfits!</h3>
+      <form id="userDetails" >
+        <div class="form-group">
+          <label for="email">Email:</label>
+          <input type="email" class="form-control" id="email" placeholder="Enter email" name="email">
+        </div>
+        <div class="form-group">
+          <label for="pwd">Password: </label>
+          <input type="password" class="form-control" id="pwd" placeholder="Enter password" name="pwd">
+        </div>
+        <div class="form-group">
+          <label for="confirmPwd">Confirm Password:</label>
+          <input type="password" class="form-control" id="confirmPwd" placeholder="Confirm password" name="confirmPwd">
+        </div>
+        <button type="submit" class="btn btn-info">Register</button>
+      </form>
+    </div>
+
+  </body>
+
+  <script>
+
+  var cognitoUserPoolId = 'REPLACE_ME';  // example: 'us-east-1_abcd12345'
+  var cognitoUserPoolClientId = 'REPLACE_ME'; // example: 'abcd12345abcd12345abcd12345'
+
+  $(document).on('click', '.btn-info', function(event) {
+    event.preventDefault();
+
+    var poolData = {
+      UserPoolId : cognitoUserPoolId,
+      ClientId : cognitoUserPoolClientId
+    };
+    var userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+
+    var attributeList = [];
+
+
+    var email = document.getElementById('email').value;
+    var pw = document.getElementById('pwd').value;
+    var confirmPw = document.getElementById('confirmPwd').value;
+    var dataEmail = {
+        Name : 'email',
+        Value : email
+    };
+
+    var attributeEmail = new AmazonCognitoIdentity.CognitoUserAttribute(dataEmail);
+
+    attributeList.push(attributeEmail);
+
+    if (pw === confirmPw) {
+      userPool.signUp(email, pw, attributeList, null, function(err, result){
+          if (err) {
+              alert(err.message);
+              return;
+          }
+          cognitoUser = result.user;
+          console.log(cognitoUser);
+          localStorage.setItem('email', email);
+          window.location.replace('confirm.html');
+      });
+    } else {
+      alert('Passwords do not match.')
+    }
+
+  });
+  </script>
+</html>

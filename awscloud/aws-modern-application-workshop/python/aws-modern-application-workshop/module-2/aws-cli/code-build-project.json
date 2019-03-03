@@ -1,0 +1,27 @@
+{
+  "name": "MythicalMysfitsServiceCodeBuildProject",
+  "artifacts": {
+    "type": "no_artifacts"
+  },
+  "environment": {
+    "computeType": "BUILD_GENERAL1_SMALL",
+    "image": "aws/codebuild/python:3.5.2",
+    "privilegedMode": true,
+    "environmentVariables": [
+      {
+        "name": "AWS_ACCOUNT_ID",
+        "value": "REPLACE_ME_ACCOUNT_ID"
+      },
+      {
+        "name": "AWS_DEFAULT_REGION",
+        "value": "REPLACE_ME_REGION"
+      }
+    ],
+    "type": "LINUX_CONTAINER"
+  },
+  "serviceRole": "REPLACE_ME_CODEBUILD_ROLE_ARN",
+  "source": {
+    "type": "CODECOMMIT",
+    "location": "https://git-codecommit.REPLACE_ME_REGION.amazonaws.com/v1/repos/MythicalMysfitsService-Repository"
+  }
+}

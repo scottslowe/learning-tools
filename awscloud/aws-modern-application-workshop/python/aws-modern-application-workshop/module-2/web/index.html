@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+  <!--
+    The next iteration of our Mythical Mysfits website. Updates include
+    dynamically pulling the mysfits from our backend service via the network
+    load balancer DNS name. There is also additional functionality for filtering
+    mysfits that we have yet to implement on the backend service.  You will see
+    the buttons available on the webpage, but because that functionality isn't
+    implemented on the backend, it does not yet work.  You will implement it during
+    module 3!
+  -->
+  <head>
+    <title>Mythical Mysfits</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+  </head>
+  <body ng-app="mysfitsApp" style="background-color:#EBEBEB">
+    <style>
+      @media (max-width: 800px) {
+      	img {
+          max-width: 300px;
+      	}
+      }
+    </style>
+    <br>
+    <div style="text-align: center">
+      <img src="https://www.mythicalmysfits.com/images/mysfits_banner.gif" width="800px" align="center">
+    </div>
+    <div class="container" ng-controller="mysfitsFilterController">
+      <div id="filterMenu">
+        <ul class="nav nav-pills">
+          &nbsp;
+          <li class="nav-item dropdown" ng-repeat="filterCategory in filterOptionsList.categories">
+            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#!" role="button" aria-haspopup="true" aria-expanded="false">{{filterCategory.title}}</a>
+            <div class="dropdown-menu" >
+              <button class="dropdown-item" ng-repeat="filterCategorySelection in filterCategory.selections" ng-click="queryMysfits(filterCategory.title, filterCategorySelection)">{{filterCategorySelection}}</button>
+            </div>
+          </li>
+          &nbsp;
+          <li class="nav-item " >
+            <button type="button" class="btn btn-success" ng-click="removeFilter()">View All</button>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <br>
+    <div class="container">
+      <div id="mysfitsGrid" class="row" ng-controller="mysfitsListController">
+          <div class="col-md-4 border border-warning" ng-repeat="mysfit in mysfits">
+              <br>
+              <p align="center">
+                <strong> {{mysfit.name}}</strong>
+                <br>
+                <img src="{{mysfit.thumbImageUri}}" alt="{{mysfit.Name}}">
+              </p>
+              <p>
+                <br>
+                <b>Species:</b> {{mysfit.species}}
+                <br>
+                <b>Age:</b> {{mysfit.age}}
+                <br>
+                <b>Good/Evil:</b> {{mysfit.goodevil}}
+                <br>
+                <b>Lawful/Chaotic:</b> {{mysfit.lawchaos}}
+              </p>
+          </div>
+        </div>
+      </div>
+    <p>
+      <br>
+      <br>
+      &nbsp;&nbsp;This site was created for use in the AWS Modern Application Workshop. <a href="https://github.com/aws-samples/aws-modern-application-workshop">Please see details here.</a>
+    </p>
+  </body>
+  <script>
+
+    var mysfitsApiEndpoint = 'REPLACE_ME'; // example: 'http://mythi-publi-abcd12345-01234567890123.elb.us-east-1.amazonaws.com'
+
+    var app = angular.module('mysfitsApp', []);
+
+    var gridScope;
+
+    var filterScope;
+
+    app.controller('clearFilterController', function($scope) {
+    });
+
+    app.controller('mysfitsFilterController', function($scope) {
+
+      filterScope = $scope;
+
+      // The possible options for Mysfits to populate the dropdown filters.
+      $scope.filterOptionsList =
+       {
+         "categories": [
+           {
+             "title": "Good/Evil",
+             "selections":  [
+               "Good",
+               "Neutral",
+               "Evil"
+             ]
+           },
+           {
+             "title": "Lawful/Chaotic",
+             "selections":  [
+               "Lawful",
+               "Neutral",
+               "Chaotic"
+             ]
+           }
+         ]
+       };
+
+       /*
+          The View All button has been selected, retrieve all the mysfits.
+      */
+       $scope.removeFilter = function() {
+         allMysfits = getAllMysfits(applyGridScope);
+       }
+
+       /*
+         This API hasn't been implemented on the service backend yet. You will
+         implement it during module 3!
+       */
+       $scope.queryMysfits = function(filterCategory, filterValue) {
+
+           var filterCategoryQS = "";
+           if (filterCategory==="Good/Evil") {
+             filterCategoryQS = "GoodEvil";
+           } else {
+             filterCategoryQS = "LawChaos"
+           }
+           var mysfitsApi = mysfitsApiEndpoint + '/mysfits?' + 'filter=' + filterCategoryQS + "&value=" + filterValue;
+
+           $.ajax({
+             url : mysfitsApi,
+             type : 'GET',
+             success : function(response) {
+               applyGridScope(response.mysfits)
+             },
+             error : function(response) {
+               console.log("could not retrieve mysfits list.");
+               console.log(response.message);
+             }
+           });
+       }
+
+
+
+    });
+
+    /*
+      Populate the main mysfit grid on page load.
+    */
+    app.controller('mysfitsListController', function($scope) {
+
+      gridScope = $scope;
+
+      getAllMysfits(applyGridScope);
+
+    });
+
+    /*
+      Reload the grid of mysfits whenever a new list is retrieved based
+      on the filters selected.
+    */
+    function applyGridScope(mysfitsList) {
+      gridScope.mysfits = mysfitsList;
+      gridScope.$apply();
+    }
+
+    /*
+      Retrieve the full list of mysfits from the backend service API.
+    */
+    function getAllMysfits(callback) {
+
+      var mysfitsApi = mysfitsApiEndpoint + '/mysfits';
+
+      $.ajax({
+        url : mysfitsApi,
+        type : 'GET',
+        success : function(response) {
+          callback(response.mysfits);
+        },
+        error : function(response) {
+          console.log("could not retrieve mysfits list.");
+          console.log(response.message);
+        }
+      });
+    }
+
+
+  </script>
+</html>

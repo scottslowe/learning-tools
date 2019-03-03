@@ -1,0 +1,224 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Description: A stack that gives mythicalmysfits.com users the ability to submit a question to
+            the Mythical Mysfits team regarding one of the mysfits.
+Parameters:
+  AdministratorEmailAddress:
+    Type: String
+    Default: EMAIL_ADDRESS_REQUIRED
+    Description: The email address that should receive the newly posted questions.
+    
+Resources:
+  # A microservice Lambda function that receives a new question
+  # submitted to the MythicalMysfits website from a user and inserts
+  # it into a DynamoDB database table.
+  MysfitsPostQuestionFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      FunctionName: MythicalMysfitsPostQuestionFunction
+      Handler: mysfitsPostQuestion.postQuestion
+      Runtime: python3.6
+      CodeUri: ./PostQuestionsService
+      Description: A microservice Lambda function that receives a new question
+                  submitted to the MythicalMysfits website from a user and inserts
+                  it into a DynamoDB database table.
+      Tracing: Active
+      MemorySize: 128
+      Timeout: 30
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'dynamodb:PutItem'
+              Resource:
+                'Fn::Join':
+                  - ''
+                  - - 'arn:aws:dynamodb:'
+                    - Ref: 'AWS::Region'
+                    - ':'
+                    - Ref: 'AWS::AccountId'
+                    - ':table/MysfitsQuestionsTable'
+            - Effect: Allow
+              Action:
+                - 'xray:PutTraceSegments'
+                - 'xray:PutTelemetryRecords'
+                - 'xray:GetSamplingRules'
+                - 'xray:GetSamplingTargets'
+                - 'xray:GetSamplingStatisticSummaries'
+              Resource:
+                '*'
+            
+  
+  QuestionsTable:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      TableName: "MysfitsQuestionsTable"
+      AttributeDefinitions:
+        -
+          AttributeName: "QuestionId"
+          AttributeType: "S"
+      KeySchema:
+        - 
+          AttributeName: "QuestionId"
+          KeyType: "HASH"
+      ProvisionedThroughput: 
+        ReadCapacityUnits: "5"
+        WriteCapacityUnits: "5"
+      StreamSpecification:
+        StreamViewType: "NEW_IMAGE"
+        
+  # SNS Topic where new questions will be sent so that
+  # administrators can receive an email regarding the newly posted question.
+  MythicalMysfitsQuestionsTopic:
+    Type: "AWS::SNS::Topic"
+    Properties: 
+      DisplayName: MythicalMysfitsQuestionsTopic
+      Subscription:
+        - 
+          Endpoint: 
+            Ref: AdministratorEmailAddress
+          Protocol: email
+      TopicName: MythicalMysfitsQuestionsTopic
+        
+  # An AWS Lambda function that will process all new questions posted
+  # to mythical mysfits and notify the site administrator of the question
+  # that was asked.
+  MysfitsProcessQuestionStreamFunction:
+    Type: 'AWS::Serverless::Function'
+    DependsOn:
+      - MythicalMysfitsQuestionsTopic
+    Properties:
+      FunctionName: MysfitsProcessQuestionStreamFunction
+      Handler: mysfitsProcessStream.processStream
+      Runtime: python3.6
+      CodeUri: ./ProcessQuestionsStream
+      Environment:
+        Variables: 
+          SNS_TOPIC_ARN: !Ref MythicalMysfitsQuestionsTopic
+      Description: An AWS Lambda function that will process all new questions posted
+                  to mythical mysfits and notify the site administrator of the question
+                  that was asked.
+      Tracing: Active
+      MemorySize: 128
+      Timeout: 30
+      Policies:
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'sns:Publish'
+              Resource:
+                'Fn::Join':
+                  - ''
+                  - - 'arn:aws:sns:'
+                    - Ref: 'AWS::Region'
+                    - ':'
+                    - Ref: 'AWS::AccountId'
+                    - ':MythicalMysfitsQuestionsTopic'
+            - Effect: Allow
+              Action:
+                - 'xray:PutTraceSegments'
+                - 'xray:PutTelemetryRecords'
+                - 'xray:GetSamplingRules'
+                - 'xray:GetSamplingTargets'
+                - 'xray:GetSamplingStatisticSummaries'
+              Resource:
+                '*'
+      Events:
+        DynamoDBQuestionsStream:
+          Type: DynamoDB
+          Properties:
+            Stream: !GetAtt QuestionsTable.StreamArn
+            StartingPosition: TRIM_HORIZON
+            BatchSize: 1
+            
+
+  # An API Gateway execution role for the below REST API.
+  QuestionsApiRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: ''
+            Effect: Allow
+            Principal:
+              Service: apigateway.amazonaws.com
+            Action: 'sts:AssumeRole'
+
+  # An IAM policy that permits our created questions API service to invoke the appropriate lambda function.
+  QuestionsApiPolicy:
+    Type: 'AWS::IAM::Policy'
+    DependsOn:
+      - QuestionsApiRole
+      - MysfitsPostQuestionFunction
+    Properties:
+      PolicyName: questions_api_policy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+                - 'lambda:InvokeFunction'
+            Resource: !GetAtt MysfitsPostQuestionFunction.Arn
+      Roles:
+        - !Ref QuestionsApiRole
+
+  # A new REST API that acts as an AWS Service proxy to the Kinesis Firehose
+  # PutRecord API.
+  QuestionsApi:
+    Type: AWS::Serverless::Api
+    DependsOn:
+      - QuestionsApiRole
+      - MysfitsPostQuestionFunction
+    Properties:
+      EndpointConfiguration: REGIONAL
+      StageName: prod
+      Cors:
+        AllowOrigin: "'*'"
+        AllowHeaders: "'Content-Type'"
+      DefinitionBody:
+          swagger: 2.0
+          info:
+            title:
+              Ref: AWS::StackName
+          paths:
+            "/questions":
+              post:
+                consumes:
+                  - 'application/json'
+                produces:
+                  - 'application/json'
+                responses:
+                  '200':
+                    statusCode: 200
+                    headers:
+                      Access-Control-Allow-Headers:
+                          type: string
+                      Access-Control-Allow-Methods:
+                          type: string
+                      Access-Control-Allow-Origin:
+                          type: string
+                x-amazon-apigateway-integration:
+                  responses:
+                    default:
+                      statusCode: 200
+                      responseParameters:
+                        method.response.header.Access-Control-Allow-Headers: "'Content-Type'"
+                        method.response.header.Access-Control-Allow-Methods: "'OPTIONS, POST'"
+                        method.response.header.Access-Control-Allow-Origin: "'*'"
+                  credentials: !GetAtt QuestionsApiRole.Arn
+                  httpMethod: POST
+                  type: aws_proxy
+                  uri: !Join ["", ["arn:aws:apigateway:", { "Ref": "AWS::Region" }, ":lambda:path/2015-03-31/functions/", !GetAtt MysfitsPostQuestionFunction.Arn, "/invocations" ] ]
+
+
+Outputs:
+  QuestionsApiEndpoint:
+    Description: REPLACE_ME_QUESTIONS_API_ENDPOINT
+    Value: !Join ['', ['https://', !Ref 'QuestionsApi',  '.execute-api.', !Ref 'AWS::Region', '.amazonaws.com/prod']]
+  QuestionsRestApiId:
+    Description: REPLACE_ME_QUESTIONS_REST_API_ID
+    Value: !Ref QuestionsApi

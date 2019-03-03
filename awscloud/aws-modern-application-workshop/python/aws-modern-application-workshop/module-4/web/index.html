@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+  <!--
+    A new version of the Mythical Mysfits website that has enabled user
+    registration and login, as well as the ability to logged in users to like
+    and mark mysfits as adopted.
+  -->
+  <head>
+    <title>Mythical Mysfits</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.6/angular.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.135.0.min.js"></script>
+    <script src="js/aws-cognito-sdk.min.js"></script>
+    <script src="js/amazon-cognito-identity.min.js"></script>
+  </head>
+  <body ng-app="mysfitsApp" style="background-color:#EBEBEB">
+    <style>
+      @media (max-width: 800px) {
+      	img {
+          max-width: 300px;
+      	}
+      }
+    </style>
+    <br>
+    <div style="text-align: center">
+      <img src="https://www.mythicalmysfits.com/images/mysfits_banner.gif" width="800px" align="center">
+    </div>
+    <div class="container">
+        <div class='btn-toolbar float-right'>
+          <button type="button" id="logInButton" class="btn btn-info btn-lg" data-toggle="modal" data-target="#loginModal">Log In / Register</button>
+          <button type="button" id="logOutButton" class="btn btn-danger btn-lg d-none">Log Out</button>
+        </div>
+    </div>
+    <div class="modal fade" id="loginModal" tabindex="-1" role="dialog" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <!-- Modal Header -->
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal">
+            <span aria-hidden="true">&times;</span>
+            <span class="sr-only">Close</span>
+          </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="modal-body">
+          <form id="loginForm">
+            <input type="text" id ="email" name="email" placeholder="Email" />
+            <input type="password" id="pwd" name="pwd" placeholder="Password" />
+            <input type="submit" id="login-modal-button" name="login" class="btn btn-info" value="Login"/ >
+          </form>
+          <div class="login-help">
+            <a href="register.html">Register</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+    <div class="container" ng-controller="mysfitsFilterController">
+      <div id="filterMenu">
+        <ul class="nav nav-pills">
+          &nbsp;
+          <li class="nav-item dropdown" ng-repeat="filterCategory in filterOptionsList.categories">
+            <a class="nav-link dropdown-toggle" data-toggle="dropdown" href="#!" role="button" aria-haspopup="true" aria-expanded="false">{{filterCategory.title}}</a>
+            <div class="dropdown-menu" >
+              <button class="dropdown-item" ng-repeat="filterCategorySelection in filterCategory.selections" ng-click="queryMysfits(filterCategory.title, filterCategorySelection)">{{filterCategorySelection}}</button>
+            </div>
+          </li>
+          &nbsp;
+          <li class="nav-item " >
+            <button type="button" class="btn btn-success" ng-click="removeFilter()">View All</button>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <br>
+    <div class="container">
+      <div id="mysfitsGrid" class="row" ng-controller="mysfitsListController">
+        <div class="col-md-4 border border-warning" ng-repeat="mysfit in mysfits">
+            <br>
+            <p align="center">
+              <strong> {{mysfit.name}}</strong>
+              <br>
+              <img src="{{mysfit.thumbImageUri}}" alt="{{mysfit.Name}}">
+              <br>
+              <br>
+              <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#profileModal" data-mysfitid="{{mysfit.mysfitId}}">View Profile</button>
+            </p>
+            <p>
+              <br>
+              <b>Species:</b> {{mysfit.species}}
+              <br>
+              <b>Good/Evil:</b> {{mysfit.goodevil}}
+              <br>
+              <b>Lawful/Chaotic:</b> {{mysfit.lawchaos}}
+              <span style="float:right;">
+                <img id="{{mysfit.mysfitId}}LikeIcon" ng-click="likeClicked(mysfit.mysfitId)" src="https://www.mythicalmysfits.com/images/like_icon_false.png" onmouseover="" style="cursor: pointer;">
+                <img id="{{mysfit.mysfitId}}AlreadyLikedIcon" class="d-none" src="https://www.mythicalmysfits.com/images/like_icon_true.png" >
+              </span>
+            </p>
+        </div>
+      </div>
+    </div>
+    <div class="modal fade bd-example-modal-lg" id="profileModal" tabindex="-1" aria-hidden="true" ng-controller="mysfitProfileController">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <!-- Modal Header -->
+          <div class="modal-header">
+            <h3>Mysfit Profile</h3>
+            <button type="button" class="close" data-dismiss="modal">
+              <span aria-hidden="true">&times;</span>
+              <span class="sr-only">Close</span>
+            </button>
+          </div>
+        <!-- Modal Body -->
+          <div class="modal-body">
+            <p align="center">
+              <img id="profileImage" src="{{profileMysfit.profileImageUri}}" align="center" />
+            </p>
+            <br>
+            <p id="profileName"><b>Name:</b> {{profileMysfit.name}}</p>
+            <p id="profileSpecies"><b>Species:</b> {{profileMysfit.species}}</p>
+            <p id="profileGoodEvil"><b>Good/Evil:</b> {{profileMysfit.goodevil}} </p>
+            <p id="profileLawChaos"><b>Lawful/Chaotic:</b> {{profileMysfit.lawchaos}} </p>
+            <p id="profileAge"><b>Age:</b> {{profileMysfit.age}}</p>
+            <p id="profileDescription"><b>Description:</b> {{profileMysfit.description}}</p>
+            <p id="profileLikes"><b>Likes:</b> {{profileMysfit.likes}}</p>
+            <p align="center">
+              <button id="adoptButton" align="center" type="button" ng-click="adoptClicked(profileMysfit.mysfitId)" class="btn btn-primary">Adopt Me Now!</button>
+              <button id="alreadyAdoptedButton" align="center" type="button" class="btn btn-primary d-none" disabled>Mysfit Adopted!</button>
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+         </div>
+        </div>
+      </div>
+    </div>
+    <p>
+      <br>
+      <br>
+      &nbsp;&nbsp;This site was created for use in the AWS Modern Application Workshop. <a href="https://github.com/aws-samples/aws-modern-application-workshop">Please see details here.</a>
+    </p>
+  </body>
+  <script>
+
+    var mysfitsApiEndpoint = 'REPLACE_ME'; // example: 'https://abcd12345.execute-api.us-east-1.amazonaws.com/prod'
+    var cognitoUserPoolId = 'REPLACE_ME';  // example: 'us-east-1_abcd12345'
+    var cognitoUserPoolClientId = 'REPLACE_ME'; // example: 'abcd12345abcd12345abcd12345'
+    var awsRegion = 'REPLACE_ME'; // example: 'us-east-1' or 'eu-west-1' etc.
+
+    var app = angular.module('mysfitsApp', []);
+
+    var gridScope;
+
+    var filterScope;
+
+    var profileScope;
+
+    initializeStorage();
+
+    var configString = localStorage.getItem("awsConfig");
+    var config = JSON.parse(configString);
+    if(config != null) {
+      refreshAWSCredentials();
+      loggedInDisplay();
+    }
+
+    function loggedInDisplay() {
+      $("#loginModal").modal("hide");
+      $("#logInButton").addClass("d-none");
+      $("#logOutButton").removeClass("d-none");
+    }
+
+    function initializeStorage() {
+      var identityPoolId = cognitoUserPoolId;//
+      var userPoolId = cognitoUserPoolId; //
+      var clientId = cognitoUserPoolClientId;//
+      var loginPrefix = 'cognito-idp.' + awsRegion + '.amazonaws.com/' + identityPoolId;
+
+      localStorage.setItem('identityPoolId', identityPoolId);
+      localStorage.setItem('userPoolId', userPoolId);
+      localStorage.setItem('clientId', clientId);
+      localStorage.setItem('loginPrefix', loginPrefix);
+    }
+
+
+  $(document).on('click', '#logOutButton', function(event) {
+    localStorage.clear();
+    document.location.reload();
+  });
+
+
+    function loginUser() {
+
+      var userPoolId = localStorage.getItem('userPoolId');
+      var clientId = localStorage.getItem('clientId');
+      var identityPoolId = localStorage.getItem('identityPoolId');
+      var loginPrefix = localStorage.getItem('loginPrefix');
+
+      var poolData = {
+        UserPoolId : userPoolId, // Your user pool id here
+        ClientId : clientId // Your client id here
+      };
+      var userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+
+      var email = document.getElementById('email').value;
+      var pwd = document.getElementById('pwd').value;
+
+      var authenticationData =
+      {
+        'UserName': email,
+        'Password': pwd
+      }
+      var userData = {
+        Username : email,
+        Pool : userPool
+      };
+
+      var authenticationDetails = new AmazonCognitoIdentity.AuthenticationDetails(authenticationData);
+      var cognitoUser = new AmazonCognitoIdentity.CognitoUser(userData);
+      cognitoUser.authenticateUser(authenticationDetails, {
+        onSuccess: function (result) {
+          console.log('access token + \n' + result.getAccessToken().getJwtToken());
+
+          var sessionTokens =
+          {
+            IdToken: result.getIdToken(),
+            AccessToken: result.getAccessToken(),
+            RefreshToken: result.getRefreshToken()
+          };
+          localStorage.setItem('sessionTokens', JSON.stringify(sessionTokens));
+
+          //POTENTIAL: Region needs to be set if not already set previously elsewhere.
+          AWS.config.region = 'us-east-1';
+          AWS.config.credentials = new AWS.CognitoIdentityCredentials({
+            IdentityPoolId : identityPoolId, // your identity pool id here
+            Logins : {
+              // Change the key below according to the specific region your user pool is in.
+               loginPrefix : sessionTokens.IdToken.jwtToken
+            }
+          });
+          localStorage.setItem('awsConfig', JSON.stringify(AWS.config));
+          localStorage.setItem('email', email);
+
+          cognitoUser.getUserAttributes(function(err, result) {
+            if (err) {
+                alert(err);
+                return;
+            }
+            for (i = 0; i < result.length; i++) {
+                console.log('attribute ' + result[i].getName() + ' has value ' + result[i].getValue());
+                if (result[i].getName() == 'sub') {
+                  console.log('Overwriting userId into local storage');
+                  localStorage.setItem('userId', result[i].getValue());
+                }
+            }
+          });
+
+          loggedInDisplay();
+        },
+
+        onFailure: function(err) {
+          alert(err.message);
+        },
+
+      });
+    }
+
+    function refreshAWSCredentials() {
+
+      var userPoolId = localStorage.getItem('userPoolId');
+      var clientId = localStorage.getItem('clientId');
+      var identityPoolId = localStorage.getItem('identityPoolId');
+      var loginPrefix = localStorage.getItem('loginPrefix');
+
+      var poolData = {
+        UserPoolId : userPoolId, // Your user pool id here
+        ClientId : clientId // Your client id here
+      };
+      var userPool = new AmazonCognitoIdentity.CognitoUserPool(poolData);
+      var cognitoUser = userPool.getCurrentUser();
+
+      if (cognitoUser != null) {
+            cognitoUser.getSession(function(err, result) {
+                if (result) {
+                    console.log('You are now logged in.');
+                    cognitoUser.refreshSession(result.getRefreshToken(), function(err, result) {
+
+                        if (err) {//throw err;
+                            console.log('In the err: '+err);
+                        }
+                        else{
+                            localStorage.setItem('awsConfig', JSON.stringify(AWS.config));
+                            var sessionTokens =
+                            {
+                              IdToken: result.getIdToken(),
+                              AccessToken: result.getAccessToken(),
+                              RefreshToken: result.getRefreshToken()
+                            };
+                            localStorage.setItem("sessionTokens", JSON.stringify(sessionTokens));
+
+                        }
+                    });
+
+                }
+            });
+        }
+
+
+    }
+
+    $("#loginForm").submit(function(event) {
+      event.preventDefault();
+      loginUser();
+    });
+
+    app.controller('clearFilterController', function($scope) {
+    });
+
+    app.controller('mysfitsFilterController', function($scope) {
+
+      filterScope = $scope;
+
+      // The possible options for Mysfits to populate the dropdown filters.
+      $scope.filterOptionsList =
+       {
+         "categories": [
+           {
+             "title": "Good/Evil",
+             "selections":  [
+               "Good",
+               "Neutral",
+               "Evil"
+             ]
+           },
+           {
+             "title": "Lawful/Chaotic",
+             "selections":  [
+               "Lawful",
+               "Neutral",
+               "Chaotic"
+             ]
+           }
+         ]
+       };
+
+       $scope.removeFilter = function() {
+         allMysfits = getAllMysfits(applyGridScope);
+       }
+
+       $scope.queryMysfits = function(filterCategory, filterValue) {
+
+           var filterCategoryQS = "";
+           if (filterCategory==="Good/Evil") {
+             filterCategoryQS = "GoodEvil";
+           } else {
+             filterCategoryQS = "LawChaos"
+           }
+           var mysfitsApi = mysfitsApiEndpoint + '/mysfits?' + 'filter=' + filterCategoryQS + "&value=" + filterValue;
+
+           $.ajax({
+             url : mysfitsApi,
+             type : 'GET',
+             success : function(response) {
+               applyGridScope(response.mysfits)
+             },
+             error : function(response) {
+               console.log("could not retrieve mysfits list.");
+               if (response.status == "401") {
+                  refreshAWSCredentials();
+                }
+             }
+           });
+       }
+
+
+
+    });
+
+    app.controller('mysfitsListController', function($scope) {
+
+      gridScope = $scope;
+
+      getAllMysfits(applyGridScope);
+
+
+
+      $scope.likeClicked = function(mysfitId) {
+        console.log("clicked: " + mysfitId);
+        likeMysfit(mysfitId, updateLikeIcons);
+      }
+
+    });
+
+    app.controller('mysfitProfileController', function($scope) {
+
+      profileScope = $scope;
+
+      $scope.adoptClicked = function(mysfitId) {
+        console.log("adopt clicked: " +  mysfitId);
+        adoptMysfit(mysfitId, markAdopted);
+      }
+
+    });
+
+    $('#profileModal').on('show.bs.modal', function (event) {
+      var button = $(event.relatedTarget);
+      var mysfitId = button.data('mysfitid');
+      getMysfit(mysfitId, updateModalText);
+
+
+    });
+
+    function updateModalText(profileMysfit) {
+
+      applyProfileScope(profileMysfit);
+
+      if (profileMysfit.adopted == true) {
+        markAdopted();
+      } else {
+        markNotAdopted();
+      }
+
+    }
+
+    function markAdopted() {
+      $("#adoptButton").addClass("d-none");
+      $("#alreadyAdoptedButton").removeClass("d-none");
+    }
+
+    function markNotAdopted() {
+      $("#adoptButton").removeClass("d-none");
+      $("#alreadyAdoptedButton").addClass("d-none");
+    }
+
+    function updateLikeIcons(mysfitId) {
+
+      likeIconId = "#" + mysfitId + "LikeIcon";
+      $(likeIconId).addClass("d-none");
+
+      alreadyLikedIconId = "#" + mysfitId + "AlreadyLikedIcon";
+      $(alreadyLikedIconId).removeClass("d-none");
+
+    }
+
+    function applyGridScope(mysfitsList) {
+      gridScope.mysfits = mysfitsList;
+      gridScope.$apply();
+    }
+
+    function applyProfileScope(mysfit) {
+      profileScope.profileMysfit = mysfit;
+      profileScope.$apply();
+    }
+
+    function likeMysfit(mysfitId, callback) {
+
+      try {
+        var mysfitsApi = mysfitsApiEndpoint + '/mysfits/' + mysfitId + "/like";
+
+        var sessionTokensString = localStorage.getItem('sessionTokens');
+        var sessionTokens = JSON.parse(sessionTokensString);
+        var IdToken = sessionTokens.IdToken;
+        var idJwt = IdToken.jwtToken;
+
+        $.ajax({
+          url : mysfitsApi,
+          type : 'POST',
+          headers : {'Authorization' : idJwt },
+          success : function(response) {
+            console.log("here" + mysfitId);
+            callback(mysfitId);
+          },
+          error : function(response) {
+            console.log("could not like mysfit");
+            console.log(response);
+            if (response.status == "401") {
+               refreshAWSCredentials();
+             }
+          }
+        });
+      } catch(err) {
+        alert("You must be logged in to like a mysfit.");
+        console.log(err.message);
+      }
+
+    }
+
+    function adoptMysfit(mysfitId, callback) {
+
+      try {
+        var mysfitsApi = mysfitsApiEndpoint + '/mysfits/' + mysfitId + "/adopt";
+
+        var sessionTokensString = localStorage.getItem('sessionTokens');
+        var sessionTokens = JSON.parse(sessionTokensString);
+        var IdToken = sessionTokens.IdToken;
+        var idJwt = IdToken.jwtToken;
+
+        $.ajax({
+          url : mysfitsApi,
+          async : false,
+          type : 'POST',
+          headers : {'Authorization' : idJwt },
+          success : function(response) {
+            callback();
+          },
+          error : function(response) {
+            console.log("could not adopt mysfit");
+            if (response.status == "401") {
+               refreshAWSCredentials();
+             }
+          }
+        });
+      } catch (err) {
+        alert("You must be logged in to adopt a mysfit.");
+        console.log(err.message);
+      }
+
+    }
+
+    function getAllMysfits(callback) {
+
+      var mysfitsApi = mysfitsApiEndpoint + '/mysfits';
+
+      $.ajax({
+        url : mysfitsApi,
+        type : 'GET',
+        success : function(response) {
+          callback(response.mysfits);
+        },
+        error : function(response) {
+          console.log("could not retrieve mysfits list.");
+          if (response.status == "401") {
+             refreshAWSCredentials();
+           }
+        }
+      });
+    }
+
+    function getMysfit(mysfitId, callback) {
+
+      var mysfitsApi = mysfitsApiEndpoint + '/mysfits/' + mysfitId;
+
+      $.ajax({
+        url : mysfitsApi,
+        type : 'GET',
+        success : function(response) {
+          callback(response);
+        },
+        error : function(response) {
+          console.log("could not retrieve mysfits list.");
+          if (response.status == "401") {
+             refreshAWSCredentials();
+           }
+        }
+      });
+    }
+
+
+  </script>
+</html>

@@ -1,0 +1,59 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Description: A stack that creates an IAM role to be used by a SageMaker notebook
+             instance.
+
+Resources:
+  # A SageMaker notebook role to allow SageMaker notebooks to interact with
+  # required services.
+  MysfitsNotebookRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: 'MysfitsNotbookRole'
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: ''
+            Effect: Allow
+            Principal:
+              Service: sagemaker.amazonaws.com
+            Action: 'sts:AssumeRole'
+
+  MysfitsNotebookPolicy:
+    Type: 'AWS::IAM::Policy'
+    DependsOn:
+      - MysfitsNotebookRole
+    Properties:
+      PolicyName: mysfits_notebook_policy
+      Roles:
+        - !Ref MysfitsNotebookRole
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+        - Effect: Allow
+          Action:
+            - 'sagemaker:*'
+            - 'ecr:GetAuthorizationToken'
+            - 'ecr:GetDownloadUrlForLayer'
+            - 'ecr:BatchGetImage'
+            - 'ecr:BatchCheckLayerAvailability'
+            - 'cloudwatch:PutMetricData'
+            - 'logs:CreateLogGroup'
+            - 'logs:CreateLogStream'
+            - 'logs:DescribeLogStreams'
+            - 'logs:PutLogEvents'
+            - 'logs:GetLogEvents'
+            - 's3:CreateBucket'
+            - 's3:ListBucket'
+            - 's3:GetBucketLocation'
+            - 's3:GetObject'
+            - 's3:PutObject'
+            - 's3:DeleteObject'
+          Resource: '*'
+        - Effect: Allow
+          Action:
+            - 'iam:PassRole'
+          Resource: '*'
+          Condition:
+            StringEquals:
+              iam:PassedToService: 'sagemaker.amazonaws.com'

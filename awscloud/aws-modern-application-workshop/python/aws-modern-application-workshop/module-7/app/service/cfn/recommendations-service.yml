@@ -1,0 +1,59 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Description: A stack that gives Mythical Mysfits the abillity to recommend
+             Mysfits to a website user using machine learning.
+
+Globals:
+  Function:
+    Runtime: python3.6
+    MemorySize: 128
+  Api:
+    Cors:
+      AllowMethods: "'*'"
+      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key'"
+      AllowOrigin: "'*'"
+
+Resources:
+  MysfitsRecommendationsApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+
+  # An IAM policy that permits Lambda funciton to invoke a SageMaker endpoint.
+  MysfitsRecommendationFunctionPolicy:
+    Type: 'AWS::IAM::ManagedPolicy'
+    Properties:
+      ManagedPolicyName: MythicalMysfitsRecommendationPolicy
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Action:
+                - 'sagemaker:InvokeEndpoint'
+            Resource: '*'
+
+  MysfitsRecommendationFunction:
+    DependsOn:
+      - MysfitsRecommendationFunctionPolicy
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: recommendations.recommend
+      CodeUri: ..
+      Description: >-
+        A microservice backend to invoke a SageMaker endpoint.
+      Timeout: 30
+      Policies:
+        - !Ref MysfitsRecommendationFunctionPolicy
+      Events:
+        RecommendationsApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref MysfitsRecommendationsApi
+            Path: /recommendations
+            Method: POST
+
+Outputs:
+  MysfitsRecommendationsApi:
+    Description: The endpoint for the REST API created with API Gateway
+    Value: !Join ['', ['https://', !Ref 'MysfitsRecommendationsApi',  '.execute-api.', !Ref 'AWS::Region', '.amazonaws.com/prod']]

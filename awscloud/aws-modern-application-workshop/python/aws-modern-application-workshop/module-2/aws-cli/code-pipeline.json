@@ -1,0 +1,91 @@
+{
+  "pipeline": {
+      "name": "MythicalMysfitsServiceCICDPipeline",
+      "roleArn": "REPLACE_ME_CODEPIPELINE_ROLE_ARN",
+      "stages": [
+        {
+          "name": "Source",
+          "actions": [
+            {
+              "inputArtifacts": [
+    
+              ],
+              "name": "Source",
+              "actionTypeId": {
+                "category": "Source",
+                "owner": "AWS",
+                "version": "1",
+                "provider": "CodeCommit"
+              },
+              "outputArtifacts": [
+                {
+                  "name": "MythicalMysfitsService-SourceArtifact"
+                }
+              ],
+              "configuration": {
+                "BranchName": "master",
+                "RepositoryName": "MythicalMysfitsService-Repository"
+              },
+              "runOrder": 1
+            }
+          ]
+        },
+        {
+          "name": "Build",
+          "actions": [
+            {
+              "name": "Build",
+              "actionTypeId": {
+                "category": "Build",
+                "owner": "AWS",
+                "version": "1",
+                "provider": "CodeBuild"
+              },
+              "outputArtifacts": [
+                {
+                  "name": "MythicalMysfitsService-BuildArtifact"
+                }
+              ],
+              "inputArtifacts": [
+                {
+                  "name": "MythicalMysfitsService-SourceArtifact"
+                }
+              ],
+              "configuration": {
+                "ProjectName": "MythicalMysfitsServiceCodeBuildProject"
+              },
+              "runOrder": 1
+            }
+          ]
+        },
+        {
+          "name": "Deploy",
+          "actions": [
+            {
+              "name": "Deploy",
+              "actionTypeId": {
+                "category": "Deploy",
+                "owner": "AWS",
+                "version": "1",
+                "provider": "ECS"
+              },
+              "inputArtifacts": [
+                {
+                  "name": "MythicalMysfitsService-BuildArtifact"
+                }
+              ],
+              "configuration": {
+                "ClusterName": "MythicalMysfits-Cluster",
+                "ServiceName": "MythicalMysfits-Service",
+                "FileName": "imagedefinitions.json"
+              }
+            }
+          ]
+        }
+      ],
+      "artifactStore": {
+        "type": "S3",
+        "location": "REPLACE_ME_ARTIFACTS_BUCKET_NAME"
+      }
+  }
+}
