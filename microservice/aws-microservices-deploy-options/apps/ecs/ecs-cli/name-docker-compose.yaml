@@ -1,0 +1,13 @@
+version: '2'
+services:
+  name-service:
+    image: arungupta/name:latest
+    ports:
+      - "8082:8082"
+    logging:
+      driver: awslogs
+      options: 
+        awslogs-group: /ecs/ecs-demo
+        awslogs-region: us-east-1
+        awslogs-stream-prefix: name
+    

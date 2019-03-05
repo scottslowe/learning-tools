@@ -1,0 +1,23 @@
+apiVersion: config.istio.io/v1alpha2
+kind: RouteRule
+metadata:
+  name: greeting-delay-abort
+spec:
+  destination:
+    name: greeting
+  match:
+    source:
+      name: webapp
+      labels:
+        version: v2
+  route:
+  - labels:
+      greeting: howdy
+  httpFault:
+#delay all requests from "webapp v2" to "greeting howdy" by 5s
+    delay:
+      fixedDelay: 5s
+#abort 10% of requests
+    abort:
+      percent: 10
+      httpStatus: 400

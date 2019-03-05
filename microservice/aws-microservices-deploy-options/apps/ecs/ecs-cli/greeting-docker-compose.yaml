@@ -1,0 +1,13 @@
+version: '2'
+services:
+  greeting-service:
+    image: arungupta/greeting:latest
+    ports:
+      - "8081:8081"
+    logging:
+      driver: awslogs
+      options: 
+        awslogs-group: /ecs/ecs-demo
+        awslogs-region: us-east-1
+        awslogs-stream-prefix: greeting
+    

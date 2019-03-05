@@ -1,0 +1,1092 @@
+= Deploying Microservices on AWS Cloud
+:toc:
+
+This repo contains a simple application that consists of three microservices. The sample application uses three services:
+
+. `webapp`: Web application microservice calls `greeting` and `name` microservice to generate a greeting for a person.
+. `greeting`: A microservice that returns a greeting.
+. `name`: A microservice that returns a person’s name based upon `{id}` in the URL.
+
+Each application is deployed using different AWS Compute options.
+
+== Build and Test Services using Maven
+
+. Each microservice is in a different repo:
++
+[cols="1,3"]
+|====
+| `greeting` | https://github.com/arun-gupta/microservices-greeting
+| `name` | https://github.com/arun-gupta/microservices-name
+| `webapp` | https://github.com/arun-gupta/microservices-webapp
+|====
++
+. Clone all the repos. Open each one in a separate terminal.
+. Run `greeting` service: `mvn wildfly-swarm:run`
+.. Optionally test: `curl http://localhost:8081/resources/greeting`
+. Run `name` service: `mvn wildfly-swarm:run`
+.. Optionally test:
+... `curl http://localhost:8082/resources/names`
+... `curl http://localhost:8082/resources/names/1`
+. Run `webapp` service: `mvn wildfly-swarm:run`
+. Run the application: `curl http://localhost:8080/`
+
+== Docker
+
+=== Create Docker Images
+
+`mvn package -Pdocker` for each repo will create the Docker image.
+
+By default, the Docker image name is `arungupta/<service>` where `<service>` is `greeting`, `name` or `webapp`. The image can be created in your repo:
+
+  mvn package -Pdocker -Ddocker.repo=<repo>
+
+By default, the `latest` tag is used for the image. A different tag may be specified as:
+
+  mvn package -Pdocker -Ddocker.tag=<tag>
+
+=== Push Docker Images to Registry
+
+Push Docker images to the registry:
+
+  mvn install -Pdocker
+
+=== Deployment to Docker Swarm
+
+. `docker swarm init`
+. `cd apps/docker`
+. `docker stack deploy --compose-file docker-compose.yaml myapp`
+. Access the application: `curl http://localhost:8080`
+.. Optionally test the endpoints:
+... Greeting endpoint: `curl http://localhost:8081/resources/greeting`
+... Name endpoint: `curl http://localhost:8082/resources/names/1`
+. Remove the stack: `docker stack rm myapp`
+
+==== Debug
+
+. List stack:
+
+  docker stack ls
+
+. List services in the stack:
+
+  docker stack services myapp
+
+. List containers:
+
+  docker container ls -f name=myapp*
+
+. Get logs for all the containers in the `webapp` service:
+
+  docker service logs myapp_webapp-service
+
+== Amazon ECS and AWS Fargate
+
+This section will explain how to deploy these microservices using Fargate on Amazon ECS cluster.
+
+NOTE: AWS Fargate is only supported in `us-east-1` region at this time. The instructions will only work in that region.
+
+=== Deployment: Create Cluster using AWS Console
+
+This section will explain how to create an ECS cluster using AWS Console.
+
+Complete instructions are available at https://docs.aws.amazon.com/AmazonECS/latest/developerguide/create_cluster.html.
+
+Use the cluster name `fargate-cluster`.
+
+=== Deployment: Create Cluster using AWS CloudFormation
+
+This section will explain how to create an ECS cluster using CloudFormation.
+
+The following resources are needed in order to deploy the sample application:
+
+- Private Application Load Balancer for `greeting` and `name` and a public ALB for `webapp`
+- Target groups registered with the ALB
+- Security Group that allows the services to talk to each other and be externally accessible
+
+. Create an ECS cluster with these resources:
+
+  cd apps/ecs/fargate/templates
+  aws cloudformation deploy \
+    --stack-name fargate-cluster \
+    --template-file infrastructure.yaml \
+    --region us-east-1 \
+    --capabilities CAPABILITY_IAM
+
+. View the output from the cluster:
+
+  aws cloudformation \
+    describe-stacks \
+    --region us-east-1 \
+    --stack-name fargate-cluster \
+    --query 'Stacks[].Outputs[]' \
+    --output text
+
+==== Deployment: Simple ECS Cluster
+
+This section explains how to create a ECS cluster with no additional resources. The cluster can be created with a private VPC or a public VPC. The CloudFormation templates for different types are available at https://github.com/awslabs/aws-cloudformation-templates/tree/master/aws/services/ECS/EC2LaunchType/clusters.
+
+This section will create a 3-instance cluster using a public VPC:
+
+  curl -O https://raw.githubusercontent.com/awslabs/aws-cloudformation-templates/master/aws/services/ECS/EC2LaunchType/clusters/public-vpc.yml
+  aws cloudformation deploy \
+    --stack-name MyECSCluster \
+    --template-file public-vpc.yml \
+    --region us-east-1 \
+    --capabilities CAPABILITY_IAM
+
+List the cluster using `aws ecs list-clusters` command:
+
+  {
+      "clusterArns": [
+          "arn:aws:ecs:us-east-1:091144949931:cluster/MyECSCluster-ECSCluster-197YNE1ZHPSOP"
+      ]
+  }
+
+=== Deployment: Create Cluster and Deploy Services using Fargate CLI
+
+This section explains how to create a Fargate cluster and run services on it.
+
+. Download CLI from http://somanymachines.com/fargate/
+. Create the LoadBalancer:
+
+  fargate lb create \
+    microservices-lb \
+    --port 80
+
+. Create `greeting` service:
+
+  fargate service create greeting-service \
+    --lb microservices-lb \
+    -m 1024 \
+    -i arungupta/greeting \
+    -p http:8081 \
+    --rule path=/resources/greeting
+
+. Create `name` service:
+
+  fargate service create name-service \
+    --lb microservices-lb \
+    -m 1024 \
+    -i arungupta/name \
+    -p http:8082 \
+    --rule path=/resources/names/*
+
+. Get URL of the LoadBalancer:
+
+  fargate lb info microservices-lb
+
+. Create `webapp` service:
+
+  fargate service create webapp-service \
+    --lb microservices-lb \
+    -m 1024 \
+    -i arungupta/webapp \
+    -p http:8080 \
+    -e GREETING_SERVICE_HOST=<lb> \
+    -e GREETING_SERVICE_PORT=80 \
+    -e GREETING_SERVICE_PATH=/resources/greeting \
+    -e NAME_SERVICE_HOST=<lb> \
+    -e NAME_SERVICE_PORT=80 \
+    -e NAME_SERVICE_PATH=/resources/names
+
+. Test the application:
+
+  curl http://<lb>
+  curl http://<lb>/0
+
+. Scale the service: `fargate service scale webapp-service +3`
+. Clean up the resources:
+
+  fargate service scale greeting-service 0
+  fargate service scale name-service 0
+  fargate service scale webapp-service 0
+  fargate lb destroy microservices-lb
+
+NOTE: As described at https://docs.aws.amazon.com/AmazonECS/latest/developerguide/service_limits.html, the number of tasks using the Fargate launch type, per region, per account is 20. This limit can be increased by filing a support ticket from the AWS Console.
+
+=== Deployment: Deploy Tasks and Service using ECS CLI
+
+This section will explain how to create an ECS cluster using a CloudFormation template. The tasks are then deployed using ECS CLI and Docker Compose definitions.
+
+==== Pre-requisites
+
+. Install https://docs.aws.amazon.com/AmazonECS/latest/developerguide/ECS_CLI.html[ECS CLI].
+. Install - https://www.perl.org/get.html[Perl].
+
+==== Deploy the application
+
+. Run the CloudFormation template to create the AWS resources:
++
+|===
+|Region | Launch Template
+| *N. Virginia* (us-east-1)
+a| image::./images/deploy-to-aws.png[link=https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=aws-microservices-deploy-options-ecscli&templateURL=https://s3.amazonaws.com/aws-microservices-deploy-options/infra.yaml]
+|===
++
+. Run the follow command to capture the output from the CloudFormation template as key/value pairs in the file `ecs-cluster.props`. These will be used to setup environment variables which are used subseqently.
+
+    aws cloudformation describe-stacks \
+      --stack-name aws-microservices-deploy-options-ecscli \
+      --query 'Stacks[0].Outputs' \
+      --output=text | \
+      perl -lpe 's/\s+/=/g' | \
+      tee ecs-cluster.props
+
+. Setup the environment variables using this file:
+
+    set -o allexport
+    source ecs-cluster.props
+    set +o allexport
+
+. Configure ECS CLI:
+
+    ecs-cli configure --cluster $ECSCluster --region us-east-1 --default-launch-type FARGATE
+
+. Create the task definition parameters for each of the service:
+
+    ecs-params-create.sh greeting
+    ecs-params-create.sh name
+    ecs-params-create.sh webapp
+
+. Start the `greeting` service up:
+
+    ecs-cli compose --verbose \
+      --file greeting-docker-compose.yaml \
+      --task-role-arn $ECSRole \
+      --ecs-params ecs-params_greeting.yaml \
+      --project-name greeting \
+      service up \
+      --target-group-arn $GreetingTargetGroupArn \
+      --container-name greeting-service \
+      --container-port 8081
+
+. Bring the `name` service up:
+
+    ecs-cli compose --verbose \
+      --file name-docker-compose.yaml \
+      --task-role-arn $ECSRole \
+      --ecs-params ecs-params_name.yaml  \
+      --project-name name \
+      service up \
+      --target-group-arn $NameTargetGroupArn \
+      --container-name name-service \
+      --container-port 8082
+
+. Bring the webapp service up:
++
+    ecs-cli compose --verbose \
+      --file webapp-docker-compose.yaml \
+      --task-role-arn $ECSRole \
+      --ecs-params ecs-params_webapp.yaml \
+      --project-name webapp \
+      service up \
+      --target-group-arn $WebappTargetGroupArn \
+      --container-name webapp-service \
+      --container-port 8080
++
+Docker Compose supports environment variable substitution. The `webapp-docker-compose.yaml` uses `$PrivateALBCName`  to refer to the private Application Load Balancer for `greeting` and `name` service.
++
+. Check the `healthy` status of different services:
+
+    aws elbv2 describe-target-health \
+      --target-group-arn $GreetingTargetGroupArn \
+      --query 'TargetHealthDescriptions[0].TargetHealth.State' \
+      --output text
+    aws elbv2 describe-target-health \
+      --target-group-arn $NameTargetGroupArn \
+      --query 'TargetHealthDescriptions[0].TargetHealth.State' \
+      --output text
+    aws elbv2 describe-target-health \
+      --target-group-arn $WebappTargetGroupArn \
+      --query 'TargetHealthDescriptions[0].TargetHealth.State' \
+      --output text
+
+. Once all the services are in `healthy` state, get a response from the `webapp` service:
+
+  curl http://"$ALBPublicCNAME"
+  Hello Sheldon
+
+==== Tear down the resources
+
+  ecs-cli compose --verbose \
+        --file greeting-docker-compose.yaml \
+        --task-role-arn $ECSRole \
+        --ecs-params ecs-params_greeting.yaml \
+        --project-name greeting \
+        service down
+  ecs-cli compose --verbose \
+        --file name-docker-compose.yaml \
+        --task-role-arn $ECSRole \
+        --ecs-params ecs-params_name.yaml \
+        --project-name name \
+        service down
+  ecs-cli compose --verbose \
+        --file webapp-docker-compose.yaml \
+        --task-role-arn $ECSRole \
+        --ecs-params ecs-params_webapp.yaml \
+        --project-name webapp \
+        service down
+  aws cloudformation delete-stack --region us-east-1 --stack-name aws-microservices-deploy-options-ecscli
+
+=== Deployment: Create Cluster and Deploy Fargate Tasks using CloudFormation
+
+This section creates an ECS cluster and deploys Fargate tasks to the cluster:
+
+|===
+|Region | Launch Template
+| *N. Virginia* (us-east-1)
+a| image::./images/deploy-to-aws.png[link=https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=aws-compute-options-fargate&templateURL=https://s3.amazonaws.com/compute-options-public/master.yaml]
+|===
+
+Retrieve the public endpoint to test your application deployment:
+
+  aws cloudformation \
+    describe-stacks \
+    --region us-east-1 \
+    --stack-name aws-compute-options-fargate \
+    --query 'Stacks[].Outputs[?OutputKey==`PublicALBCNAME`].[OutputValue]' \
+    --output text
+
+Use the command to test:
+
+  curl http://<public_endpoint>
+
+=== Deployment: Create Cluster and Deploy EC2 Tasks using CloudFormation
+
+This section creates an ECS cluster and deploys EC2 tasks to the cluster:
+
+|===
+|Region | Launch Template
+| *N. Virginia* (us-east-1)
+a| image::./images/deploy-to-aws.png[link=https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/new?stackName=aws-compute-options-ecs&templateURL=https://s3.amazonaws.com/aws-compute-options-bucket/master.yaml]
+|===
+
+Retrieve the public endpoint to test your application deployment:
+
+  aws cloudformation \
+    describe-stacks \
+    --region us-east-1 \
+    --stack-name aws-compute-options-ecs \
+    --query 'Stacks[].Outputs[?OutputKey==`PublicALBCNAME`].[OutputValue]' \
+    --output text
+
+Use the command to test:
+
+  curl http://<public_endpoint>
+
+=== Deployment Pipeline: Fargate with AWS CodePipeline
+
+This section will explain how to deploy a Fargate task via CodePipeline
+
+. Fork each of the repositories in the link:#build-and-test-services-using-maven[Build and Test Services using Maven] section.
+. Clone the forked repositories to your local machine:
+
+  git clone https://github.com/<your_github_username>/microservice-greeting
+  git clone https://github.com/<your_github_username>/microservice-name
+  git clone https://github.com/<your_github_username>/microservice-webapp
+
+. Create the CloudFormation stack:
++
+|===
+|Region | Launch Template
+| *N. Virginia* (us-east-1)
+a| image::./images/deploy-to-aws.png[link=https://console.aws.amazon.com/cloudformation/home?region=us-east-1#/stacks/create/review?stackName=Fargate-ContinuousDeployment&templateURL=https://s3.amazonaws.com/aws-microservices-deploy-options-ecs-deployment/ecs-refarch-continuous-deployment.yaml&param_LaunchType=Fargate]
+|===
+
+The CloudFormation template requires the following input parameters:
+
+. Cluster Configuration
+.. *Launch Type:* Select Fargate.
+. GitHub Configuration
+.. *Repo:* The repository name for each of the sample services. These have been populated for you.
+.. *Branch:* The branch of the repository to deploy continuously, e.g. master.
+.. *User:* Your GitHub username.
+.. *Personal Access Token:* A token for the user specified above. Use https://github.com/settings/tokens to create a new token. See https://help.github.com/enterprise/2.12/user/articles/creating-a-personal-access-token-for-the-command-line/[Creating a personal access token for the command line] for more details.
+
+The CloudFormation stack has the following outputs:
+
+. *ServiceUrl:* The URL of the sample service that is being deployed.
+. *PipelineUrl:* A deep link for the pipeline in the AWS Management Console.
+
+Once the stack has been provisioned, *click* the link for the *PipelineUrl*. This will open the CodePipline console.  Clicking on the pipeline will display a diagram that looks like this:
+
+image::./images/fargate-pipeline.png[Fargate Pipeline, 350]
+
+Now that a deployment pipeline has been established for our services, you can modify files in the repositories we cloned earlier and push your changes to GitHub.  This will cause the following actions to occur:
+
+. The latest changes will be pulled from GitHub.
+. A new Docker image will be created and pushed to ECR.
+. A new revision of the task definition will be created using the latest version of the Docker image.
+. The service definition will be updated with the latest version of the task definition.
+. ECS will deploy a new version of the Fargate task.
+
+==== Cleaning up the example resources
+
+To remove all the resources created by the example, do the following:
+
+. Delete the main CloudFromation stack which deletes the sub stacks and resouces.
+. Manually delete the resources which may contain content:
+.. S3 Bucket: ArtifactBucket
+.. ECR Repository: Repository
+
+=== Monitoring: AWS X-Ray
+
+https://github.com/aws-samples/aws-microservices-deploy-options/issues/55
+
+=== Monitoring: Prometheus and Grafana
+
+https://github.com/aws-samples/aws-microservices-deploy-options/issues/78
+
+== Kubernetes
+
+=== Deployment: Create EKS Cluster
+
+Create an EKS cluster based upon Limited Preview instructions.
+
+=== Deployment: Create Cluster using kops
+
+. Install kops
+
+  brew update && brew install kops
+
+. Create an S3 bucket and setup `KOPS_STATE_STORE`:
+
+  aws s3 mb s3://kubernetes-aws-io
+  export KOPS_STATE_STORE=s3://kubernetes-aws-io
+
+. Define an envinronment variable for Availability Zones for the cluster:
+
+  export AWS_AVAILABILITY_ZONES="$(aws ec2 describe-availability-zones --query 'AvailabilityZones[].ZoneName' --output text | awk -v OFS="," '$1=$1')"
+
+. Create cluster:
+
+  kops create cluster \
+    --name=cluster.k8s.local \
+    --zones=$AWS_AVAILABILITY_ZONES \
+    --yes
+
+By default, it creates a single master and 2 worker cluster spread across the AZs.
+
+=== Deployment: Standalone Manifests
+
+Make sure `kubectl` CLI is installed and configured for the Kubernetes cluster.
+
+. Apply the manifests: `kubectl apply -f apps/k8s/standalone/manifest.yml`
+. Access the application: `curl http://$(kubectl get svc/webapp -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')`
+. Delete the application: `kubectl delete -f apps/k8s/standalone/manifest.yml`
+
+=== Deployment: Helm
+
+Make sure `kubectl` CLI is installed and configured for the Kubernetes cluster. Also, make sure Helm is installed on that Kubernetes cluster.
+
+. Install the Helm CLI: `brew install kubernetes-helm`
+. Install Helm in Kubernetes cluster: `helm init`
+. Install the Helm chart: `helm install --name myapp apps/k8s/helm/myapp`
+.. By default, the `latest` tag for an image is used. Alternatively, a different tag for the image can be used:
+
+  helm install --name myapp apps/k8s/helm/myapp --set "docker.tag=<tag>"
+
+. Access the application:
+
+  curl http://$(kubectl get svc/myapp-webapp -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+
+. Delete the Helm chart: `helm delete --purge myapp`
+
+=== Deployment: Ksonnet
+
+Make sure `kubectl` CLI is installed and configured for the Kubernetes cluster.
+
+. Install `ksonnet` from `homebrew` tap: `brew install ksonnet/tap/ks`
+. Change into the ksonnet sub directory: `cd apps/k8s/ksonnet/myapp`
+. Add the environment: `ks env add default`
+. Deploy the manifests: `ks apply default`
+. Access the application: `curl http://$(kubectl get svc/webapp -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')`
+. Delete the application: `ks delete default`
+
+=== Deployment: Kubepack
+
+This section will explain how to use https://kubepack.com/[Kubepack] to deploy your Kubernetes application.
+
+. Install `kubepack` CLI:
+
+  wget -O pack https://github.com/kubepack/pack/releases/download/0.1.0/pack-darwin-amd64 \
+    && chmod +x pack \
+    && sudo mv pack /usr/local/bin/
+
+. Move to package root directory: `cd apps/k8s/kubepack`
+. Pull dependent packages:
++
+  pack dep -f .
++
+This will generate `manifests/vendor` folder.
++
+. Generate final manifests: Combine the manifests for this package and its dependencies and potential patches into the final manifests:
++
+  pack up -f .
++
+This will create `manifests/output` folder with an installer script and final manifests.
++
+. Install package: `./manifests/output/install.sh`
+. Access the application:
+
+  curl http://$(kubectl get svc/webapp -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+
+. Delete the application: `kubectl delete -R -f manifests/output`
+
+=== Deployment: Local Dev & Test using Draft
+
+https://github.com/aws-samples/aws-microservices-deploy-options/issues/208
+
+. Install Draft:
+
+  brew tap Azure/draft
+  brew install Azure/draft/draft
+
+. Initialize:
+
+  draft init
+
+. Create Draft artifacts to containerize and deploy to k8s:
+
+  draft create
+
+Following issues are identified so far:
+
+. https://github.com/Azure/draft/issues/726
+. https://github.com/Azure/draft/issues/727
+. https://github.com/Azure/draft/issues/728
+. https://github.com/Azure/draft/issues/729
+. https://github.com/Azure/draft/issues/730
+
+=== Deployment Pipeline: AWS Codepipeline
+
+This section explains how to setup a deployment pipeline using AWS CodePipeline.
+
+CloudFormation templates for different regions are listed at https://github.com/aws-samples/aws-kube-codesuite. `us-west-2` is listed below.
+
+|===
+|Region | Launch Template
+| *Oregon* (us-west-2)
+a| image::./images/deploy-to-aws.png[link=https://console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/new?stackName=Codesuite-Demo&templateURL=https://s3.amazonaws.com/codesuite-demo-public/aws-refarch-codesuite-kubernetes.yaml]
+|===
+
+. Create Git credentials for HTTPS connections to AWS CodeCommit: https://docs.aws.amazon.com/codecommit/latest/userguide/setting-up-gc.html?icmpid=docs_acc_console_connect#setting-up-gc-iam
+. Reset any stored git credentials for CodeCommit in the keychain. Open `Keychain Access`, search for `codecommit` and remove any related entries.
+. Get CodeCommit repo URL from CloudFormation output and follow the instructions at https://github.com/aws-samples/aws-kube-codesuite#test-cicd-platform.
+
+=== Deployment Pipeline: Jenkins
+
+Create a deployment pipeline using http://jenkins-x.io/[Jenkins X].
+
+. Install Jenkins X CLI:
+
+  brew tap jenkins-x/jx
+  brew install jx
+
+. Create the Kubernetes cluster:
++
+  jx create cluster aws
++
+This will create a Kubernetes cluster on AWS using kops. This cluster will have RBAC enabled. It will also have insecure registries enabled. These are needed by the pipeline to store Docker images.
++
+. Clone the repo:
+
+  git clone https://github.com/arun-gupta/docker-kubernetes-hello-world
+
+. Import the project in Jenkins X:
++
+  jx import
++
+This will generate `Dockerfile` and Helm charts, if they don't already exist. It also creates a `Jenkinsfile` with different build stages identified. Finally, it triggers a Jenkins build and deploy the application in a staging environment by default.
++
+. View Jenkins console using `jx console`. Select the user, project and branch to see the deployment pipeline.
+. Get the staging URL using `jx get apps` and view the output from the application in a browser window.
+. Now change the message in displayed from `HelloHandler` and push to the GitHub repo. Make sure to change the corresponding test as well otherwise the pipeline will fail. Wait for the deployment to complete and then refresh the browser page to see the updated output.
+
+=== Deployment Pipeline: Gitkube
+
+https://github.com/aws-samples/aws-microservices-deploy-options/issues/88
+
+. Deploy the greeting service
+. Install Gitkube:
+
+  kubectl create -f https://storage.googleapis.com/gitkube/gitkube-setup-stable.yaml
+  kubectl --namespace kube-system expose deployment gitkubed --type=LoadBalancer --name=gitkubed
+
+. Configure secret for Docker registry in the cluster:
+
+  kubectl create secret \
+    docker-registry gitkube-secret \
+    --docker-server=https://index.docker.io/v1/ \
+    --docker-username=arungupta \
+    --docker-password='<password>' \
+    --docker-email=help@example.com
+
+. Create a Remote resource manifest based upon `greeting-remote.yaml`
+. Create the Remote resource:
+
+  kubectl apply -f greeting-remote.yaml
+
+. Add remote to git repo:
+
+  git remote add gitkube `kubectl get remote greeting -o jsonpath='{.status.remoteUrl}'`
+
+=== Deployment Pipeline: Spinnaker
+
+link:spinnaker.md[Deploy with Spinnaker]
+
+=== Deployment Pipeline: Skaffold
+
+link:skaffold.md[Deployment with Skaffold]
+
+=== Deployment: Canary Deployment with Istio
+
+https://istio.io/[Istio] allows the deployment of canary services. This is done by using a simple DSL that controls how API calls and layer-4 traffic flow across various services in the application deployment.
+
+. Install Istio in the Kubernetes cluster:
+
+  curl -L https://git.io/getLatestIstio | sh -
+  cd istio-0.7.1/
+  kubectl apply -f install/kubernetes/istio.yaml
+
+. Istio uses the Envoy proxy to manage all inbound/outbound traffic in the service mesh. Envoy proxy needs to be injected as sidecar into the application. So, we'll deploy the application:
++
+  kubectl apply -f <(istioctl kube-inject -f apps/k8s/istio/manifest.yaml)
++
+This will deploy the application with 3 microservices. Each microservice is deployed in its own pod, with the Envoy proxy injected into the pod; Envoy will now take over all network communications between the pods.
++
+. Create route rules:
+
+  kubectl apply -f apps/k8s/istio/route-50-50.yaml
+
+. Access the application:
++
+  curl http://$(kubectl get svc/webapp -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
++
+Access the endpoint multiple times and notice how `Hello` and `Howdy` greeting is returned. Its not a round-robin but over 100 requests, 50% would be split between different greeting message.
++
+This is causing https://github.com/aws-samples/aws-microservices-deploy-options/issues/239.
+
+Here are some convenient commands to manage route rules:
+
+. `istioctl get routerules` shows the list of all route rules
+. `istioctl delete routerule <name>` deletes a route rule by name
+
+Another route with the traffic split of 90% and 10% is at `apps/k8s/istio/route-90-10.yaml`.
+
+=== Monitoring: AWS X-Ray
+
+. `arungupta/xray:us-west-2` Docker image is already available on Docker Hub. Optionally, you may build the image:
+
+  cd config/xray
+  docker build -t arungupta/xray:latest .
+  docker image push arungupta/xray:us-west-2
+
+. Deploy the DaemonSet: `kubectl apply -f xray-daemonset.yaml`
+. Deploy the application link:#deployment-helm[using Helm charts]:
+
+  helm install --name myapp apps/k8s/helm/myapp
+
+. Access the application:
+
+  curl http://$(kubectl get svc/myapp-webapp -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+
+. Open the https://us-west-2.console.aws.amazon.com/xray/home?region=us-west-2#/service-map[X-Ray console] and watch the service map and traces.
+
+X-Ray Service map looks like:
+
+image::images/k8s-xray-service-map.png[]
+
+X-Ray traces looks like:
+
+image::images/k8s-xray-traces.png[]
+
+=== Monitoring: Conduit
+https://conduit.io/[Conduit] is a small, ultralight, incredibly fast service mesh centered around a zero config approach. It can be used for gaining remarkable visibility in your Kubernetes deployments.
+
+. Confirm that both Kubernetes client and server versions are v1.8.0 or greater using `kubectl version --short`
+
+. Install the Conduit CLI on your local machine:
+
+  curl https://run.conduit.io/install | sh
+
+. Add the `conduit` command into your PATH:
+
+  export PATH=$PATH:$HOME/.conduit/bin
+
+. Verify the CLI is installed and running correctly. You will see a message that says 'Server version: unavailable' because you have not installed Conduit in your deployments.
+
+  conduit version
+
+. Install Conduit on your Kubernetes cluster. It will install into a separate `conduit` namespace, where it can be easily removed.
+
+  conduit install | kubectl apply -f -
+
+. Verify installation of Conduit into your cluster. Your Client and Server versions should now be the same.
+
+  conduit version
+
+. Verify the Conduit dashboard opens and that you can connect to Conduit in your cluster.
+
+  conduit dashboard
+
+. Install the demo app to see how Conduit handles monitoring of your Kubernetes applications.
+
+  curl https://raw.githubusercontent.com/runconduit/conduit-examples/master/emojivoto/emojivoto.yml | conduit inject - | kubectl apply -f -
+
+. You now have a demo application running on your Kubernetes cluster and also added to the Conduit service mesh. You can see a http://emoji.voto/[live version] of this app (not in your cluster) to understand what this demo app is. Click to vote your favorite emoji. One of them has an error. Which one is it? You can also see the local version of this app running in your cluster:
+
+  kubectl get svc web-svc -n emojivoto -o jsonpath="{.status.loadBalancer.ingress[0].*}"
+
+The demo app includes a service (`vote-bot`) constantly running traffic through the demo app. Look back at the `conduit dashboard`. You should be able to browse all the services that are running as part of the application to view success rate, request rates, latency distribution percentiles, upstream and downstream dependencies, and various other bits of information about live traffic.
+
+You can also see useful data about live traffic from the `conduit` CLI.
+
+. Check the status of the demo app (`emojivoto`) deployment named `web`. You should see good latency, but a success rate indicating some errors.
+
+  conduit stat -n emojivoto deployment web
+
+. Determine what other deployments in the `emojivoto` namespace talk to the web deployment.
+
+  conduit stat deploy --all-namespaces --from web --from-namespace emojivoto
+
+. You should see that `web` talks to both the `emoji` and `voting` services. Based on their success rates, you should see that the `voting` service is responsible for the low success rate of requests to `web`. Determine what else talks to the `voting` service.
+
+  conduit stat deploy --to voting --to-namespace emojivoto --all-namespaces
+
+. You should see that it only talks to `web`. You now have a plausible target to investigate further since the `voting` service is returning a low success rate. From here, you might look into the logs, or traces, or other forms of deeper investigation to determine how to fix the error.
+
+
+=== Monitoring: Istio and Prometheus
+
+Istio is deployed as a sidecar proxy into each of your pods; this means it can see and monitor all the traffic flows between your microservices and generate a graphical representation of your mesh traffic.
+
+. Prometheus addon will obtain the metrics from Istio. Install Prometheus:
+
+  kubectl apply -f install/kubernetes/addons/prometheus.yaml
+
+. Install the Servicegraph addon; Servicegraph queries Prometheus, which obtains details of the mesh traffic flows from Istio:
+
+  kubectl apply -f install/kubernetes/addons/servicegraph.yaml
+
+. Generate some traffic to the application:
+
+  curl http://$(kubectl get svc/webapp -o jsonpath='{.status.loadBalancer.ingress[0].hostname}')
+
+. View the ServiceGraph UI:
+
+  kubectl -n istio-system \
+    port-forward $(kubectl -n istio-system \
+      get pod \
+      -l app=servicegraph \
+      -o jsonpath='{.items[0].metadata.name}') \
+      8088:8088 &
+  open http://localhost:8088/dotviz
+
+. You should see a distributed trace that looks something like this. It may take a few seconds for Servicegraph to become available, so refresh the browser if you do not receive a response.
++
+image::images/istio-servicegraph.png[]
+
+=== Monitoring: Prometheus and Grafana
+
+https://github.com/aws-samples/aws-microservices-deploy-options/issues/79
+
+== AWS Lambda
+
+=== Deployment: Package Lambda Functions
+
+`mvn clean package -Plambda` in each repo will build the deployment package for each microservice.
+
+=== Deployment: Test Lambda Functions Locally
+
+https://github.com/awslabs/serverless-application-model[Serverless Application Model] (SAM) defines a standard application model for serverless applications. It extends AWS CloudFormation to provide a simplified way of defining the Amazon API Gateway APIs, AWS Lambda functions, and Amazon DynamoDB tables needed by your serverless application.
+
+`sam` is the AWS CLI tool for managing Serverless applications written with SAM. Install SAM CLI as:
+
+  npm install -g aws-sam-local
+
+The complete installation steps for SAM CLI are at https://github.com/awslabs/aws-sam-local#installation.
+
+==== In Mac
+
+All commands are given from `apps/lambda` directory.
+
+. Start `greeting` service:
+
+  sam local start-api --template greeting-sam.yaml --port 3001
+
+. Test `greeting` endpoint:
+
+  curl http://127.0.0.1:3001/resources/greeting
+
+. Start `name` service:
+
+  sam local start-api --template name-sam.yaml --port 3002
+
+. Test `name` endpoint:
+
+  curl http://127.0.0.1:3002/resources/names
+  curl http://127.0.0.1:3002/resources/names/1
+
+. Start `webapp` service:
+
+  sam local start-api --template webapp-sam.yaml --env-vars test/env-mac.json --port 3000
+
+. Test `webapp` endpoint:
+
+  curl http://127.0.0.1:3000/1
+
+==== In Windows
+
+Firstly start the Greeting and Name service as Mac, and then start the WebApp service using the following command
+
+. `sam local start-api --template webapp-sam.yaml --env-vars test/env-win.json --port 3000`
+. Test the urls above in a browser
+
+=== Deployment: Debug using IntelliJ
+
+This section will explain how to debug your Lambda functions locally using SAM Local and IntelliJ.
+
+. Start functions using SAM Local and a debug port:
+
+  sam local start-api \
+    --env-vars test/env-mac.json \
+    --template sam.yaml \
+    --debug-port 5858
+
+. In IntelliJ, setup a break point in your Lambda function.
+. Go to `Run`, `Debug`, `Edit Configurations`, specify the port `5858` and click on `Debug`. The breakpoint will hit and you can see the debug state of the function.
+
+=== Deployment: Deploy using Serverless Application Model
+
+. Serverless applications are stored as a deployment packages in a S3 bucket. Create a S3 bucket:
++
+  aws s3api create-bucket \
+    --bucket aws-microservices-deploy-options \
+    --region us-west-2 \
+    --create-bucket-configuration LocationConstraint=us-west-2
++
+Make sure to use a bucket name that is unique.
++
+. Package the SAM application. This uploads the deployment package to the specified S3 bucket and generates a new file with the code location:
+
+  sam package \
+    --template-file sam.yaml \
+    --s3-bucket aws-microservices-deploy-options \
+    --output-template-file \
+    sam.transformed.yaml
+
+. Create the resources:
+
+  sam deploy \
+    --template-file sam.transformed.yaml \
+    --stack-name aws-microservices-deploy-options-lambda \
+    --capabilities CAPABILITY_IAM
+
+. Test the application:
+.. Greeting endpoint:
+
+  curl `aws cloudformation \
+    describe-stacks \
+    --stack-name aws-microservices-deploy-options-lambda \
+    --query "Stacks[].Outputs[?OutputKey=='GreetingApiEndpoint'].[OutputValue]" \
+    --output text`
+
+.. Name endpoint:
+
+  curl `aws cloudformation \
+    describe-stacks \
+    --stack-name aws-microservices-deploy-options-lambda \
+    --query "Stacks[].Outputs[?OutputKey=='NamesApiEndpoint'].[OutputValue]" \
+    --output text`
+
+.. Webapp endpoint:
+
+  curl `aws cloudformation \
+    describe-stacks \
+    --stack-name aws-microservices-deploy-options-lambda \
+    --query "Stacks[].Outputs[?OutputKey=='WebappApiEndpoint'].[OutputValue]" \
+    --output text`/1
+
+=== Deployment: Deploy to Serverless Application Repository
+
+The https://aws.amazon.com/serverless/serverlessrepo/[AWS Serverless Application Repository] (SAR) enables you to quickly deploy code samples, components, and complete applications for common use cases such as web and mobile back-ends, event and data processing, logging, monitoring, IoT, and more. Each application is packaged with an AWS Serverless Application Model (SAM) template that defines the AWS resources used.
+
+The complete list of applications can be seen at https://serverlessrepo.aws.amazon.com/applications.
+
+This section explains how to publish your SAM application to SAR. Detailed instructions are at https://docs.aws.amazon.com/serverlessrepo/latest/devguide/serverless-app-publishing-applications.html.
+
+. Applications packaged as SAM can be published at https://console.aws.amazon.com/serverlessrepo/home?locale=en&region=us-east-1#/published-applications
+. Add the following policy to your S3 bucket:
++
+```
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Service":  "serverlessrepo.amazonaws.com"
+            },
+            "Action": "s3:GetObject",
+            "Resource": "arn:aws:s3:::<your-bucket-name>/*"
+        }
+    ]
+}
+```
++
+. Use `sam.transformed.yaml` as the SAM template
+. Publish the application
+. Test the application:
+
+  curl `aws cloudformation \
+    describe-stacks \
+    --stack-name aws-serverless-repository-aws-microservices \
+    --query "Stacks[].Outputs[?OutputKey=='WebappApiEndpoint'].[OutputValue]" \
+    --output text`/1
+
+. List of your published applications: https://console.aws.amazon.com/serverlessrepo/home?locale=en&region=us-east-1#/published-applications
+
+=== Deployment Pipeline: AWS CodePipeline
+
+This section will explain how to deploy Lambda + API Gateway via CodePipeline.
+
+. Generate new https://github.com/settings/tokens/new[GitHub personal access token].
+. Create CloudFormation stack:
+.. Create pipeline for `greeting` and `name` services. The default repository can be overridden to forked public repo by providing URL to the parameter `Git`:
+
+  cd apps/lambda
+  aws cloudformation deploy \
+    --template-file microservice-pipeline.yaml \
+    --stack-name lambda-microservices-greeting-pipeline \
+    --parameter-overrides ServiceName=greeting GitHubOAuthToken=<github-token> \
+    --capabilities CAPABILITY_IAM
+  aws cloudformation deploy \
+    --template-file microservice-pipeline.yaml \
+    --stack-name lambda-microservices-name-pipeline \
+    --parameter-overrides ServiceName=name GitHubOAuthToken=<github-token> \
+    --capabilities CAPABILITY_IAM
+
+.. Wait for `greeting` and `name` pipelines to be created successfully. Then, create the pipeline for the `webapp` service:
+
+  aws cloudformation deploy \
+    --template-file microservice-pipeline.yaml \
+    --stack-name lambda-microservices-webapp-pipeline \
+    --parameter-overrides ServiceName=webapp GitHubOAuthToken=<github-token> \
+    --capabilities CAPABILITY_IAM
+
+. Get the Deployment Pipeline URL:
++
+  aws cloudformation \
+    describe-stacks \
+    --stack-name lambda-microservices-greeting-pipeline \
+    --query "Stacks[].Outputs[?OutputKey=='CodePipelineUrl'].[OutputValue]" \
+    --output text
+
+  aws cloudformation \
+    describe-stacks \
+    --stack-name lambda-microservices-name-pipeline \
+    --query "Stacks[].Outputs[?OutputKey=='CodePipelineUrl'].[OutputValue]" \
+    --output text
+
+  aws cloudformation \
+    describe-stacks \
+    --stack-name lambda-microservices-webapp-pipeline \
+    --query "Stacks[].Outputs[?OutputKey=='CodePipelineUrl'].[OutputValue]" \
+    --output text
+
+. Get the URL to test microservices:
++
+  curl `aws cloudformation \
+    describe-stacks \
+    --stack-name aws-compute-options-lambda-greeting \
+    --query "Stacks[].Outputs[?OutputKey=='greetingApiEndpoint'].OutputValue" \
+    --output text`
+
+  curl `aws cloudformation \
+    describe-stacks \
+    --stack-name aws-compute-options-lambda-name \
+    --query "Stacks[].Outputs[?OutputKey=='nameApiEndpoint'].OutputValue" \
+    --output text`
+
+  curl `aws cloudformation \
+    describe-stacks \
+    --stack-name aws-compute-options-lambda-webapp \
+    --query "Stacks[].Outputs[?OutputKey=='webappApiEndpoint'].OutputValue" \
+    --output text`/1
+
++
+Deployment pipeline in the AWS console looks like as shown:
++
+image::images/lambda-pipeline.png[Lambda Pipeline, 350]
++
+. After one run of the `webapp` pipeline, access the endpoint:
+
+  curl `aws cloudformation \
+    describe-stacks \
+    --stack-name lambda-microservices-webapp \
+    --query "Stacks[].Outputs[?OutputKey=='webappApiEndpoint'].[OutputValue]" \
+    --output text`/1
+
+=== Deployment: Canary Deployment for Lambda Functions
+
+The `greeting` service has implemented Lambda SAM Safe Deployment. By default, the function is deployed using `Canary10Percent5Minutes` deployment type. This means that 10% of the traffic will be shifted to the new Lambda function. If there are no errors or CloudWatch alarms are triggered, the remaining traffic is shifted after 5 minutes. This is further explained at https://docs.aws.amazon.com/lambda/latest/dg/automating-updates-to-serverless-apps.html.
+
+In the `microservice-greeting` repository, we prepared the `greeting-sam.yaml` template allows users to change the deployment types supported by safe deployment. You can update the default setting to another support deployment https://github.com/awslabs/serverless-application-model/blob/develop/docs/safe_lambda_deployments.rst#traffic-shifting-configurations[types]. 
+
+To test the Canary deployment, please follow the following steps
+
+. Fork (https://github.com/arun-gupta/microservices-greeting#fork-destination-box)[microservice-greeting] github repository.  
+. Checkout the forked repository localy
+. Modify the Lambda function source code `src/main/java/org/aws/samples/compute/greeting/GreetingEndpoint.java` to return response "Hi" instead of "Hello". 
+. Use the following command to commit the change.
++
+  git add src/main/java/org/aws/samples/compute/greeting/GreetingEndpoint.java 
+  git commit -m "say hi to canary"
+  git push origin master
+
+. Navigate to this repo, and run the following command to update CodePipeline stack for the `greeting` service. 
++
+  cd apps/lambda
+  aws cloudformation deploy \
+    --template-file microservice-pipeline.yaml \
+    --stack-name lambda-microservices-greeting-pipeline \
+    --parameter-overrides ServiceName=greeting GitHubOAuthToken=<github-token> GitHubSetting=OVERRIDE GitHubRepo=<forked-repo-name> GitHubOwner=<github-owner-user-name> GitHubBranch=master \
+    --capabilities CAPABILITY_IAM
+
+To checkout Canary deployment progress, navigate to AWS Console CodeDeploy Service and open Application `lambda-microservices-greeting-ServerlessDeploymentApplication-<random-string>` in the console.  Please see the following example:
+
+image::images/lambda-codedeploy.png[Lambda CodeDeploy, 640]
+
+To monitor the deployment progress, select the in progress deployment link, you will see the progress like the following screenshot.
+
+image::images/lambda-canary.png[Lambda Canary, 640]
+
+
+
+=== Deployment: Composition using AWS Step Functions
+
+https://github.com/aws-samples/aws-microservices-deploy-options/issues/76
+
+=== Monitoring: AWS X-Ray
+
+AWS X-Ray is fully integrated with AWS Lambda. This can be easily enabled for functions published using SAM by the following property:
+
+```
+Tracing: Active
+```
+
+This is explained at https://github.com/awslabs/serverless-application-model/blob/develop/versions/2016-10-31.md#awsserverlessfunction.
+
+More details about AWS Lambda and X-Ray integration is at https://docs.aws.amazon.com/lambda/latest/dg/lambda-x-ray.html.
+
+Deploying the functions as explained above will generate X-Ray service map and traces.
+
+=== Deployment: Remove the stack
+
+  aws cloudformation delete-stack \
+    --stack-name aws-microservices-deploy-options-lambda
+
+== License
+
+This library is licensed under the Amazon Software License.

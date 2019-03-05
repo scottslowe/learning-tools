@@ -1,0 +1,46 @@
+{
+    "family": "webapp",
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "networkMode": "awsvpc",
+    "cpu": "256",
+    "memory": "1024",
+    "containerDefinitions": [
+        {
+            "name": "webapp",
+            "image": "arungupta/webapp:latest",
+            "portMappings": [
+                {
+                    "containerPort": 8080
+                }
+            ],
+            "environment": [
+                {
+                    "name": "GREETING_SERVICE_HOST",
+                    "value": "INTERNAL_ALB_URL_GOES_HERE"
+                },
+                {
+                    "name": "GREETING_SERVICE_PORT",
+                    "value": "8081"
+                },
+                {
+                    "name": "GREETING_SERVICE_PATH",
+                    "value": "/resources/greeting"
+                },
+                {
+                    "name": "NAME_SERVICE_HOST",
+                    "value": "INTERNAL_ALB_URL_GOES_HERE"
+                },
+                {
+                    "name": "NAME_SERVICE_PORT",
+                    "value": "8082"
+                },
+                {
+                    "name": "NAME_SERVICE_PATH",
+                    "value": "/resources/names/1"
+                }
+            ]
+        }
+    ]
+}

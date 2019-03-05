@@ -1,0 +1,40 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: webapp
+  labels:
+    name: webapp
+spec:
+  replicas:
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      containers:
+      - name: webapp
+        image: arungupta/webapp
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: NAME_SERVICE_HOST
+          value: name
+        - name: NAME_SERVICE_PORT
+          value: "8082"
+        - name: NAME_SERVICE_PATH
+          value: /resources/names
+        - name: GREETING_SERVICE_HOST
+          value: greeting
+        - name: GREETING_SERVICE_PORT
+          value: "8081"
+        - name: GREETING_SERVICE_PATH
+          value: /resources/greeting
+        - name: AWS_XRAY_DAEMON_ADDRESS
+          value: xray-service.default
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 5

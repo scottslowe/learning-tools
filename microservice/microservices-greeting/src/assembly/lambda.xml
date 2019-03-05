@@ -1,0 +1,19 @@
+<assembly
+    xmlns="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.3"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/plugins/maven-assembly-plugin/assembly/1.1.3 http://maven.apache.org/xsd/assembly-1.1.3.xsd">
+    <formats>
+        <format>zip</format>
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <fileSets>
+      <fileSet>
+        <directory>${project.build.directory}/unwar/${project.artifactId}/WEB-INF/classes</directory>
+        <outputDirectory>/</outputDirectory>
+      </fileSet>
+      <fileSet>
+        <directory>${project.build.directory}/unwar/${project.artifactId}/WEB-INF/lib</directory>
+        <outputDirectory>/lib</outputDirectory>
+      </fileSet>
+    </fileSets>    
+</assembly>

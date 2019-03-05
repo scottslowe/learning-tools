@@ -1,0 +1,20 @@
+{
+  "family": "name",
+  "containerDefinitions": [
+    {
+      "name": "name",
+      "image": "arungupta/name:latest",
+      "cpu": "256",
+      "memory": "1024",
+      "essential": true,
+      "portMappings": [
+        {
+          "hostPort": "8082",
+          "containerPort": "8082",
+          "protocol": "tcp"
+        }
+      ]
+    }
+  ]
+}
+

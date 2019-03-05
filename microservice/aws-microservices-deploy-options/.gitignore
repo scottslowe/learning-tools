@@ -1,0 +1,12 @@
+**/*.idea
+**/*.iml
+**/target
+**/audit.log
+**/.DS_Store
+**/*.transformed.yaml
+apps/k8s/ksonnet/myapp/environments/**/
+apps/ecs/ecs-cli/ecs-cluster.*
+apps/ecs/ecs-cli/ecs-params_*.yaml
+readme.html
+**/~$*.pptx
+services

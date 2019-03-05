@@ -1,0 +1,76 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: >-
+  Amazon API Gateway.
+Parameters:
+  GreetingApiEndpoint:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: GreetingApiEndpoint
+    Description: Greeting Service API Gateway Endpoint
+  NameApiEndpoint:
+    Type: AWS::SSM::Parameter::Value<String>
+    Default: NameApiEndpoint
+    Description: Name Service API Gateway Endpoint
+Resources:
+  WebAppFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: org.aws.samples.compute.webapp.WebappHandler::handleRequest
+      Runtime: "java8"
+      CodeUri: ../../../microservices-webapp/target/webapp.zip
+      Description: >-
+        Amazon API Gateway.
+      MemorySize: 1024
+      Timeout: 20
+      Tracing: Active
+      Environment:
+        Variables:
+          GREETING_SERVICE_HOST: !Ref GreetingApiEndpoint
+          GREETING_SERVICE_PORT: "443"
+          GREETING_SERVICE_PATH: "/prod/resources/greeting"
+          GREETING_SERVICE_SCHEME: "https"
+          NAME_SERVICE_HOST: !Ref NameApiEndpoint
+          NAME_SERVICE_PORT: "443"
+          NAME_SERVICE_PATH: "/prod/resources/names"
+          NAME_SERVICE_SCHEME: "https"
+      Events:
+        WebAppRoot:
+          Type: Api
+          Properties:
+            Path: "/"
+            Method: GET
+            RestApiId: !Ref WebAppApi
+        WebAppName:
+          Type: Api
+          Properties:
+            Path: "/{id}"
+            Method: GET
+            RestApiId: !Ref WebAppApi
+  WebAppApi:
+    Type: AWS::Serverless::Api
+    Properties:
+#      EndpointConfiguration: REGIONAL
+      StageName: prod
+      DefinitionBody:
+        swagger: "2.0"
+        info:
+          title: "Webapp API"
+        paths:
+          "/{id}":
+            get:
+              produces:
+                - text/plain
+              parameters:
+                - name: id
+                  in: path
+                  required: false
+                  type: number
+              responses: {}
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebAppFunction.Arn}/invocations"
+Outputs:
+  webappApiEndpoint:
+    Description: WebApp URL for application
+    Value: !Sub "https://${WebAppApi}.execute-api.${AWS::Region}.amazonaws.com/prod/"

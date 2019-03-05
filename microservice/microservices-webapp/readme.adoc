@@ -1,0 +1,4 @@
+= Webapp Microservice
+
+This repo contains a microservice that is used at https://github.com/aws-samples/aws-microservices-deploy-options/.
+

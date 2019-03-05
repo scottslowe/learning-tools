@@ -1,0 +1,130 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+
+Parameters:
+  Subnet1:
+    Type: String
+
+  Subnet2:
+    Type: String
+
+  PublicALB:
+    Type: String
+
+  Cluster:
+    Type: String
+
+  ExecutionRole:
+    Type: String
+
+  DesiredCount:
+    Type: Number
+    Default: 1
+
+  ALBPrivateCNAME:
+    Type: String
+
+  LaunchType:
+    Type: String
+    Default: Fargate
+    AllowedValues:
+      - Fargate
+      - EC2
+
+  TargetGroup:
+    Type: String
+
+  SecurityGroup:
+    Type: String
+
+
+Conditions:
+  Fargate: !Equals [ !Ref LaunchType, "Fargate" ]
+
+  EC2: !Equals [ !Ref LaunchType, "EC2" ]
+
+Resources:
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /ecs/${AWS::StackName}
+
+  FargateService:
+    Type: AWS::ECS::Service
+    DependsOn: TaskDefinition
+    Condition: Fargate
+    Properties:
+      Cluster: !Ref Cluster
+      DesiredCount: !Ref DesiredCount
+      HealthCheckGracePeriodSeconds: 60
+      TaskDefinition: !Ref TaskDefinition
+      LaunchType: FARGATE
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - !Ref SecurityGroup
+          Subnets:
+            - !Ref Subnet1
+            - !Ref Subnet2
+      LoadBalancers:
+        - ContainerName: webapp
+          ContainerPort: 8080
+          TargetGroupArn: !Ref TargetGroup
+
+  EC2Service:
+    Type: AWS::ECS::Service
+    Condition: EC2
+    Properties:
+      Cluster: !Ref Cluster
+      DesiredCount: !Ref DesiredCount
+      TaskDefinition: !Ref TaskDefinition
+      LaunchType: EC2
+      LoadBalancers:
+        - ContainerName: webapp
+          ContainerPort: 8080
+          TargetGroupArn: !Ref TargetGroup
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${AWS::StackName}-webapp
+      RequiresCompatibilities:
+        - !If [ Fargate, "FARGATE", "EC2" ]
+      Memory: 1GB
+      Cpu: 256
+      NetworkMode: !If [ Fargate, "awsvpc", "bridge" ]
+      ExecutionRoleArn: !Ref ExecutionRole
+      ContainerDefinitions:
+        - Name: webapp
+          Environment:
+            - Name: NAME_SERVICE_HOST
+              Value: !Ref ALBPrivateCNAME
+            - Name: NAME_SERVICE_PORT
+              Value: "8082"
+            - Name: NAME_SERVICE_PATH
+              Value: /resources/names
+            - Name: GREETING_SERVICE_HOST
+              Value: !Ref ALBPrivateCNAME
+            - Name: GREETING_SERVICE_PORT
+              Value: "8081"
+            - Name: GREETING_SERVICE_PATH
+              Value: /resources/greeting
+          Image: arungupta/webapp
+          Essential: true
+          Memory: 500
+          Cpu: 10
+          PortMappings:
+            - ContainerPort: 8080
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-region: !Ref AWS::Region
+              awslogs-group: !Ref LogGroup
+              awslogs-stream-prefix: !Ref AWS::StackName
+
+
+Outputs:
+  Service:
+    Value: !If [ Fargate, !Ref FargateService, !Ref EC2Service ]

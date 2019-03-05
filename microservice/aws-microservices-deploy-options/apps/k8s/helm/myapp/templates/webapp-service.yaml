@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-webapp
+  labels:
+    name: {{ .Release.Name }}-webapp
+    {{- template "labels" . }}
+spec:
+  selector:
+    app: {{ .Release.Name }}-webapp
+  ports:
+  - name: http
+    protocol: TCP
+    port: 80
+    targetPort: 8080
+  type: LoadBalancer

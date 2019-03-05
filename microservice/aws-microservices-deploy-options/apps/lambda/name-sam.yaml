@@ -1,0 +1,86 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: >-
+  Amazon API Gateway.
+Resources:
+  NamesFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: org.aws.samples.compute.name.NameHandler::handleRequest
+      Runtime: java8
+      CodeUri: ../../../microservices-name/target/name.zip
+      Description: >-
+        Amazon API Gateway.
+      MemorySize: 1024
+      Timeout: 20
+      Tracing: Active
+      Events:
+        findname:
+          Type: Api
+          Properties:
+            Path: /resources/names/{id}
+            Method: GET
+            RestApiId: !Ref NameApi
+        names:
+          Type: Api
+          Properties:
+            Path: /resources/names
+            Method: GET
+            RestApiId: !Ref NameApi
+  NameApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: prod
+      DefinitionBody:
+        swagger: "2.0"
+        definitions:
+          Name:
+            type: "object"
+            properties:
+              id: 
+                type: "number"
+              name:
+                type: "string"
+        paths:
+          "/resources/names":
+            get:
+              produces:
+                - application/json
+                - application/xml
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NamesFunction.Arn}/invocations"
+                responses: {}
+          "/resources/names/{id}":
+            get:
+              produces:
+                - text/plain
+                - application/json
+                - application/xml
+              parameters:
+                - name: id
+                  in: path
+                  required: true
+                  type: number
+              responses:
+                "200":
+                  content:
+                    text/plain:
+                      scheme:
+                        type: string
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NamesFunction.Arn}/invocations"
+  Parameter:
+    Type: "AWS::SSM::Parameter"
+    Properties: 
+      Name: NameApiEndpoint
+      Description: Name API Endpoint
+      Type: String
+      Value: !Sub '${NameApi}.execute-api.${AWS::Region}.amazonaws.com'
+Outputs:
+  nameApiEndpoint:
+    Description: Names API URL for application
+    Value: !Sub 'https://${NameApi}.execute-api.${AWS::Region}.amazonaws.com/prod/resources/names'

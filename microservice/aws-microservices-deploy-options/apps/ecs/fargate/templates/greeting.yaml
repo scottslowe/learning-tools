@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Creating greeting service
+
+Parameters:
+  PrivateSubnet1:
+    Type: String
+  PrivateSubnet2:
+    Type: String
+  PrivateALB:
+    Type: String
+  ECSCluster:
+    Type: String
+  VPC:
+    Type: String
+  SecurityGroup:
+    Type: String
+
+Resources:
+  taskdefinition:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      RequiresCompatibilities:
+        - "FARGATE"
+      Cpu: 256
+      Memory: 1GB
+      ContainerDefinitions:
+        - Name: Greeting
+          Cpu: 10
+          Image: arungupta/greeting
+          Memory: 500
+          PortMappings:
+            - ContainerPort: 8081
+      NetworkMode: awsvpc
+
+  service:
+    Type: 'AWS::ECS::Service'
+    DependsOn: listener
+    Properties:
+      Cluster: !Ref ECSCluster
+      DesiredCount: 1
+      HealthCheckGracePeriodSeconds: 60
+      LaunchType: FARGATE
+      LoadBalancers:
+        - TargetGroupArn: !Ref targetgroup001
+          ContainerPort: 8081
+          ContainerName: Greeting
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          SecurityGroups:
+            - !Ref SecurityGroup
+          Subnets:
+            - !Ref PrivateSubnet1
+            - !Ref PrivateSubnet2
+      TaskDefinition: !Ref taskdefinition
+      ServiceName: greeting
+
+  targetgroup001:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 60
+      UnhealthyThresholdCount: 10
+      HealthCheckPath: /resources/greeting
+      Name: greeting
+      Port: 8081
+      Protocol: HTTP
+      VpcId: !Ref VPC
+      TargetType: ip
+
+  listener:
+      Type: AWS::ElasticLoadBalancingV2::Listener
+      Properties:
+        DefaultActions:
+          - Type: forward
+            TargetGroupArn:
+              Ref: targetgroup001
+        LoadBalancerArn: !Ref PrivateALB
+        Port: 8081
+        Protocol: HTTP

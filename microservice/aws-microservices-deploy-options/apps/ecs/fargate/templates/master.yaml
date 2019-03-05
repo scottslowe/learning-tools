@@ -1,0 +1,47 @@
+Description: >
+  This template illustrates how to use Fargate to deploy a three service microservice architecture.
+Resources:
+
+  Infrastructure:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/compute-options-public/infrastructure.yaml
+
+  Greeting:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/compute-options-public/greeting.yaml
+      Parameters:
+        PrivateSubnet1: !GetAtt Infrastructure.Outputs.PrivateSubnet1
+        PrivateSubnet2: !GetAtt Infrastructure.Outputs.PrivateSubnet2
+        PrivateALB: !GetAtt Infrastructure.Outputs.ALBPrivate
+        ECSCluster: !GetAtt Infrastructure.Outputs.ECSCluster
+        VPC: !GetAtt Infrastructure.Outputs.VPC
+        SecurityGroup: !GetAtt Infrastructure.Outputs.SecurityGroupWebapp
+  Name:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/compute-options-public/name.yaml
+      Parameters:
+        PrivateSubnet1: !GetAtt Infrastructure.Outputs.PrivateSubnet1
+        PrivateSubnet2: !GetAtt Infrastructure.Outputs.PrivateSubnet2
+        PrivateALB: !GetAtt Infrastructure.Outputs.ALBPrivate
+        ECSCluster: !GetAtt Infrastructure.Outputs.ECSCluster
+        VPC: !GetAtt Infrastructure.Outputs.VPC
+        SecurityGroup: !GetAtt Infrastructure.Outputs.SecurityGroupWebapp
+  Webapp:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/compute-options-public/webapp.yaml
+      Parameters:
+        PublicSubnet1: !GetAtt Infrastructure.Outputs.PublicSubnet1
+        PublicSubnet2: !GetAtt Infrastructure.Outputs.PublicSubnet2
+        PublicALB: !GetAtt Infrastructure.Outputs.ALBPublic
+        ALBPrivateCNAME: !GetAtt Infrastructure.Outputs.ALBPrivateCNAME
+        ECSCluster: !GetAtt Infrastructure.Outputs.ECSCluster
+        VPC: !GetAtt Infrastructure.Outputs.VPC
+        SecurityGroup: !GetAtt Infrastructure.Outputs.SecurityGroupWebapp
+
+Outputs:
+  PublicALBCNAME:
+    Value: !GetAtt Infrastructure.Outputs.ALBPublicCNAME

@@ -1,0 +1,16 @@
+apiVersion: config.istio.io/v1alpha2
+kind: RouteRule
+metadata:
+  name: greeting-50-50
+spec:
+  destination:
+    name: greeting
+  route:
+  - labels:
+      app: greeting
+      greeting: hello
+    weight: 50
+  - labels:
+      app: greeting
+      greeting: howdy
+    weight: 50

@@ -1,0 +1,28 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: greeting
+  labels:
+    name: greeting
+spec:
+  replicas:
+  template:
+    metadata:
+      labels:
+        app: greeting
+    spec:
+      containers:
+      - name: greeting
+        image: arungupta/greeting
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8081
+        readinessProbe:
+          httpGet:
+            path: /resources/greeting
+            port: 8081
+          initialDelaySeconds: 50
+          periodSeconds: 5
+        env:
+        - name: AWS_XRAY_DAEMON_ADDRESS
+          value: xray-service.default

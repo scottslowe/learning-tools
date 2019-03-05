@@ -1,0 +1,12 @@
+{
+ "WebAppFunction": {
+   "GREETING_SERVICE_HOST": "docker.for.mac.host.internal",
+   "GREETING_SERVICE_PORT": "3001",
+   "GREETING_SERVICE_PATH": "/resources/greeting",
+   "GREETING_SERVICE_SCHEME": "http",
+   "NAME_SERVICE_HOST": "docker.for.mac.host.internal",
+   "NAME_SERVICE_PORT": "3002",
+   "NAME_SERVICE_PATH": "/resources/names",
+   "NAME_SERVICE_SCHEME": "http"
+ }
+}

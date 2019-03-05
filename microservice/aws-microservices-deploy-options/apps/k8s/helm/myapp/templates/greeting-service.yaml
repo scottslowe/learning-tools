@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-greeting
+  labels:
+    name: {{ .Release.Name }}-greeting
+    {{- template "labels" . }}
+spec:
+  selector:
+    app: {{ .Release.Name }}-greeting
+  ports:
+  - name: http
+    protocol: TCP
+    port: 8081

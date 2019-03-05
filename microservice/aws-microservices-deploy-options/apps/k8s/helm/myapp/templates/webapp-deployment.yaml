@@ -1,0 +1,41 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-webapp
+  labels:
+    name: {{ .Release.Name }}-webapp
+    {{- template "labels" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-webapp
+    spec:
+      containers:
+      - name: webapp
+        image: {{ .Values.webapp.image }}:{{ .Values.docker.tag }}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        env:
+        - name: NAME_SERVICE_HOST
+          value: {{ .Release.Name }}-name
+        - name: NAME_SERVICE_PORT
+          value: "8082"
+        - name: NAME_SERVICE_PATH
+          value: /resources/names
+        - name: GREETING_SERVICE_HOST
+          value: {{ .Release.Name }}-greeting
+        - name: GREETING_SERVICE_PORT
+          value: "8081"
+        - name: GREETING_SERVICE_PATH
+          value: /resources/greeting
+        - name: AWS_XRAY_DAEMON_ADDRESS
+          value: xray-service.default:2000
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 5

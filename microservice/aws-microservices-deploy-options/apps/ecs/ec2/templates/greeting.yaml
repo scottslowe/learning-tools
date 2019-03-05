@@ -1,0 +1,112 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Creating ECS service
+
+Parameters:
+
+  PrivateALB:
+    Type: String
+  ECSCluster:
+    Type: String
+  VPC:
+    Type: String
+  PrivateSubnet1:
+    Type: String
+  PrivateSubnet2:
+    Type: String
+  SecurityGroup:
+    Type: String
+
+Resources:
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /ecs/${AWS::StackName}
+  taskdefinition:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      RequiresCompatibilities:
+        - "EC2"
+      Cpu: 256
+      Memory: 1GB
+      NetworkMode: awsvpc
+      ContainerDefinitions:
+        - Name: Greeting
+          Cpu: 10
+          Image: arungupta/greeting
+          Memory: 500
+          PortMappings:
+            - ContainerPort: 8081
+          LogConfiguration:
+             LogDriver: awslogs
+             Options:
+               awslogs-group: !Ref LogGroup
+               awslogs-region: !Ref AWS::Region
+               awslogs-stream-prefix: greeting
+
+  service:
+    Type: 'AWS::ECS::Service'
+    DependsOn: listener
+    Properties:
+      Cluster: !Ref ECSCluster
+      DesiredCount: 1
+      HealthCheckGracePeriodSeconds: 60
+      LaunchType: EC2
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          SecurityGroups:
+            - !Ref SecurityGroup
+          Subnets:
+            - !Ref PrivateSubnet1
+            - !Ref PrivateSubnet2
+      LoadBalancers:
+        - TargetGroupArn: !Ref targetgroup001
+          ContainerPort: 8081
+          ContainerName: Greeting
+      TaskDefinition: !Ref taskdefinition
+      ServiceName: greeting
+
+  targetgroup001:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 60
+      UnhealthyThresholdCount: 10
+      HealthCheckPath: /resources/greeting
+      Name: greeting
+      Port: 8081
+      Protocol: HTTP
+      VpcId: !Ref VPC
+      TargetType: ip
+
+  listener:
+      Type: AWS::ElasticLoadBalancingV2::Listener
+      DependsOn: ECSServiceRole
+      Properties:
+        DefaultActions:
+          - Type: forward
+            TargetGroupArn:
+              Ref: targetgroup001
+        LoadBalancerArn: !Ref PrivateALB
+        Port: 8081
+        Protocol: HTTP
+  ECSServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: [ecs.amazonaws.com]
+          Action: ['sts:AssumeRole']
+      Path: /
+      Policies:
+      - PolicyName: ecs-service
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action: ['elasticloadbalancing:DeregisterInstancesFromLoadBalancer', 'elasticloadbalancing:DeregisterTargets',
+              'elasticloadbalancing:Describe*', 'elasticloadbalancing:RegisterInstancesWithLoadBalancer',
+              'elasticloadbalancing:RegisterTargets', 'ec2:Describe*', 'ec2:AuthorizeSecurityGroupIngress']
+            Resource: '*'
+
+  

@@ -1,0 +1,126 @@
+AWSTemplateFormatVersion: 2010-09-09
+
+Description: Creating ECS service
+
+Parameters:
+
+  ECSCluster:
+    Type: String
+  VPC:
+    Type: String
+  PublicALB:
+    Type: String
+  ALBPrivateCNAME:
+    Type: String
+  PublicSubnet1:
+    Type: String
+  PublicSubnet2:
+    Type: String
+  SecurityGroup:
+    Type: String
+Resources:
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /ecs/${AWS::StackName}
+  taskdefinition:
+    Type: 'AWS::ECS::TaskDefinition'
+    Properties:
+      RequiresCompatibilities:
+        - "EC2"
+      Cpu: 256
+      NetworkMode: awsvpc
+      Memory: 1GB
+      ContainerDefinitions:
+        - Name: webapp
+          Cpu: 10
+          Environment:
+            - Name: NAME_SERVICE_HOST
+              Value: !Ref ALBPrivateCNAME
+            - Name: NAME_SERVICE_PORT
+              Value: "8082"
+            - Name: NAME_SERVICE_PATH
+              Value: /resources/names/1
+            - Name: GREETING_SERVICE_HOST
+              Value: !Ref ALBPrivateCNAME
+            - Name: GREETING_SERVICE_PORT
+              Value: "8081"
+            - Name: GREETING_SERVICE_PATH
+              Value: /resources/greeting
+          Image: arungupta/webapp
+          Memory: 500
+          PortMappings:
+            - ContainerPort: 8080  
+          LogConfiguration:
+             LogDriver: awslogs
+             Options:
+               awslogs-group: !Ref LogGroup
+               awslogs-region: !Ref AWS::Region
+               awslogs-stream-prefix: webapp
+
+  service:
+    Type: 'AWS::ECS::Service'
+    DependsOn: listener
+    Properties:
+      Cluster: !Ref ECSCluster
+      DesiredCount: 1
+      HealthCheckGracePeriodSeconds: 60
+      LaunchType: EC2
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          SecurityGroups:
+            - !Ref SecurityGroup
+          Subnets:
+            - !Ref PublicSubnet1
+            - !Ref PublicSubnet2
+      LoadBalancers:
+        - TargetGroupArn: !Ref targetgroup002
+          ContainerPort: 8080
+          ContainerName: webapp
+      TaskDefinition: !Ref taskdefinition
+      ServiceName: webapp
+
+  targetgroup002:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 60
+      UnhealthyThresholdCount: 10
+      HealthCheckPath: /
+      Name: webapp
+      Port: 8080
+      Protocol: HTTP
+      VpcId: !Ref VPC
+      TargetType: ip
+
+  listener:
+      Type: AWS::ElasticLoadBalancingV2::Listener
+      DependsOn: ECSServiceRole
+      Properties:
+        DefaultActions:
+          - Type: forward
+            TargetGroupArn:
+              Ref: targetgroup002
+        LoadBalancerArn: !Ref PublicALB
+        Port: 80
+        Protocol: HTTP
+  ECSServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: [ecs.amazonaws.com]
+          Action: ['sts:AssumeRole']
+      Path: /
+      Policies:
+      - PolicyName: ecs-service
+        PolicyDocument:
+          Statement:
+          - Effect: Allow
+            Action: ['elasticloadbalancing:DeregisterInstancesFromLoadBalancer', 'elasticloadbalancing:DeregisterTargets',
+              'elasticloadbalancing:Describe*', 'elasticloadbalancing:RegisterInstancesWithLoadBalancer',
+              'elasticloadbalancing:RegisterTargets', 'ec2:Describe*', 'ec2:AuthorizeSecurityGroupIngress']
+            Resource: '*'
+
+  

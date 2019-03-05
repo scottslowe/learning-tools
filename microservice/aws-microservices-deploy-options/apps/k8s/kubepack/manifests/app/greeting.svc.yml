@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: greeting
+  labels:
+    name: greeting
+spec:
+  selector:
+    app: greeting
+  ports:
+  - name: http
+    protocol: TCP
+    port: 8081

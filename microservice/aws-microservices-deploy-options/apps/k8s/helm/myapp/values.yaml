@@ -1,0 +1,14 @@
+greeting:
+  image: arungupta/greeting
+  replicaCount: 1
+
+name:
+  image: arungupta/name
+  replicaCount: 1
+
+webapp:
+  image: arungupta/webapp
+  replicaCount: 1
+
+docker:
+  tag: latest

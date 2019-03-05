@@ -1,0 +1,20 @@
+version: '2'
+services:
+  webapp-service:
+    image: arungupta/webapp:latest
+    ports:
+      - "8080:8080"
+    logging:
+      driver: awslogs
+      options: 
+        awslogs-group: /ecs/ecs-demo
+        awslogs-region: us-east-1
+        awslogs-stream-prefix: webapp
+    environment:
+      - GREETING_SERVICE_HOST=$ALBPrivateCNAME
+      - GREETING_SERVICE_PORT=8081
+      - GREETING_SERVICE_PATH=/resources/greeting
+      - NAME_SERVICE_HOST=$ALBPrivateCNAME
+      - NAME_SERVICE_PORT=8082
+      - NAME_SERVICE_PATH=/resources/names/1
+    

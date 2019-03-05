@@ -1,0 +1,21 @@
+{
+    "family": "greeting",
+    "requiresCompatibilities": [
+        "FARGATE"
+    ],
+    "networkMode": "awsvpc",
+    "cpu": "256",
+    "memory": "1024",
+    "containerDefinitions": [
+        {
+            "name": "greeting",
+            "image": "arungupta/greeting:latest",
+            "essential": true,
+            "portMappings": [
+                {
+                    "containerPort": 8081
+                }
+            ]
+        }
+    ]
+}

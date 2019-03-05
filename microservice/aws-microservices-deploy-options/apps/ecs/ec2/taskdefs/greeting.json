@@ -1,0 +1,20 @@
+{
+  "family": "greeting",
+  "containerDefinitions": [
+    {
+      "name": "greeting",
+      "image": "arungupta/greeting:latest",
+      "cpu": "256",
+      "memory": "1024",
+      "essential": true,
+      "portMappings": [
+        {
+          "hostPort": "8081",
+          "containerPort": "8081",
+          "protocol": "tcp"
+        }
+      ]
+    }
+  ]
+}
+

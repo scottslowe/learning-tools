@@ -1,0 +1,36 @@
+local params = std.extVar("__ksonnet/params").components.webapp;
+local k = import "k.libsonnet";
+local deployment = k.apps.v1beta1.deployment;
+local container = k.apps.v1beta1.deployment.mixin.spec.template.spec.containersType;
+local containerPort = container.portsType;
+local service = k.core.v1.service;
+local servicePort = k.core.v1.service.mixin.spec.portsType;
+
+local targetPort = params.containerPort;
+local labels = { app: params.name };
+
+local appService = service
+                   .new(
+    params.name,
+    labels,
+    servicePort.new(params.servicePort, targetPort))
+                   .withType(params.type);
+
+local appDeployment = deployment
+                      .new(
+    params.name,
+    params.replicas,
+    container
+    .new(params.name, params.image)
+    .withEnv([
+        container.envType.new("NAME_SERVICE_HOST", "name"),
+        container.envType.new("NAME_SERVICE_PORT", "8082"),
+        container.envType.new("NAME_SERVICE_PATH", "/resources/names"),
+        container.envType.new("GREETING_SERVICE_HOST", "greeting"),
+        container.envType.new("GREETING_SERVICE_PORT", "8081"),
+        container.envType.new("GREETING_SERVICE_PATH", "/resources/greeting"),
+    ])
+    .withPorts(containerPort.new(targetPort)),
+    labels);
+
+k.core.v1.list.new([appService, appDeployment])

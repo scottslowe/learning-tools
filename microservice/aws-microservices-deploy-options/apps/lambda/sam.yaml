@@ -1,0 +1,189 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: >-
+  Amazon API Gateway.
+Resources:
+  GreetingFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: org.aws.samples.compute.greeting.GreetingHandler::handleRequest
+      Runtime: java8
+#      CodeUri: ../../services/greeting/target/greeting.zip
+      CodeUri: ../../../microservices-greeting/target/greeting.zip
+      Description: >-
+        Amazon API Gateway.
+      MemorySize: 1024
+      Timeout: 20
+      Tracing: Active
+      Events:
+        greet:
+          Type: Api
+          Properties:
+            Path: /resources/greeting
+            Method: GET
+            RestApiId: !Ref GreetingApi
+  GreetingApi:
+    Type: AWS::Serverless::Api
+    Properties:
+#      EndpointConfiguration: REGIONAL
+      StageName: prod
+      DefinitionBody:
+        swagger: "2.0"
+        paths:
+          "/resources/greeting":
+            get:
+              responses:
+                "200":
+                  content:
+                    text/plain:
+                      scheme:
+                        type: string
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${GreetingFunction.Arn}/invocations"
+  NamesFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: org.aws.samples.compute.name.NameHandler::handleRequest
+      Runtime: java8
+#      CodeUri: ../../services/name/target/name.zip
+      CodeUri: ../../../microservices-name/target/name.zip
+      Description: >-
+        Amazon API Gateway.
+      MemorySize: 1024
+      Timeout: 20
+      Tracing: Active
+      Events:
+        findname:
+          Type: Api
+          Properties:
+            Path: /resources/names/{id}
+            Method: GET
+            RestApiId: !Ref NamesApi
+        names:
+          Type: Api
+          Properties:
+            Path: /resources/names
+            Method: GET
+            RestApiId: !Ref NamesApi
+  NamesApi:
+    Type: AWS::Serverless::Api
+    Properties:
+#      EndpointConfiguration: REGIONAL
+      StageName: prod
+      DefinitionBody:
+        swagger: "2.0"
+        definitions:
+          Name:
+            type: "object"
+            properties:
+              id: 
+                type: "number"
+              name:
+                type: "string"
+        paths:
+          "/resources/names":
+            get:
+              produces:
+                - application/json
+                - application/xml
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NamesFunction.Arn}/invocations"
+                responses: {}
+          "/resources/names/{id}":
+            get:
+              produces:
+                - text/plain
+                - application/json
+                - application/xml
+              parameters:
+                - name: id
+                  in: path
+                  required: true
+                  type: number
+              responses:
+                "200":
+                  content:
+                    text/plain:
+                      scheme:
+                        type: string
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${NamesFunction.Arn}/invocations"
+
+  WebAppFunction:
+    DependsOn:
+      - NamesApi
+      - GreetingApi
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: org.aws.samples.compute.webapp.WebappHandler::handleRequest
+      Runtime: "java8"
+#      CodeUri: ../../services/webapp/target/webapp.zip
+      CodeUri: ../../../microservices-webapp/target/webapp.zip
+      Description: >-
+        Amazon API Gateway.
+      MemorySize: 1024
+      Timeout: 20
+      Tracing: Active
+      Environment:
+        Variables:
+          GREETING_SERVICE_HOST: !Sub "${GreetingApi}.execute-api.${AWS::Region}.amazonaws.com"
+          GREETING_SERVICE_PORT: "443"
+          GREETING_SERVICE_PATH: "/prod/resources/greeting"
+          GREETING_SERVICE_SCHEME: "https"
+          NAME_SERVICE_HOST: !Sub "${NamesApi}.execute-api.${AWS::Region}.amazonaws.com"
+          NAME_SERVICE_PORT: "443"
+          NAME_SERVICE_PATH: "/prod/resources/names"
+          NAME_SERVICE_SCHEME: "https"
+      Events:
+        WebAppRoot:
+          Type: Api
+          Properties:
+            Path: "/"
+            Method: GET
+            RestApiId: !Ref WebAppApi
+        WebAppName:
+          Type: Api
+          Properties:
+            Path: "/{id}"
+            Method: GET
+            RestApiId: !Ref WebAppApi
+  WebAppApi:
+    Type: AWS::Serverless::Api
+    Properties:
+#      EndpointConfiguration: REGIONAL
+      StageName: prod
+      DefinitionBody:
+        swagger: "2.0"
+        info:
+          title: "Webapp API"
+        paths:
+          "/{id}":
+            get:
+              produces:
+                - text/plain
+              parameters:
+                - name: id
+                  in: path
+                  required: false
+                  type: number
+              responses: {}
+              x-amazon-apigateway-integration:
+                httpMethod: POST
+                type: aws_proxy
+                uri: !Sub "arn:aws:apigateway:${AWS::Region}:lambda:path/2015-03-31/functions/${WebAppFunction.Arn}/invocations"
+Outputs:
+  WebappApiEndpoint:
+    Description: WebApp URL for application
+    Value: !Sub "https://${WebAppApi}.execute-api.${AWS::Region}.amazonaws.com/prod/"
+  GreetingApiEndpoint:
+    Description: Greeting API URL for application
+    Value: !Sub 'https://${GreetingApi}.execute-api.${AWS::Region}.amazonaws.com/prod/resources/greeting'
+  NamesApiEndpoint:
+    Description: Names API URL for application
+    Value: !Sub 'https://${NamesApi}.execute-api.${AWS::Region}.amazonaws.com/prod/resources/names'

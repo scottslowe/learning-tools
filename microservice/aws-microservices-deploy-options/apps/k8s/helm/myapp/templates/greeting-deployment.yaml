@@ -1,0 +1,29 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-greeting
+  labels:
+    name: {{ .Release.Name }}-greeting
+    {{- template "labels" . }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-greeting
+    spec:
+      containers:
+      - name: greeting
+        image: {{ .Values.greeting.image }}:{{ .Values.docker.tag }}
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8081
+        readinessProbe:
+          httpGet:
+            path: /resources/greeting
+            port: 8081
+          initialDelaySeconds: 50
+          periodSeconds: 5
+        env:
+        - name: AWS_XRAY_DAEMON_ADDRESS
+          value: xray-service.default:2000

@@ -1,0 +1,20 @@
+apiVersion: manifest.k8s.io/v1alpha1
+kind: Manifest
+metadata:
+  name: myapp
+description: Deploy microservices using Kubepack
+namePrefix: some-prefix
+# Labels to add to all objects and selectors.
+# These labels would also be used to form the selector for apply --prune
+# Named differently than “labels” to avoid confusion with metadata for this object
+objectLabels:
+  app: myapp
+# Add Resources to inflate below. List of directories/file-paths to add.
+resources: []
+#- service.yaml
+#- ../some-dir/
+# There could also be configmaps in Base, which would make these overlays
+configmaps: []
+# There could be secrets in Base, if just using a fork/rebase workflow
+secrets: []
+recursive: true

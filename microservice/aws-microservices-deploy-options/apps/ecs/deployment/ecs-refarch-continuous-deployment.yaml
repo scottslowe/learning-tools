@@ -1,0 +1,216 @@
+---
+AWSTemplateFormatVersion: 2010-09-09
+
+
+Description: >
+  This template shows how to use AWS CodePipeline and AWS CodeBuild to build an
+  automated continuous deployment pipeline to Amazon Elastic Container Service
+  (Amazon ECS) using clusters powered by AWS Fargate or Amazon Elastic Compute
+  Cloud (Amazon EC2).
+
+
+Parameters:
+  LaunchType:
+    Type: String
+    Default: Fargate
+    AllowedValues:
+      - Fargate
+      - EC2
+    Description: >
+      The launch type for your service. Selecting EC2 will create an Auto
+      Scaling group of t2.micro instances for your cluster. See
+      https://docs.aws.amazon.com/AmazonECS/latest/developerguide/launch_types.html
+      to learn more about launch types.
+
+  GitHubUser:
+    Type: String
+    Description: Your username on GitHub.
+
+  GitHubRepo:
+    Type: String
+    Default: microservices-greeting
+    Description: The repo name of the greeting service.
+
+  GitHubRepo001:
+    Type: String
+    Default: microservices-name
+    Description: The repo name of the name service.
+
+  GitHubRepo002:
+    Type: String
+    Default: microservices-webapp
+    Description: The repo name of the webapp service.
+
+  GitHubBranch:
+    Type: String
+    Default: master
+    Description: The branch of the repo to continuously deploy.
+
+  GitHubToken:
+    Type: String
+    NoEcho: true
+    Description: >
+      Token for the user specified above. (https://github.com/settings/tokens)
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterLabels:
+      GitHubUser:
+        default: "User"
+      GitHubRepo:
+        default: "Repo1"
+      GitHubRepo001:
+        default: "Repo2"
+      GitHubRepo002:
+        default: "Repo3"
+      GitHubBranch:
+        default: "Branch"
+      GitHubToken:
+        default: "Personal Access Token"
+      LaunchType:
+        default: "Launch Type"
+    ParameterGroups:
+      - Label:
+          default: Cluster Configuration
+        Parameters:
+          - LaunchType
+      - Label:
+          default: GitHub Configuration
+        Parameters:
+          - GitHubRepo
+          - GitHubRepo001
+          - GitHubRepo002
+          - GitHubBranch
+          - GitHubUser
+          - GitHubToken
+
+Resources:
+  Cluster:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/aws-microservices-deploy-options-ecs-deployment/ecs-cluster.yaml
+      Parameters:
+        LaunchType: !Ref LaunchType
+        SourceSecurityGroup: !GetAtt LoadBalancer.Outputs.SecurityGroup
+        Subnets: !GetAtt VPC.Outputs.Subnets
+        VpcId: !GetAtt VPC.Outputs.VpcId
+
+  DeploymentPipeline:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/aws-microservices-deploy-options-ecs-deployment/deployment-pipeline.yaml
+      Parameters:
+        Cluster: !GetAtt Cluster.Outputs.ClusterName
+        Service: !GetAtt Greeting.Outputs.Service
+        GitHubUser: !Ref GitHubUser
+        GitHubToken: !Ref GitHubToken
+        GitHubRepo: !Ref GitHubRepo
+        GitHubBranch: !Ref GitHubBranch
+
+  DeploymentPipeline001:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: DeploymentPipeline
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/aws-microservices-deploy-options-ecs-deployment/deployment-pipeline-name.yaml
+      Parameters:
+        Cluster: !GetAtt Cluster.Outputs.ClusterName
+        Service: !GetAtt Name.Outputs.Service
+        GitHubUser: !Ref GitHubUser
+        GitHubToken: !Ref GitHubToken
+        GitHubRepo001: !Ref GitHubRepo001
+        GitHubBranch: !Ref GitHubBranch
+        CodeBuildServiceRole: !GetAtt DeploymentPipeline.Outputs.CodeBuildServiceRole
+        CodePipelineServiceRoleArn: !GetAtt DeploymentPipeline.Outputs.CodePipelineServiceRoleArn
+        ArtifactBucketName: !GetAtt DeploymentPipeline.Outputs.ArtifactBucketName
+
+  DeploymentPipeline002:
+    Type: AWS::CloudFormation::Stack
+    DependsOn: DeploymentPipeline
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/aws-microservices-deploy-options-ecs-deployment/deployment-pipeline-webapp.yaml
+      Parameters:
+        Cluster: !GetAtt Cluster.Outputs.ClusterName
+        Service: !GetAtt Name.Outputs.Service
+        GitHubUser: !Ref GitHubUser
+        GitHubToken: !Ref GitHubToken
+        GitHubRepo002: !Ref GitHubRepo002
+        GitHubBranch: !Ref GitHubBranch
+        CodeBuildServiceRole: !GetAtt DeploymentPipeline.Outputs.CodeBuildServiceRole
+        CodePipelineServiceRoleArn: !GetAtt DeploymentPipeline.Outputs.CodePipelineServiceRoleArn
+        ArtifactBucketName: !GetAtt DeploymentPipeline.Outputs.ArtifactBucketName
+
+  LoadBalancer:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/aws-microservices-deploy-options-ecs-deployment/load-balancer.yaml
+      Parameters:
+        LaunchType: !Ref LaunchType
+        Subnet1: !GetAtt VPC.Outputs.Subnet1
+        Subnet2: !GetAtt VPC.Outputs.Subnet2
+        Subnet3: !GetAtt VPC.Outputs.Subnet3
+        Subnet4: !GetAtt VPC.Outputs.Subnet4
+        VpcId: !GetAtt VPC.Outputs.VpcId
+
+  VPC:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/aws-microservices-deploy-options-ecs-deployment/vpc.yaml
+      Parameters:
+        Name: !Ref AWS::StackName
+        VpcCIDR: 10.215.0.0/16
+        Subnet1CIDR: 10.215.10.0/24
+        Subnet2CIDR: 10.215.20.0/24
+        Subnet3CIDR: 10.215.30.0/24
+        Subnet4CIDR: 10.215.40.0/24
+
+  Greeting:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/aws-microservices-deploy-options-ecs-deployment/greeting.yaml
+      Parameters:
+        Subnet3: !GetAtt VPC.Outputs.Subnet3
+        Subnet4: !GetAtt VPC.Outputs.Subnet4
+        PrivateALB: !GetAtt LoadBalancer.Outputs.ALBPrivate
+        Cluster: !GetAtt Cluster.Outputs.ClusterName
+        LaunchType: !Ref LaunchType
+        SecurityGroup: !GetAtt LoadBalancer.Outputs.SecurityGroupWebapp
+        TargetGroup: !GetAtt LoadBalancer.Outputs.TargetGroup
+
+  Name:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/aws-microservices-deploy-options-ecs-deployment/name.yaml
+      Parameters:
+        Subnet3: !GetAtt VPC.Outputs.Subnet3
+        Subnet4: !GetAtt VPC.Outputs.Subnet4
+        PrivateALB: !GetAtt LoadBalancer.Outputs.ALBPrivate
+        Cluster: !GetAtt Cluster.Outputs.ClusterName
+        LaunchType: !Ref LaunchType
+        SecurityGroup: !GetAtt LoadBalancer.Outputs.SecurityGroupWebapp
+        TargetGroup001: !GetAtt LoadBalancer.Outputs.TargetGroup001
+        ExecutionRole: !GetAtt Greeting.Outputs.ExecutionRole
+
+  Webapp:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: https://s3.amazonaws.com/aws-microservices-deploy-options-ecs-deployment/webapp.yaml
+      Parameters:
+        Subnet1: !GetAtt VPC.Outputs.Subnet1
+        Subnet2: !GetAtt VPC.Outputs.Subnet2
+        PublicALB: !GetAtt LoadBalancer.Outputs.ALBPublic
+        Cluster: !GetAtt Cluster.Outputs.ClusterName
+        LaunchType: !Ref LaunchType
+        SecurityGroup: !GetAtt LoadBalancer.Outputs.SecurityGroup
+        TargetGroup: !GetAtt LoadBalancer.Outputs.TargetGroup002
+        ExecutionRole: !GetAtt Greeting.Outputs.ExecutionRole
+        ALBPrivateCNAME: !GetAtt LoadBalancer.Outputs.ALBPrivateCNAME
+
+
+Outputs:
+  ServiceUrl:
+    Description: The sample service that is being continuously deployed.
+    Value: !GetAtt LoadBalancer.Outputs.ServiceUrl
+
+  PipelineUrl:
+    Description: The continuous deployment pipeline in the AWS Management Console.
+    Value: !GetAtt DeploymentPipeline.Outputs.PipelineUrl
