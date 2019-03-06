@@ -9,7 +9,7 @@
     "containerDefinitions": [
         {
             "name": "webapp",
-            "image": "arungupta/webapp:latest",
+            "image": "huangzhaorongit/webapp:latest",
             "portMappings": [
                 {
                     "containerPort": 8080

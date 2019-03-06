@@ -1,15 +1,15 @@
 version: '3'
 services:
   greeting-service:
-    image: arungupta/greeting:latest
+    image: huangzhaorongit/greeting:latest
     ports:
       - 8081:8081
   name-service:
-    image: arungupta/name:latest
+    image: huangzhaorongit/name:latest
     ports:
       - 8082:8082
   webapp-service:
-    image: arungupta/webapp:latest
+    image: huangzhaorongit/webapp:latest
     ports:
       - 8080:8080
     depends_on:

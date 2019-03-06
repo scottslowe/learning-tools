@@ -106,7 +106,7 @@ Resources:
       ExecutionRoleArn: !Ref TaskExecutionRole
       ContainerDefinitions:
         - Name: greeting
-          Image: arungupta/greeting
+          Image: huangzhaorongit/greeting
           Essential: true
           Memory: 500
           PortMappings:

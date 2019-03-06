@@ -94,7 +94,7 @@ Resources:
       ExecutionRoleArn: !Ref ExecutionRole
       ContainerDefinitions:
         - Name: name
-          Image: arungupta/name
+          Image: huangzhaorongit/name
           Essential: true
           Memory: 500
           Cpu: 10

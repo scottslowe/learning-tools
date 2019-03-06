@@ -1,13 +1,13 @@
 greeting:
-  image: arungupta/greeting
+  image: huangzhaorongit/greeting
   replicaCount: 1
 
 name:
-  image: arungupta/name
+  image: huangzhaorongit/name
   replicaCount: 1
 
 webapp:
-  image: arungupta/webapp
+  image: huangzhaorongit/webapp
   replicaCount: 1
 
 docker:

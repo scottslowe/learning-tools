@@ -36,7 +36,7 @@ Each application is deployed using different AWS Compute options.
 
 `mvn package -Pdocker` for each repo will create the Docker image.
 
-By default, the Docker image name is `arungupta/<service>` where `<service>` is `greeting`, `name` or `webapp`. The image can be created in your repo:
+By default, the Docker image name is `huangzhaorongit/<service>` where `<service>` is `greeting`, `name` or `webapp`. The image can be created in your repo:
 
   mvn package -Pdocker -Ddocker.repo=<repo>
 
@@ -158,7 +158,7 @@ This section explains how to create a Fargate cluster and run services on it.
   fargate service create greeting-service \
     --lb microservices-lb \
     -m 1024 \
-    -i arungupta/greeting \
+    -i huangzhaorongit/greeting \
     -p http:8081 \
     --rule path=/resources/greeting
 
@@ -167,7 +167,7 @@ This section explains how to create a Fargate cluster and run services on it.
   fargate service create name-service \
     --lb microservices-lb \
     -m 1024 \
-    -i arungupta/name \
+    -i huangzhaorongit/name \
     -p http:8082 \
     --rule path=/resources/names/*
 
@@ -180,7 +180,7 @@ This section explains how to create a Fargate cluster and run services on it.
   fargate service create webapp-service \
     --lb microservices-lb \
     -m 1024 \
-    -i arungupta/webapp \
+    -i huangzhaorongit/webapp \
     -p http:8080 \
     -e GREETING_SERVICE_HOST=<lb> \
     -e GREETING_SERVICE_PORT=80 \
@@ -618,7 +618,7 @@ https://github.com/aws-samples/aws-microservices-deploy-options/issues/88
   kubectl create secret \
     docker-registry gitkube-secret \
     --docker-server=https://index.docker.io/v1/ \
-    --docker-username=arungupta \
+    --docker-username=huangzhaorongit \
     --docker-password='<password>' \
     --docker-email=help@example.com
 
@@ -676,11 +676,11 @@ Another route with the traffic split of 90% and 10% is at `apps/k8s/istio/route-
 
 === Monitoring: AWS X-Ray
 
-. `arungupta/xray:us-west-2` Docker image is already available on Docker Hub. Optionally, you may build the image:
+. `huangzhaorongit/xray:us-west-2` Docker image is already available on Docker Hub. Optionally, you may build the image:
 
   cd config/xray
-  docker build -t arungupta/xray:latest .
-  docker image push arungupta/xray:us-west-2
+  docker build -t huangzhaorongit/xray:latest .
+  docker image push huangzhaorongit/xray:us-west-2
 
 . Deploy the DaemonSet: `kubectl apply -f xray-daemonset.yaml`
 . Deploy the application link:#deployment-helm[using Helm charts]:

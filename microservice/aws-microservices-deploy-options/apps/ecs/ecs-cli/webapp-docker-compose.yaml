@@ -1,7 +1,7 @@
 version: '2'
 services:
   webapp-service:
-    image: arungupta/webapp:latest
+    image: huangzhaorongit/webapp:latest
     ports:
       - "8080:8080"
     logging:

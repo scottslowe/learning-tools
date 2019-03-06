@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: webapp
-        image: arungupta/webapp
+        image: huangzhaorongit/webapp
         imagePullPolicy: Always
         ports:
         - containerPort: 8080

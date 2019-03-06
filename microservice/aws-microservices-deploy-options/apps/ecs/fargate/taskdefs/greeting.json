@@ -9,7 +9,7 @@
     "containerDefinitions": [
         {
             "name": "greeting",
-            "image": "arungupta/greeting:latest",
+            "image": "huangzhaorongit/greeting:latest",
             "essential": true,
             "portMappings": [
                 {

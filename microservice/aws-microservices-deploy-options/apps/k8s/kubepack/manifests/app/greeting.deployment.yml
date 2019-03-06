@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: greeting
-        image: arungupta/greeting
+        image: huangzhaorongit/greeting
         imagePullPolicy: Always
         ports:
         - containerPort: 8081

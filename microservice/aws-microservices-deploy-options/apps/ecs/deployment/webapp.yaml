@@ -111,7 +111,7 @@ Resources:
               Value: "8081"
             - Name: GREETING_SERVICE_PATH
               Value: /resources/greeting
-          Image: arungupta/webapp
+          Image: huangzhaorongit/webapp
           Essential: true
           Memory: 500
           Cpu: 10

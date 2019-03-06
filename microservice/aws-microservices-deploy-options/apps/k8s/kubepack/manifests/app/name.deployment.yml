@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: name
-        image: arungupta/name
+        image: huangzhaorongit/name
         imagePullPolicy: Always
         ports:
         - containerPort: 8082

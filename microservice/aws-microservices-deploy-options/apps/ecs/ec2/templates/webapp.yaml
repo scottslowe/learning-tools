@@ -47,7 +47,7 @@ Resources:
               Value: "8081"
             - Name: GREETING_SERVICE_PATH
               Value: /resources/greeting
-          Image: arungupta/webapp
+          Image: huangzhaorongit/webapp
           Memory: 500
           PortMappings:
             - ContainerPort: 8080  

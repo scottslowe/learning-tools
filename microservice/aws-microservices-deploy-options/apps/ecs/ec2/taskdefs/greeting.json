@@ -3,7 +3,7 @@
   "containerDefinitions": [
     {
       "name": "greeting",
-      "image": "arungupta/greeting:latest",
+      "image": "huangzhaorongit/greeting:latest",
       "cpu": "256",
       "memory": "1024",
       "essential": true,

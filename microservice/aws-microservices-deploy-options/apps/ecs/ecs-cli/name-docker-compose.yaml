@@ -1,7 +1,7 @@
 version: '2'
 services:
   name-service:
-    image: arungupta/name:latest
+    image: huangzhaorongit/name:latest
     ports:
       - "8082:8082"
     logging:

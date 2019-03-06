@@ -9,7 +9,7 @@
     "containerDefinitions": [
         {
             "name": "name",
-            "image": "arungupta/name:latest",
+            "image": "huangzhaorongit/name:latest",
             "essential": true,
             "portMappings": [
                 {

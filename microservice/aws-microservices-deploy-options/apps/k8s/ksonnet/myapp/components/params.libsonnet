@@ -8,7 +8,7 @@
         // Each object below should correspond to a component in the components/ directory
         webapp: {
             containerPort: 8080,
-            image: "arungupta/webapp",
+            image: "huangzhaorongit/webapp",
             name: "webapp",
             replicas: 1,
             servicePort: 80,
@@ -16,7 +16,7 @@
         },
         name: {
             containerPort: 8082,
-            image: "arungupta/name",
+            image: "huangzhaorongit/name",
             name: "name",
             replicas: 1,
             servicePort: 8082,
@@ -24,7 +24,7 @@
         },
         greeting: {
             containerPort: 8081,
-            image: "arungupta/greeting",
+            image: "huangzhaorongit/greeting",
             name: "greeting",
             replicas: 1,
             servicePort: 8081,

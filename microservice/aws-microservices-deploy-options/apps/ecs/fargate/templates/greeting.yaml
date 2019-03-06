@@ -27,7 +27,7 @@ Resources:
       ContainerDefinitions:
         - Name: Greeting
           Cpu: 10
-          Image: arungupta/greeting
+          Image: huangzhaorongit/greeting
           Memory: 500
           PortMappings:
             - ContainerPort: 8081
