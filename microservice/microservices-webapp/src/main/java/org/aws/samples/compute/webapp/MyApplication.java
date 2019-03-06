@@ -7,7 +7,7 @@ import java.util.Set;
 import static org.aws.samples.compute.webapp.MyApplication.APP_ROOT;
 
 /**
- * @author arungupta
+ * @author huangzhaorongit
  */
 @ApplicationPath(APP_ROOT)
 public class MyApplication extends Application {

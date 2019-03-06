@@ -11,7 +11,7 @@
           "States": {
             "Transform 1": {
               "Type": "Task",
-              "Resource": "arn:aws:lambda:us-east-1:038221756127:function:StepFunctions_Step1",
+              "Resource": "arn:aws:lambda:us-east-1:236566373701:function:StepFunctions_Step1",
               "End": true
             }
           }
@@ -21,7 +21,7 @@
           "States": {
             "Transform 2": {
               "Type": "Task",
-              "Resource": "arn:aws:lambda:us-east-1:038221756127:function:StepFunctions_Step2",
+              "Resource": "arn:aws:lambda:us-east-1:236566373701:function:StepFunctions_Step2",
               "End": true
             }
           }
@@ -31,7 +31,7 @@
           "States": {
             "Transform 3": {
               "Type": "Task",
-              "Resource": "arn:aws:lambda:us-east-1:038221756127:function:StepFunctions_Step3",
+              "Resource": "arn:aws:lambda:us-east-1:236566373701:function:StepFunctions_Step3",
               "End": true
             }
           }
@@ -40,7 +40,7 @@
     },
     "Final State": {
       "Type": "Task",
-      "Resource": "arn:aws:lambda:us-east-1:038221756127:function:StepFunctions_Final",
+      "Resource": "arn:aws:lambda:us-east-1:236566373701:function:StepFunctions_Final",
       "End": true
     }
   }

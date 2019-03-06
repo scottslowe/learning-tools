@@ -2,7 +2,7 @@ var AWS = require('aws-sdk');
 var stepFunctions = new AWS.StepFunctions();
 
 var params = {
-  stateMachineArn: 'arn:aws:states:us-east-1:038221756127:stateMachine:HelloWorldStepMachine', /* required */
+  stateMachineArn: 'arn:aws:states:us-east-1:236566373701:stateMachine:HelloWorldStepMachine', /* required */
   input: "{'bucket':'serverless-image-transform', 'key':'image.png'}",
   name: 'MyTest'
 };

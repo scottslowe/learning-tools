@@ -614,7 +614,138 @@ Ubuntu 16.04.5 LTS master ttyS0
 [   19.680380] cloud-init[1583]: Cloud-init v. 18.4-0ubuntu1~16.04.2 running 'modules:config' at Sun, 17 Feb 2019 00:52:38 +0000. Up 18.80 seconds.
 [   20.894270] [   20.916162] cloud-init[2043]: Cloud-init v. 18.4-0ubuntu1~16.04.2 running 'modules:final' at Sun, 17 Feb 2019 00:52:39 +0000. Up 20.63 seconds.
 [   20.917881] cloud-init[2043]: Cloud-init v. 18.4-0ubuntu1~16.04.2 finished at Sun, 17 Feb 2019 0Datasource DataSourceNoCloud [seed=/dev/sdb][dsmode=net].  Up 20.87 seconds
-20.88 seconds
-ning 'modules:config' at Sun, 17 Feb 2019 00:52:38 +0000. Up 19.52 seconds.
-[   21.487019] cloud-init[2061]: Cloud-init v. 18.4-0ubuntu1~16.04.2 running 'modules:final' at Sun, 17 Feb 2019 00:52:40 +0000. Up 21.16 seconds.
-[   21.492132] cloud-init[2061]: Cloud-init v. 18.4-0ubuntu1~16.04.2 finished at Sun, 17 Feb 2019 00:52:40 +0000. Datasource DataSourceNoCloud [seed=/dev/sdb][dsmode=net].  Up 21.44 seconds
+[[0;32m  OK  [[0;32m  OK  [0m] Closed Load/Save RF Kill Switch Status /dev/rfkill Watch.
+         Stopping Authenticate and Authorize Users to Run Privileged Tasks...
+[[0;32m  OK  [0m] Stopped target Timers.
+[[0;32m  OK  [0m] Stopped target Cloud-init target.
+[[0;32m  OK  [0m] Stopped Execute cloud user/final scripts.
+[[0;32m  OK  [0m] Stopped target Graphical Interface.
+         Stopping Accounts Service...
+[[0;32m  OK  [0m] Stopped target Multi-User System.
+         Stopping LSB: Record successful boot for GRUB...
+[[0;32m  OK  [0m] Stopped target Login Prompts.
+         Stopping Serial Getty on ttyS0...
+         Stopping LXD - container startup/shutdown...
+         Stopping FUSE filesystem for LXC...
+         Stopping D-Bus System Message Bus...
+         Stopping Regular background program processing daemon...
+         Stopping LSB: MD monitoring daemon...
+         Stopping Deferred execution scheduler...
+         Stopping LSB: Set up cgroupfs mounts....
+         Stopping Getty on tty1...
+         Stopping LSB: automatic crash report generation...
+         Stopping LSB: Set the CPU Frequency Scaling governor to "ondemand"...
+         Stopping OpenBSD Secure Shell server...
+         Stopping Docker Application Container Engine...
+[[0;32m  OK  [0m] Stopped Daily Cleanup of Temporary Directories.
+[[0;32m  OK  [0m] Stopped Daily apt upgrade and clean activities.
+[[0;32m  OK  [0m] Stopped Daily apt download activities.
+         Stopping Ubuntu FAN network setup...
+         Stopping Session 13 of user vagrant.
+         Stopping Unattended Upgrades Shutdown...
+         Stopping ACPI event daemon...
+[[0;32m  OK  [0m] Stopped Apply the settings specified in cloud-config.
+[[0;32m  OK  [0m] Stopped Wait until snapd is fully seeded.
+         Stopping Snappy daemon...
+[[0;32m  OK  [0m] Stopped target Cloud-config availability.
+         Stopping LSB: daemon to balance interrupts for SMP systems...
+         Stopping vboxadd-service.service...
+[[0;32m  OK  [0m] Stopped kubelet: The Kubernetes Node Agent.
+         Stopping User Manager for UID 1000...
+         Stopping System Logging Service...
+[[0;32m  OK  [0m] Stopped target System Time Synchronized.
+[[0;32m  OK  [0m] Unmounted /var/lib/lxcfs.
+[[0;32m  OK  [0m] Stopped ACPI event daemon.
+[[0;32m  OK  [0m] Stopped Snappy daemon.
+[[0;32m  OK  [0m] Stopped System Logging Service.
+[[0;32m  OK  [0m] Stopped Regular background program processing daemon.
+[[0;32m  OK  [0m] Stopped Accounts Service.
+[[0;32m  OK  [0m] Stopped Deferred execution scheduler.
+[[0;32m  OK  [0m] Stopped OpenBSD Secure Shell server.
+[[0;32m  OK  [0m] Stopped Authenticate and Authorize Users to Run Privileged Tasks.
+[[0;32m  OK  [0m] Stopped Serial Getty on ttyS0.
+[[0;32m  OK  [0m] Stopped Getty on tty1.
+[[0;32m  OK  [0m] Stopped User Manager for UID 1000.
+[[0;32m  OK  [0m] Stopped D-Bus System Message Bus.
+[[0;32m  OK  [0m] Stopped LSB: Set up cgroupfs mounts..
+[[0;32m  OK  [0m] Stopped Ubuntu FAN network setup.
+[[0;32m  OK  [0m] Stopped Unattended Upgrades Shutdown.
+[[0;32m  OK  [0m] Stopped Session 13 of user vagrant.
+[[0;32m  OK  [0m] Stopped FUSE filesystem for LXC.
+[[0;32m  OK  [0m] Stopped vboxadd-service.service.
+[[0;32m  OK  [0m] Stopped LXD - container startup/shutdown.
+[[0;32m  OK  [0m] Stopped LSB: MD monitoring daemon.
+[[0;32m  OK  [0m] Stopped LSB: Record successful boot for GRUB.
+[[0;32m  OK  [0m] Stopped LSB: Set the CPU Frequency Scaling governor to "ondemand".
+[[0;32m  OK  [0m] Stopped LSB: automatic crash report generation.
+[[0;32m  OK  [0m] Stopped LSB: daemon to balance interrupts for SMP systems.
+         Stopping vboxadd.service...
+[[0;32m  OK  [0m] Removed slice User Slice of vagrant.
+         Stopping Login Service...
+[[0;32m  OK  [0m] Removed slice system-getty.slice.
+         Stopping Permit User Sessions...
+[[0;32m  OK  [0m] Stopped /etc/rc.local Compatibility.
+[[0;32m  OK  [0m] Removed slice system-serial\x2dgetty.slice.
+[[0;32m  OK  [0m] Stopped Login Service.
+[[0;32m  OK  [0m] Stopped Permit User Sessions.
+[[0;32m  OK  [0m] Stopped target Remote File Systems.
+[[0;32m  OK  [0m] Stopped target Remote File Systems (Pre).
+         Stopping Login to default iSCSI targets...
+[[0;32m  OK  [0m] Stopped target User and Group Name Lookups.
+[[0;32m  OK  [0m] Stopped Login to default iSCSI targets.
+[[0;32m  OK  [0m] Stopped vboxadd.service.
+         Stopping iSCSI initiator daemon (iscsid)...
+[[0;32m  OK  [0m] Stopped iSCSI initiator daemon (iscsid).
+[[0;32m  OK  [0m] Stopped Docker Application Container Engine.
+[[0;32m  OK  [0m] Stopped target Network is Online.
+[[0;32m  OK  [0m] Stopped target Network.
+[[0;32m  OK  [0m] Stopped target Basic System.
+[[0;32m  OK  [0m] Stopped target Paths.
+[[0;32m  OK  [0m] Stopped Forward Password Requests to Wall Directory Watch.
+[[0;32m  OK  [0m] Stopped Dispatch Password Requests to Console Directory Watch.
+[[0;32m  OK  [0m] Stopped ACPI Events Check.
+[[0;32m  OK  [0m] Stopped target Slices.
+[[0;32m  OK  [0m] Removed slice User and Session Slice.
+[[0;32m  OK  [0m] Stopped target Sockets.
+[[0;32m  OK  [0m] Closed Syslog Socket.
+[[0;32m  OK  [0m] Closed ACPID Listen Socket.
+[[0;32m  OK  [0m] Closed LXD - unix socket.
+[[0;32m  OK  [0m] Closed Socket activation for snappy daemon.
+[[0;32m  OK  [0m] Closed D-Bus System Message Bus Socket.
+[[0;32m  OK  [0m] Closed UUID daemon activation socket.
+[[0;32m  OK  [0m] Closed Docker Socket for the API.
+[[0;32m  OK  [0m] Stopped target System Initialization.
+         Stopping Load/Save Random Seed...
+         Stopping LSB: ebtables ruleset management...
+[[0;32m  OK  [0m] Stopped Initial cloud-init job (metadata service crawler).
+         Stopping Raise network interfaces...
+[[0;32m  OK  [0m] Stopped target Swap.
+[[0;32m  OK  [0m] Stopped target Encrypted Volumes.
+[[0;32m  OK  [0m] Stopped Create Volatile Files and Directories.
+[[0;32m  OK  [0m] Stopped Load/Save Random Seed.
+[[0;32m  OK  [0m] Stopped LSB: ebtables ruleset management.
+[[0;32m  OK  [0m] Stopped Raise network interfaces.
+[[0;32m  OK  [0m] Stopped target Local File Systems.
+         Unmounting /run/user/1000...
+[[0;32m  OK  [0m] Stopped Apply Kernel Variables.
+[[0;32m  OK  [0m] Stopped Load Kernel Modules.
+[[0;32m  OK  [0m] Stopped target Network (Pre).
+[[0;32m  OK  [0m] Stopped Initial cloud-init job (pre-networking).
+[[0;32m  OK  [0m] Unmounted /run/user/1000.
+[[0;32m  OK  [0m] Reached target Unmount All Filesystems.
+[[0;32m  OK  [0m] Stopped target Local File Systems (Pre).
+[[0;32m  OK  [0m] Stopped Remount Root and Kernel File Systems.
+         Stopping Monitoring of LVM2 mirrors... dmeventd or progress polling...
+[[0;32m  OK  [0m] Stopped Create Static Device Nodes in /dev.
+[[0;32m  OK  [0m] Reached target Shutdown.
+[24388.749914] reboot: Power down
+rget Local File Systems.
+         Unmounting /run/user/1000...
+[[0;32m  OK  [0m] Unmounted /run/user/1000.
+[[0;32m  OK  [0m] Reached target Unmount All Filesystems.
+[[0;32m  OK  [0m] Stopped target Local File Systems (Pre).
+[[0;32m  OK  [0m] Stopped Create Static Device Nodes in /dev.
+         Stopping Monitoring of LVM2 mirrors... dmeventd or progress polling...
+[[0;32m  OK  [0m] Stopped Remount Root and Kernel File Systems.
+[[0;32m  OK  [0m] Reached target Shutdown.
+[24376.805134] reboot: Power down

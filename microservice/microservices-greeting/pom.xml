@@ -11,7 +11,7 @@
         <version.wildfly.swarm>2018.2.0</version.wildfly.swarm>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
-        <docker.repo>arungupta</docker.repo>
+        <docker.repo>huangzhaorongit</docker.repo>
         <docker.tag>latest</docker.tag>
         <docker.name>${docker.repo}/${project.build.finalName}:${docker.tag}</docker.name>
         <greeting.host>localhost</greeting.host>

@@ -6,7 +6,7 @@
     <version>1.0-SNAPSHOT</version>
     <packaging>war</packaging>
     <properties>
-        <docker.repo>arungupta</docker.repo>
+        <docker.repo>huangzhaorongit</docker.repo>
         <docker.tag>latest</docker.tag>
         <docker.name>${docker.repo}/${project.build.finalName}:${docker.tag}</docker.name>
         <greeting.host>localhost</greeting.host>

@@ -11,7 +11,7 @@ import javax.ws.rs.core.Application;
 import static org.aws.samples.compute.greeting.MyApplication.APP_ROOT;
 
 /**
- * @author arungupta
+ * @author huangzhaorongit
  */
 @ApplicationPath(APP_ROOT)
 public class MyApplication extends Application {

@@ -1,7 +1,7 @@
 var configConstants = {
 	auth0: {
-		domain: 'AUTH0-DOMAIN',
-		clientId: 'AUTH0-CLIENTID'
+		domain: 'hzrdevserverless.auth0.com',
+		clientId: 'BHj6ve8v3KIMIyk7cfOpWFeoahVsUFhe'
 	},
-  apiBaseUrl: 'https://API-GATEWAY-URL/dev'
+  apiBaseUrl: 'https://uuopxynme3.execute-api.us-east-1.amazonaws.com/dev'
 };
