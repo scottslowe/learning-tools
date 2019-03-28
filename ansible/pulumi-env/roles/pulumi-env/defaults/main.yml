@@ -1,0 +1,9 @@
+---
+pulumi_package_files:
+  - pulumi
+  - pulumi-language-go
+  - pulumi-language-nodejs
+  - pulumi-language-python
+  - pulumi-language-python-exec
+  - pulumi-resource-pulumi-nodejs
+pulumi_download_url: "https://get.pulumi.com/releases/sdk"
