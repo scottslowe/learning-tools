@@ -1,0 +1,9 @@
+---
+- box:
+    vmw: "generic/ubuntu1604"
+    vb: "ubuntu/xenial64"
+    lv: "generic/ubuntu1604"
+  name: "xenial"
+  nested: false
+  ram: "1024"
+  vcpu: "1"
