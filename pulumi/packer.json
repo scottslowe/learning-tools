@@ -1,0 +1,34 @@
+{
+    "variables": {
+      "aws_access_key": "",
+      "aws_secret_key": "",
+      "aws_region": "us-west-2",
+      "ubuntu_1804_ami": "ami-03804ed633fe58109"
+    },
+    "builders": [
+      {
+        "name": "ami-pulumi-ubuntu",
+        "type": "amazon-ebs",
+        "instance_type": "t2.small",
+        "source_ami": "{{user `ubuntu_1804_ami`}}",
+        "ami_name": "ami-pulumi-ubuntu-{{timestamp}}",
+        "access_key": "{{user `aws_access_key`}}",
+        "secret_key": "{{user `aws_secret_key`}}",
+        "region": "{{user `aws_region`}}",
+        "ssh_username": "ubuntu",
+        "tags": {
+          "source_ami": "{{user `ubuntu_1804_ami`}}",
+          "build_date": "{{isotime}}",
+          "distribution": "Ubuntu",
+          "distribution_release": "bionic",
+          "distribution_version": "18.04"
+        }
+      }
+    ],
+    "provisioners": [
+      {
+        "type": "ansible",
+        "playbook_file": "./configure.yml"
+      }
+    ]
+  }

@@ -74,9 +74,4 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       end # srv.vm.provider 'libvirt'
     end # config.vm.define
   end # machines.each
-
-  # Provision the VM with Ansible
-  config.vm.provision 'ansible' do |ansible|
-    ansible.playbook = 'provision.yml'
-  end # config.vm.provision
 end # Vagrant.configure

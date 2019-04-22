@@ -1,0 +1,59 @@
+---
+- hosts: "all"
+  become: "yes"
+  remote_user: "vagrant"
+  gather_facts: false
+
+  pre_tasks:
+  - name: "Install Python 2 if not present"
+    raw: "apt -qqy update; apt -qqy install python"
+    register: output
+    retries: 3
+    delay: 3
+    until: output.rc == 0
+  
+  tasks:
+  - name: "Ensure /usr/local/bin exists"
+    file:
+      state: "directory"
+      path: "/usr/local/bin"
+      owner: "root"
+      group: "root"
+  
+  - name: "Check for existence of Pulumi binary in /usr/local/bin"
+    stat:
+      path: "/usr/local/bin/pulumi"
+    register: pulumi_present
+  
+  - name: Install NodeJS
+    apt:
+      state: "present"
+      name: "{{ item }}"
+    with_items:
+      - nodejs
+      - npm
+
+  - block:
+    - name: "Download and extract Pulumi 0.17.5"
+      unarchive:
+        src: "https://get.pulumi.com/releases/sdk/pulumi-v0.17.5-linux-x64.tar.gz"
+        remote_src: true
+        dest: "/tmp"
+        owner: "root"
+        group: "root"
+    - name: "Move binaries to /usr/local/bin"
+      copy:
+        src: "/tmp/pulumi/{{ item }}"
+        remote_src: true
+        dest: "/usr/local/bin"
+        owner: "root"
+        group: "root"
+        mode: 0755
+      with_items:
+        - "pulumi"
+        - "pulumi-language-go"
+        - "pulumi-language-nodejs"
+        - "pulumi-language-python"
+        - "pulumi-language-python-exec"
+        - "pulumi-resource-pulumi-nodejs"
+    when: pulumi_present.stat.exists == False
