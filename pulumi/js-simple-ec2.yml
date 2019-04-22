@@ -1,0 +1,5 @@
+---
+- name: Prepare sandbox environment for js-simple-ec2
+  hosts: all
+  roles:
+  - role: js-simple-ec2

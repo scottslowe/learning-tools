@@ -1,0 +1,9 @@
+---
+- box:
+    vmw: "generic/ubuntu1804"
+    vb: "ubuntu/bionic64"
+    lv: "generic/ubuntu1804"
+  name: "pulumi"
+  nested: false
+  ram: "1024"
+  vcpu: "1"

@@ -1,0 +1,22 @@
+---
+- name: "Create directory to store files"
+  file:
+    state: "directory"
+    path: "{{ ansible_env.HOME }}/pulumi"
+    owner: "vagrant"
+    group: "vagrant"
+
+- name: "Copy files into sandbox environment"
+  copy:
+    src: "{{ item }}"
+    dest: "{{ ansible_env.HOME }}/pulumi"
+    owner: "vagrant"
+    group: "vagrant"
+  with_items:
+    - "index.js"
+    - "package.json"
+    - "Pulumi.yaml"
+
+- name: "Install Pulumi SDK"
+  npm:
+    path: "{{ ansible_env.HOME }}/pulumi"
