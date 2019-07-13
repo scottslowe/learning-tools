@@ -6,7 +6,9 @@ This folder contains materials for learning more about how to use Vagrant. This 
 
 **aws**: This folder contains a `Vagrantfile` and supporting files for using Vagrant to spin up an instance on AWS. This allows you to use Vagrant to spin up and destroy an instance on AWS.
 
-**aws-multi**: Like "vagrant-aws", but for spinning up multiple instances on AWS.
+**aws-multi**: Like "aws", but for spinning up multiple instances on AWS.
+
+**azure**: Like "aws", but for spinning up an instance on Microsoft Azure instead.
 
 **complex-json**: This folder contains files that illustrate how to use a "complex" JSON file as an external data source for a `Vagrantfile`.
 

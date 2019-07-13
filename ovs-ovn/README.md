@@ -13,3 +13,5 @@ This folder contains tools, resources, and environments for experimenting with a
 **ovs-geneve**: This folder contains a Vagrant environment and supporting files for compiling Open vSwitch (OVS) from source and using Geneve tunneling to connect network namespaces on two different VMs.
 
 **ovs-multi-br**: In this folder is a Vagrant environment, Ansible playbook, and related data files for experimenting with multiple Open vSwitch (OVS) bridges.
+
+**ovs-simple**: This environment uses Vagrant and Ansible to provision an Ubuntu 16.04 VM with Open vSwitch and a single OVS bridge. Users could use this environment as a building block for more complex environments.

@@ -1,6 +1,6 @@
 # Learning Tools: Traefik
 
-This folder contains materials for working with Traefik, a dynamic reverse proxy often using in microservices-based architectures.
+This folder contains materials for working with Traefik, a dynamic reverse proxy often used in microservices-based architectures.
 
 ## Contents
 

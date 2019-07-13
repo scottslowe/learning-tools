@@ -4,7 +4,13 @@ Here you'll find a collection of tools and resources for learning about (or expe
 
 ## Contents
 
+**atomic-swarm-mode**: Here is a learning environment and instructions for manually building a Docker Swarm cluster on CentOS Atomic Host.
+
 **containerd-runc**: _This is a placeholder for future work._
+
+**coreos-swarm-mode**: Here is a learning environment and instructions for manually building a Docker Swarm cluster on CoreOS Container Linux.
+
+**docker-ce-edge**: This folder is for quickly turning up a learning environment running the "Edge" release of Docker CE.
 
 **ipvlan-l2**: This folder has files to create a learning environment for using ipvlan interfaces with Docker containers.
 
@@ -21,3 +27,5 @@ Here you'll find a collection of tools and resources for learning about (or expe
 **swarm-etcd2-photon:** This folder contains a Vagrant environment and associated support files to turn up an etcd-backed Docker Swarm cluster where the Docker Engine instances are running on VMware Photon. Provisioning is handled by Ansible 2.x.
 
 **swarm-ha**: This folder holds a `Vagrantfile`, supporting files, and instructions for turning up a Consul-backed Docker Swarm cluster with multiple Swarm managers for high availability. The provisioning is handled via shell scripts.
+
+**ubuntu-Swarm-mode**: In this folder is a learning environment that uses Vagrant and Ansible to establish a Swarm mode cluster on Ubuntu.
