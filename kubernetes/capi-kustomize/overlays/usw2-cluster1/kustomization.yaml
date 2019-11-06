@@ -9,13 +9,25 @@ patchesJson6902:
       version: v1alpha2
       kind: Cluster
       name: capi-quickstart
-    path: cluster-name-patch.json
+    path: cluster-patch-name.json
   - target:
       group: infrastructure.cluster.x-k8s.io
       version: v1alpha2
       kind: AWSCluster
       name: capi-quickstart
-    path: awscluster-name-patch.json
+    path: awscluster-patch-name.json
+  - target:
+      group: cluster.x-k8s.io
+      version: v1alpha2
+      kind: Machine
+      name: capi-quickstart-controlplane-0
+    path: machine-patch-name.json
+  - target:
+      group: infrastructure.cluster.x-k8s.io
+      version: v1alpha2
+      kind: AWSMachine
+      name: capi-quickstart-controlplane-0
+    path: awsmachine-patch-name.json
 patches:
   - target:
       group: infrastructure.cluster.x-k8s.io
@@ -35,3 +47,9 @@ patches:
       kind: MachineDeployment
       name: .*
     path: machinedeployment-labels.yaml
+  - target:
+      group: infrastructure.cluster.x-k8s.io
+      version: v1alpha2
+      kind: AWSMachine
+      name: .*
+    path: awsmachine-details.yaml
