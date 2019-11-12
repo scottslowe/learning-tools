@@ -1,8 +1,0 @@
----
-apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
-kind: AWSCluster
-metadata:
-  name: .*
-spec:
-  region: us-west-2
-  sshKeyName: usw2_rsa_key
