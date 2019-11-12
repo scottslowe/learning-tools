@@ -17,5 +17,5 @@ kind: AWSCluster
 metadata:
   name: capi-quickstart
 spec:
-  region: us-east-1
+  region: us-west-2
   sshKeyName: default
