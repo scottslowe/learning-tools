@@ -6,7 +6,7 @@ metadata:
     cluster.x-k8s.io/cluster-name: capi-quickstart
     nodepool: nodepool-0
 spec:
-  replicas: 1
+  replicas: 3
   selector:
     matchLabels:
       cluster.x-k8s.io/cluster-name: capi-quickstart
@@ -35,7 +35,7 @@ metadata:
 spec:
   template:
     spec:
-      instanceType: t3.large
+      instanceType: m5.large
       iamInstanceProfile: "nodes.cluster-api-provider-aws.sigs.k8s.io"
       sshKeyName: default
 ---
