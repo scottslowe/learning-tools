@@ -1,0 +1,53 @@
+apiVersion: cluster.x-k8s.io/v1alpha2
+kind: MachineDeployment
+metadata:
+  name: capi-quickstart-worker
+  labels:
+    cluster.x-k8s.io/cluster-name: capi-quickstart
+    nodepool: nodepool-0
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      cluster.x-k8s.io/cluster-name: capi-quickstart
+      nodepool: nodepool-0
+  template:
+    metadata:
+      labels:
+        cluster.x-k8s.io/cluster-name: capi-quickstart
+        nodepool: nodepool-0
+    spec:
+      version: v1.15.3
+      bootstrap:
+        configRef:
+          name: capi-quickstart-worker
+          apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
+          kind: KubeadmConfigTemplate
+      infrastructureRef:
+        name: capi-quickstart-worker
+        apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
+        kind: AWSMachineTemplate
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
+kind: AWSMachineTemplate
+metadata:
+  name: capi-quickstart-worker
+spec:
+  template:
+    spec:
+      instanceType: m5.large
+      iamInstanceProfile: "nodes.cluster-api-provider-aws.sigs.k8s.io"
+      sshKeyName: default
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
+kind: KubeadmConfigTemplate
+metadata:
+  name: capi-quickstart-worker
+spec:
+  template:
+    spec:
+      joinConfiguration:
+        nodeRegistration:
+          name: '{{ ds.meta_data.hostname }}'
+          kubeletExtraArgs:
+            cloud-provider: aws

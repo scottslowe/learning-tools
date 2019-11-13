@@ -1,0 +1,5 @@
+[
+  { "op": "replace", "path": "/metadata/name", "value": "usw2-c2-nodepool0" },
+  { "op": "replace", "path": "/spec/template/spec/bootstrap/configRef/name", "value": "usw2-c2-nodepool0" },
+  { "op": "replace", "path": "/spec/template/spec/infrastructureRef/name", "value": "usw2-c2-nodepool0" }
+]

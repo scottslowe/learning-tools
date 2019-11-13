@@ -1,0 +1,138 @@
+---
+apiVersion: cluster.x-k8s.io/v1alpha2
+kind: Machine
+metadata:
+  name: capi-quickstart-controlplane-0
+  labels:
+    cluster.x-k8s.io/control-plane: "true"
+    cluster.x-k8s.io/cluster-name: "capi-quickstart"
+spec:
+  version: v1.15.3
+  bootstrap:
+    configRef:
+      apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
+      kind: KubeadmConfig
+      name: capi-quickstart-controlplane-0
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
+    kind: AWSMachine
+    name: capi-quickstart-controlplane-0
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
+kind: AWSMachine
+metadata:
+  name: capi-quickstart-controlplane-0
+spec:
+  instanceType: m5.large
+  iamInstanceProfile: "controllers.cluster-api-provider-aws.sigs.k8s.io"
+  sshKeyName: default
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
+kind: KubeadmConfig
+metadata:
+  name: capi-quickstart-controlplane-0
+spec:
+  initConfiguration:
+    nodeRegistration:
+      name: '{{ ds.meta_data.hostname }}'
+      kubeletExtraArgs:
+        cloud-provider: aws
+  clusterConfiguration:
+    apiServer:
+      extraArgs:
+        cloud-provider: aws
+    controllerManager:
+      extraArgs:
+        cloud-provider: aws
+---
+apiVersion: cluster.x-k8s.io/v1alpha2
+kind: Machine
+metadata:
+  name: capi-quickstart-controlplane-1
+  labels:
+    cluster.x-k8s.io/control-plane: "true"
+    cluster.x-k8s.io/cluster-name: "capi-quickstart"
+spec:
+  version: v1.15.3
+  bootstrap:
+    configRef:
+      apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
+      kind: KubeadmConfig
+      name: capi-quickstart-controlplane-1
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
+    kind: AWSMachine
+    name: capi-quickstart-controlplane-1
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
+kind: AWSMachine
+metadata:
+  name: capi-quickstart-controlplane-1
+spec:
+  instanceType: m5.large
+  iamInstanceProfile: "controllers.cluster-api-provider-aws.sigs.k8s.io"
+  sshKeyName: default
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
+kind: KubeadmConfig
+metadata:
+  name: capi-quickstart-controlplane-1
+spec:
+  initConfiguration:
+    nodeRegistration:
+      name: '{{ ds.meta_data.hostname }}'
+      kubeletExtraArgs:
+        cloud-provider: aws
+  clusterConfiguration:
+    apiServer:
+      extraArgs:
+        cloud-provider: aws
+    controllerManager:
+      extraArgs:
+        cloud-provider: aws
+---
+apiVersion: cluster.x-k8s.io/v1alpha2
+kind: Machine
+metadata:
+  name: capi-quickstart-controlplane-2
+  labels:
+    cluster.x-k8s.io/control-plane: "true"
+    cluster.x-k8s.io/cluster-name: "capi-quickstart"
+spec:
+  version: v1.15.3
+  bootstrap:
+    configRef:
+      apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
+      kind: KubeadmConfig
+      name: capi-quickstart-controlplane-2
+  infrastructureRef:
+    apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
+    kind: AWSMachine
+    name: capi-quickstart-controlplane-2
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
+kind: AWSMachine
+metadata:
+  name: capi-quickstart-controlplane-2
+spec:
+  instanceType: m5.large
+  iamInstanceProfile: "controllers.cluster-api-provider-aws.sigs.k8s.io"
+  sshKeyName: default
+---
+apiVersion: bootstrap.cluster.x-k8s.io/v1alpha2
+kind: KubeadmConfig
+metadata:
+  name: capi-quickstart-controlplane-2
+spec:
+  initConfiguration:
+    nodeRegistration:
+      name: '{{ ds.meta_data.hostname }}'
+      kubeletExtraArgs:
+        cloud-provider: aws
+  clusterConfiguration:
+    apiServer:
+      extraArgs:
+        cloud-provider: aws
+    controllerManager:
+      extraArgs:
+        cloud-provider: aws

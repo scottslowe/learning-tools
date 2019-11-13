@@ -1,0 +1,9 @@
+---
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha2
+kind: AWSMachine
+metadata:
+  name: .*
+spec:
+  sshKeyName: use2_rsa_key
+  # Uncomment following line to change instance type
+  #instanceType: m5.xlarge

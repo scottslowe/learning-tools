@@ -1,0 +1,5 @@
+[
+    { "op": "replace", "path": "/metadata/name", "value": "use2-cluster1-cp0" },
+    { "op": "replace", "path": "/spec/bootstrap/configRef/name", "value": "use2-cluster1-cp0" },
+    { "op": "replace", "path": "/spec/infrastructureRef/name", "value": "use2-cluster1-cp0" }
+]
