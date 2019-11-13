@@ -1,0 +1,7 @@
+---
+apiVersion: cluster.x-k8s.io/v1alpha2
+kind: Machine
+metadata:
+  name: .*
+  labels:
+    cluster.x-k8s.io/cluster-name: "usw2-cluster2"
