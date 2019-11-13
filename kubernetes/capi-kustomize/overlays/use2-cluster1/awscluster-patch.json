@@ -1,0 +1,5 @@
+[
+  { "op": "replace", "path": "/metadata/name", "value": "use2-cluster-1" },
+  { "op": "replace", "path": "/spec/region", "value": "us-east-2" },
+  { "op": "replace", "path": "/spec/sshKeyName", "value": "use2_rsa_key" }
+]

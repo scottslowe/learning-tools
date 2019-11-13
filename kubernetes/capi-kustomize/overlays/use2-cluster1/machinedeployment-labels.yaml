@@ -1,0 +1,18 @@
+---
+apiVersion: MachineDeployment
+kind: MachineDeployment
+metadata:
+  name: .*
+  labels:
+    cluster.x-k8s.io/cluster-name: "use2-cluster1"
+    nodepool: "use2-c1-nodepool0"
+spec:
+  selector:
+    matchLabels:
+        cluster.x-k8s.io/cluster-name: "use2-cluster1"
+        nodepool: "use2-c1-nodepool0"
+  template:
+    metadata:
+      labels:
+        cluster.x-k8s.io/cluster-name: "use2-cluster1"
+        nodepool: "use2-c1-nodepool0"

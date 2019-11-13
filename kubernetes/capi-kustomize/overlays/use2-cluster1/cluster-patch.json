@@ -1,0 +1,4 @@
+[
+  { "op": "replace", "path": "/metadata/name", "value": "use2-cluster-1" },
+  { "op": "replace", "path": "/spec/infrastructureRef/name", "value": "use2-cluster-1" }
+]
