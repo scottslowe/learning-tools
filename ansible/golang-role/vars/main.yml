@@ -1,0 +1,5 @@
+---
+golang_version: "1.15.2"
+golang_file: "go{{ golang_version }}.linux-amd64.tar.gz"
+golang_dl_url: "https://golang.org/dl/{{ golang_file }}"
+golang_install_path: "/usr/local"

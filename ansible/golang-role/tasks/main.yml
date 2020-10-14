@@ -1,0 +1,47 @@
+---
+- name: "Fail if used on a non-Linux system"
+  fail:
+    msg: "This role is only compatible with Linux."
+  when:
+    ansible_system != "Linux"
+
+- name: "Fail if used on a non-x86_64-based system"
+  fail:
+    msg: "This role only supports x86_64-based systems."
+  when:
+    ansible_architecture != "x86_64"
+
+- name: "Determine if Go has already been installed"
+  stat:
+    path: "{{ golang_install_path }}/go/bin/go"
+  register: go_binary
+
+- name: "Determine if Go archive has been downloaded"
+  stat:
+    path: "/usr/local/src/go{{ golang_version }}/{{ golang_file }}"
+  register: go_archive
+
+- name: "Create a location to store Go archive"
+  file:
+    path: "/usr/local/src/go{{ golang_version }}"
+    state: "directory"
+    mode: 0755
+  when: not go_archive.stat.exists
+
+- name: "Download Go archive"
+  get_url:
+    url: "{{ golang_dl_url }}"
+    dest: "/usr/local/src/go{{ golang_version }}/{{ golang_file }}"
+    owner: "root"
+    group: "root"
+    mode: 0755
+  when: not go_archive.stat.exists
+
+- name: "Extract Go archive"
+  unarchive:
+    src: "/usr/local/src/go{{ golang_version }}/{{ golang_file }}"
+    dest: "{{ golang_install_path }}/"
+    remote_src: yes
+    owner: "root"
+    group: "root"
+  when: not go_binary.stat.exists
