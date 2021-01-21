@@ -1,0 +1,12 @@
+---
+apiVersion: kubeadm.k8s.io/v1beta2
+kind: JoinConfiguration
+discovery:
+  bootstrapToken:
+    token: TOKEN
+    apiServerEndpoint: "mgmt-a-elb-random.region.elb.amazonaws.com:6443"
+    caCertHashes: ["HASH"]
+nodeRegistration:
+  name: HOSTNAME
+  kubeletExtraArgs:
+    cloud-provider: aws

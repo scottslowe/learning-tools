@@ -1,0 +1,6 @@
+keypair = "id_rsa_aws"
+cp_instance_type = "t2.large"
+wkr_instance_type = "t2.xlarge"
+bastion_instance_type = "t2.small"
+user_region = "us-east-2"
+base_cidr = "10.54.0.0/16"
