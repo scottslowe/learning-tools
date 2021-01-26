@@ -1,0 +1,56 @@
+---
+- hosts: "all"
+  gather_facts: true
+  become: true
+
+  tasks:
+    - name: "Install Wireguard"
+      apt:
+        name:
+          - "wireguard"
+          - "wireguard-tools"
+        state: "present"
+      when: ansible_distribution == "Ubuntu"
+    
+    - name: "Enable IP forwarding"
+      sysctl:
+        name: "net.ipv4.ip_forward"
+        value: '1'
+        sysctl_set: yes
+        state: "present"
+        reload: yes
+
+    - name: "Check if Wireguard configuration directory exists"
+      stat:
+        path: "/etc/wireguard"
+      register: wg_conf_directory
+
+    - name: "Create Wireguard configuration directory"
+      file:
+        path: "/etc/wireguard"
+        owner: "root"
+        group: "root"
+        mode: 0700
+      when: not wg_conf_directory.stat.exists
+
+    - name: "Check if Wireguard private key exists"
+      stat:
+        path: "/etc/wireguard/privatekey"
+      register: wg_private_key
+
+    - name: "Generate private key if it doesn't exist"
+      command: "wg genkey"
+      register: wg_generate_private_key
+      when: not wg_private_key.stat.exists
+
+    - name: "Check if Wireguard public key exists"
+      stat:
+        path: "/etc/wireguard/publickey"
+      register: wg_public_key
+
+    - name: "Generate public key if it doesn't exist"
+      command: "wg pubkey"
+      args:
+        stdin: "{{ wg_generate_private_key.stdout }}"
+      register: wg_generate_public_key
+      when: not wg_public_key.stat.exists
