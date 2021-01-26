@@ -19,3 +19,5 @@ This folder contains tools, resources, and examples to help with learning how to
 **pulumi-env**: This folder contains an Ansible role to set up a Pulumi working environment.
 
 **src-dst-list**: This set of files shows how to use complex lists with Ansible's "with_items" construct. This allows you to specify, for example, both source and location for a "copy" task in a single block (when both source and destination vary from item to item).
+
+**wireguard**: This folder provides a playbook that performs a very basic Wireguard installation.
