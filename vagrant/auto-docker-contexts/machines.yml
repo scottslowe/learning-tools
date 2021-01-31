@@ -1,0 +1,23 @@
+---
+- aws:
+    type: "t2.medium"
+    user: "ubuntu"
+    key_path: "~/.ssh/aws_rsa"
+    security_groups:
+      - "default"
+      - "test"
+    keypair: "aws_rsa"
+    region: "us-west-2"
+  box:
+    aws: "ami-0c007ac192ba0744b"
+    lv: "generic/ubuntu2004"
+    vb: "ubuntu/focal64"
+    vmw: "generic/ubuntu2004"
+  name: "focal-docker"
+  nested: false
+  nics:
+    - type: "private_network"
+      ip_addr: "dhcp"
+  ram: "512"
+  sync_disabled: true
+  vcpu: "1"
