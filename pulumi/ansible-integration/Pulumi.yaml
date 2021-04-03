@@ -1,0 +1,3 @@
+name: ansible-integration
+runtime: go
+description: A Go Pulumi program to illustrate Ansible integration
