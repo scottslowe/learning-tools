@@ -1,7 +1,7 @@
-resource "aws_internet_gateway" "gw" {
-  vpc_id = aws_vpc.main.id
+resource "aws_internet_gateway" "demo_gw" {
+  vpc_id = var.demo_vpc_id
 
-  tags = {
-    Name = "main"
+  tags {
+    tool = "terraform"
   }
 }
