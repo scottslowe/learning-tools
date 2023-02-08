@@ -6,9 +6,11 @@ This example uses [Go][link-1].
 
 ## Contents
 
-* **main.go**: This Go file contains all the necessary Pulumi code to launch an EC2 instance on your default AWS infrastructure.
+* `go.mod`: This file contains dependencies used by this Go program.
 
-* **README.md**: This file you're currently reading.
+* `main.go`: This Go file contains all the necessary Pulumi code to launch an EC2 instance on your default AWS infrastructure.
+
+* `README.md`: This file you're currently reading.
 
 ## Instructions
 
@@ -16,11 +18,13 @@ These instructions assume you've already installed and configured Pulumi and all
 
 1. Start a new Pulumi project, configured for AWS and Go (you can use `pulumi new` for this step if you prefer).
 
-2. Copy `main.go` from this directory into the directory for the new Pulumi project.
+2. Copy `main.go` and `go.mod` from this directory into the directory for the new Pulumi project.
 
-3. Edit `main.go` as outlined below in the section "Providing Your Own Information".
+3. Run `go mod tidy` in the directory where you copied `main.go` and `go.mod`.
 
-4. Once `main.go` has been appropriately customized for your specific environment, run `pulumi up` and follow the prompts.
+4. Edit `main.go` as outlined below in the section "Providing Your Own Information".
+
+5. Once `main.go` has been appropriately customized for your specific environment, run `pulumi up` and follow the prompts.
 
 Enjoy!
 
