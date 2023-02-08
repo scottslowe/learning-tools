@@ -1,12 +1,20 @@
+# Ignore certain Vagrant-related files and directories
 .bundle/
 .vagrant
-real-adminrc
-*.taskpaper
+
+# Ignore certain Terraform-related files and directories
 *.tfstate
 *.tfstate.backup
 *.tfvars
+.terraform
+
+# Ignore go.sum
+go.sum
+
+# Ignore various other files
+real-adminrc
+*.taskpaper
 consul-*.config.json
 *.defaults
 ssh.cfg
 known_hosts
-.terraform
