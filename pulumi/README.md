@@ -8,4 +8,8 @@ This folder contains environments, resources, and sample code for working with [
 
 **sandbox**: This folder contains Vagrant, Ansible, and Packer resources to create a sandbox for learning Pulumi.
 
+## Related Projects
+
+[talos-aws-pulumi](https://github.com/scottslowe/talos-aws-pulumi): This repository contains Pulumi code (in Golang) to stand up a Talos Linux cluster on AWS.
+
 [link-1]: https://www.pulumi.com/
