@@ -18,3 +18,9 @@ consul-*.config.json
 *.defaults
 ssh.cfg
 known_hosts
+
+# Ignore Pulumi stack files
+Pulumi.*.yaml
+
+# Ignore TypeScript/NodeJS directories
+node_modules/
