@@ -1,45 +1,42 @@
 # Creating AWS Infrastructure for Kubernetes
 
-This set of files provides an example on how to create AWS infrastructure for use with Kubernetes using Pulumi and TypeScript.
+This set of files provides an example on how to create AWS infrastructure for use with Kubernetes using Pulumi and Go.
 
 ## Contents
 
-* **index.ts**: This TypeScript file contains the code used by Pulumi to instantiate the AWS infrastructure.
+* **go.mod**: This file is used by Go to determine modules/libraries that are needed by the program. You shouldn't need to modify this file unless you are modifying the code.
+
+* **main.go**: This is the Go program that Pulumi will compile and execute to create the infrastructure defined in it. Unless you need to modify the infrastructure resources it creates, you shouldn't need to modify this file.
+
+* **Pulumi.yaml**: This is the Pulumi project file. You can modify this file _before creating resources_ if you want to change the name of the project or the description of the project. Don't modify it after you've created resources.
 
 * **README.md**: This file you're currently reading.
 
 ## Instructions
 
-These instructions assume you've already installed and configured Pulumi and all necessary dependencies (Node, NPM, and associated packages, as needed by your particular OS). Please refer to the Pulumi documentation for more details on installation or configuration.
+These instructions assume you've already installed and configured Pulumi, the AWS CLI, Go, and all necessary dependencies (as needed by your particular OS). Please refer to the Pulumi documentation for more details on installation or configuration.
 
-1. Start a new Pulumi project, configured for AWS and TypeScript (you can use `pulumi new` for this step if you prefer).
-
-2. Copy `index.ts` from this directory into the directory for the new Pulumi project.
-
-3. Edit `index.ts` as outlined below in the section "Providing Your Own Information".
-
-4. Once `index.ts` has been appropriately customized for your specific environment, run `pulumi up` and follow the prompts.
-
-5. After Pulumi has finished, you can use the resulting AWS infrastructure to bootstrap a Kubernetes cluster using `kubeadm` as outlined in [this blog post][link-1].
+1. Clone this repository down to your local system, and change into this directory.
+2. Run `pulumi whoami -v` to ensure you are logged into a Pulumi backend. (This project assumes you are using the Pulumi Service.)
+3. If you wish to change the name or description of the Pulumi project, edit `Pulumi.yaml` and provide the desired values.
+4. Run `pulumi stack init` to create a new stack.
+5. Review the configuration values listed in the "Configuration Values" section below, and use `pulumi config set` to set any values that are required or where you don't want to accept the default value.
+6. Run `pulumi up` and follow the prompts.
+7. After Pulumi has finished, you can use the resulting AWS infrastructure to bootstrap a Kubernetes cluster using `kubeadm` as outlined in [this blog post][link-1].
 
 Enjoy!
 
-## Providing Your Own Information
+## Configuration Values
 
-The `index.ts` file provided in this folder **will not work** without providing your own information. This section outlines the changes that need to be made to the `index.ts` file.
+This Pulumi program uses the following configuration values:
 
-1. On line 7, change the value of `keypair` to the name of an AWS keypair to which you have access.
-
-2. On line 21, change the value of `owners` to an appropriate value. This could be the account number for your own AWS account (if looking up a private AMI), or it could be the account number for an account that distributes public AMIs, like the Canonical account that distributes public Ubuntu AMIs.
-
-3. On line 24, change this value to a search string that will find the AMI you're seeking. For example, the search string "ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server*" will generally help locate an x86_64 version of the Ubuntu 18.04 server AMI.
-
-4. On lines 181 and 201, a reference is made to an IAM instance profile. This profile is not created for you; it must be created manually beforehand. If you use a different name for the instance profiles, you must edit these lines accordingly. Refer [here][link-1] for more details on these IAM instance profiles.
-
-These are the only _required_ changes. However, you may wish to make further customizations:
-
-* If you change the value of `cidrBlock` on line 33, then you **must** also adjust the value of `netAddr` on line 46.
-* On line 10, the name of an AWS tag that is required by Kubernetes is specified. Whatever value is included in the last part of this tag name (after the `kubernetes.io/cluster/` portion) should _also_ be used in the `kubeadm` configuration files used to bootstrap Kubernetes.
+* `aws:region`: This is a _required_ configuration value. Set it to the AWS region where you'd like the infrastructure created.
+* `sshKeyPair`: This is a _required_ configuration value. Set it to the name of an AWS key pair present in the region you've specified.
+* `networkCidr`: Specify the CIDR block you'd like to use for the AWS VPC in the form of "X.X.X.X/X". The default value is "10.0.0.0/16". This configuration value is optional.
+* `subnetMask`: Specify the prefix you'd like to use for the subnets created in the VPC. The default value is 22 (i.e., it will create subnets with enough IP addresses for about 1000 instances). This configuration value is optional.
+* `clusterName`: Provide the name of the Kubernetes cluster you plan to provision using `kubeadm`. This is needed to populate tags on various AWS resources in order to support AWS integration with Kubernetes. The default value is "test". This configuration value is optional, but _strongly recommended_.
+* `ownerTagValue`: Use this configuration value to populate an "Owner" tag on all provisioned AWS resources. This configuration value is optional, and the default value is "nodody@nowhere.com".
+* `teamTagValue`: Use this optional configuration value to populate a "Team" tag on all provisioned AWS resources. The default value is "TeamOfOne".
 
 ## License
 

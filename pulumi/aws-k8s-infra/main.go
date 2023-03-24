@@ -366,7 +366,7 @@ func main() {
 
 		// Get AMI ID for bastion host
 		mostRecent := true
-		bastionAmi, err := ec2.LookupAmi(ctx, &ec2.LookupAmiArgs{
+		instanceAmi, err := ec2.LookupAmi(ctx, &ec2.LookupAmiArgs{
 			Owners:     []string{"099720109477"},
 			MostRecent: &mostRecent,
 			Filters: []ec2.GetAmiFilter{
@@ -377,12 +377,12 @@ func main() {
 			},
 		})
 		if err != nil {
-			log.Printf("error looking up bastion AMI: %s", err.Error())
+			log.Printf("error looking up AMI: %s", err.Error())
 		}
 
 		// Launch an instance to serve as bastion host
 		bastion, err := ec2.NewInstance(ctx, "bastion", &ec2.InstanceArgs{
-			Ami:                      pulumi.String(bastionAmi.Id),
+			Ami:                      pulumi.String(instanceAmi.Id),
 			InstanceType:             pulumi.String(bastionAmiType),
 			AssociatePublicIpAddress: pulumi.Bool(true),
 			KeyName:                  pulumi.String(keyPair),
