@@ -1,6 +1,6 @@
 # Learning Tools: Pulumi
 
-This folder contains environments, resources, and sample code for working with [Pulumi][link-1].
+This folder contains environments, resources, and sample code for working with [Pulumi](https://www.pulumi.com).
 
 ## Contents
 
@@ -14,4 +14,4 @@ This folder contains environments, resources, and sample code for working with [
 
 [talos-aws-pulumi](https://github.com/scottslowe/talos-aws-pulumi): This repository contains Pulumi code (in Golang) to stand up a Talos Linux cluster on AWS.
 
-[link-1]: https://www.pulumi.com/
+[talos-azure-pulumi](https://github.com/scottslowe/talos-azure-pulumi): This repository contains Pulumi code (in Golang) to stand up a Talos Linux cluster on Azure.
