@@ -1,0 +1,3 @@
+name: eks-from-scratch
+runtime: go
+description: A Pulumi Go program to stand up an EKS cluster
