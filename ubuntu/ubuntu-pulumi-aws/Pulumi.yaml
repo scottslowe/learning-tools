@@ -1,0 +1,3 @@
+name: ubuntu-pulumi-aws
+runtime: go
+description: A Go Pulumi program to stand up a Debian instance on AWS
