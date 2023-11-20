@@ -5,6 +5,7 @@ go 1.21
 require (
 	github.com/pulumi/pulumi-aws/sdk/v6 v6.8.0
 	github.com/pulumi/pulumi-awsx/sdk/v2 v2.1.1
+	github.com/pulumi/pulumi-tls/sdk/v4 v4.11.1
 	github.com/pulumi/pulumi/sdk/v3 v3.91.1
 )
 

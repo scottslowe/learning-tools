@@ -7,6 +7,7 @@ import (
 
 	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/ec2"
 	awsx "github.com/pulumi/pulumi-awsx/sdk/v2/go/awsx/ec2"
+	"github.com/pulumi/pulumi-tls/sdk/v4/go/tls"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi/config"
 )
@@ -18,7 +19,6 @@ func main() {
 		typeMap := map[string]string{"amd64": "t3a.small", "arm64": "t4g.small", "x86_64": "t3a.small", "x64": "t3a.small"}
 
 		// Retrieve configuration values
-		keyPair := config.Require(ctx, "keypairname")
 		instanceCpuArch, err := config.Try(ctx, "architecture")
 		if err != nil {
 			instanceCpuArch = "arm64"
@@ -107,11 +107,10 @@ func main() {
 		}
 
 		// Get AMI ID for Flatcar Linux instance
-		mostRecent := true
 		amiName := fmt.Sprintf("Flatcar-%s-*", channel)
 		flatcarAmi, err := ec2.LookupAmi(ctx, &ec2.LookupAmiArgs{
 			Owners:     []string{"075585003325"},
-			MostRecent: &mostRecent,
+			MostRecent: pulumi.BoolRef(true),
 			Filters: []ec2.GetAmiFilter{
 				{Name: "name", Values: []string{amiName}},
 				{Name: "root-device-type", Values: []string{"ebs"}},
@@ -123,12 +122,28 @@ func main() {
 			log.Printf("error looking up AMI: %s", err.Error())
 		}
 
+		// Create an SSH key
+		sshKey, err := tls.NewPrivateKey(ctx, "ssh-key", &tls.PrivateKeyArgs{
+			Algorithm: pulumi.String("ED25519"),
+		})
+		if err != nil {
+			log.Printf("error creating SSH key: %s", err.Error())
+		}
+
+		// Create an AWS key pair
+		flatcarKeyPair, err := ec2.NewKeyPair(ctx, "flatcar-key-pair", &ec2.KeyPairArgs{
+			PublicKey: sshKey.PublicKeyOpenssh,
+		})
+		if err != nil {
+			log.Printf("error creating AWS key pair: %s", err.Error())
+		}
+
 		// Launch an instance using Flatcar Linux AMI
 		flatcarInstance, err := ec2.NewInstance(ctx, "flatcar-instance", &ec2.InstanceArgs{
 			Ami:                      pulumi.String(flatcarAmi.Id),
 			InstanceType:             pulumi.String(instanceType),
 			AssociatePublicIpAddress: pulumi.Bool(true),
-			KeyName:                  pulumi.String(keyPair),
+			KeyName:                  flatcarKeyPair.KeyName,
 			SubnetId:                 flatcarVpc.PublicSubnetIds.Index(pulumi.Int(0)),
 			VpcSecurityGroupIds:      pulumi.StringArray{flatcarSg.ID()},
 			Tags: pulumi.StringMap{
@@ -141,6 +156,7 @@ func main() {
 		ctx.Export("instanceId", flatcarInstance.ID())
 		ctx.Export("instancePublicIpAddress", flatcarInstance.PublicIp)
 		ctx.Export("instancePrivateIpAddress", flatcarInstance.PrivateIp)
+		ctx.Export("privateKey", sshKey.PrivateKeyOpenssh)
 
 		return nil
 	})

@@ -6,7 +6,7 @@ import (
 
 	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/ec2"
 	awsx "github.com/pulumi/pulumi-awsx/sdk/v2/go/awsx/ec2"
-	tls "github.com/pulumi/pulumi-tls/sdk/v4/go/tls"
+	"github.com/pulumi/pulumi-tls/sdk/v4/go/tls"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi/config"
 )
@@ -87,11 +87,10 @@ func main() {
 		}
 
 		// Get AMI ID for Ubuntu instance
-		mostRecent := true
 		amiName := fmt.Sprintf("ubuntu/images/hvm-ssd/ubuntu-%s-%s-%s-server*", versionName, versionNum, instanceCpuArch)
 		ubuntuAmi, err := ec2.LookupAmi(ctx, &ec2.LookupAmiArgs{
 			Owners:     []string{"099720109477"},
-			MostRecent: &mostRecent,
+			MostRecent: pulumi.BoolRef(true),
 			Filters: []ec2.GetAmiFilter{
 				{Name: "name", Values: []string{amiName}},
 				{Name: "root-device-type", Values: []string{"ebs"}},
@@ -113,7 +112,6 @@ func main() {
 
 		// Create an AWS key pair
 		ubuntuKeyPair, err := ec2.NewKeyPair(ctx, "ubuntu-key-pair", &ec2.KeyPairArgs{
-			KeyName:   pulumi.String("ubuntu-keypair"),
 			PublicKey: sshKey.PublicKeyOpenssh,
 		})
 		if err != nil {
