@@ -6,6 +6,7 @@ import (
 
 	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/ec2"
 	awsx "github.com/pulumi/pulumi-awsx/sdk/v2/go/awsx/ec2"
+	"github.com/pulumi/pulumi-tls/sdk/v4/go/tls"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi/config"
 )
@@ -17,7 +18,6 @@ func main() {
 		typeMap := map[string]string{"amd64": "t3a.small", "arm64": "t4g.small", "x86_64": "t3a.small", "x64": "t3a.small"}
 
 		// Retrieve configuration values
-		keyPair := config.Require(ctx, "keypairname")
 		instanceCpuArch, err := config.Try(ctx, "architecture")
 		if err != nil {
 			instanceCpuArch = "arm64"
@@ -86,11 +86,10 @@ func main() {
 		}
 
 		// Get AMI ID for Debian instance
-		mostRecent := true
 		amiName := fmt.Sprintf("debian-%d-%s-*", versionNum, instanceCpuArch)
 		debianAmi, err := ec2.LookupAmi(ctx, &ec2.LookupAmiArgs{
 			Owners:     []string{"136693071363"},
-			MostRecent: &mostRecent,
+			MostRecent: pulumi.BoolRef(true),
 			Filters: []ec2.GetAmiFilter{
 				{Name: "name", Values: []string{amiName}},
 				{Name: "root-device-type", Values: []string{"ebs"}},
@@ -102,12 +101,28 @@ func main() {
 			log.Printf("error looking up AMI: %s", err.Error())
 		}
 
+		// Create an SSH key
+		sshKey, err := tls.NewPrivateKey(ctx, "ssh-key", &tls.PrivateKeyArgs{
+			Algorithm: pulumi.String("ED25519"),
+		})
+		if err != nil {
+			log.Printf("error creating SSH key: %s", err.Error())
+		}
+
+		// Create an AWS key pair
+		debianKeyPair, err := ec2.NewKeyPair(ctx, "debian-key-pair", &ec2.KeyPairArgs{
+			PublicKey: sshKey.PublicKeyOpenssh,
+		})
+		if err != nil {
+			log.Printf("error creating AWS key pair: %s", err.Error())
+		}
+
 		// Launch an instance using Debian AMI
 		debianInstance, err := ec2.NewInstance(ctx, "debian-instance", &ec2.InstanceArgs{
 			Ami:                      pulumi.String(debianAmi.Id),
 			InstanceType:             pulumi.String(instanceType),
 			AssociatePublicIpAddress: pulumi.Bool(true),
-			KeyName:                  pulumi.String(keyPair),
+			KeyName:                  debianKeyPair.KeyName,
 			SubnetId:                 debianVpc.PublicSubnetIds.Index(pulumi.Int(0)),
 			VpcSecurityGroupIds:      pulumi.StringArray{debianSg.ID()},
 			Tags: pulumi.StringMap{
@@ -120,6 +135,7 @@ func main() {
 		ctx.Export("instanceId", debianInstance.ID())
 		ctx.Export("instancePublicIpAddress", debianInstance.PublicIp)
 		ctx.Export("instancePrivateIpAddress", debianInstance.PrivateIp)
+		ctx.Export("privateKey", sshKey.PrivateKeyOpenssh)
 
 		return nil
 	})
