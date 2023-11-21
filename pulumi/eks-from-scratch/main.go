@@ -77,6 +77,28 @@ func main() {
 			return err
 		}
 
+		// Install the VPC CNI addon
+		_, err = eks.NewAddon(ctx, "aws-vpc-cni", &eks.AddonArgs{
+			ClusterName:              testCluster.Name,
+			AddonName:                pulumi.String("vpc-cni"),            // Need to verify
+			AddonVersion:             pulumi.String("v1.24.0-eksbuild.1"), // Need to verify
+			ResolveConflictsOnUpdate: pulumi.String("PRESERVE"),
+		})
+		if err != nil {
+			return err
+		}
+
+		// Install the CoreDNS addon
+		_, err = eks.NewAddon(ctx, "coredns", &eks.AddonArgs{
+			ClusterName:              testCluster.Name,
+			AddonName:                pulumi.String("coredns"),            // Need to verify
+			AddonVersion:             pulumi.String("v1.24.0-eksbuild.1"), // Need to verify
+			ResolveConflictsOnUpdate: pulumi.String("PRESERVE"),
+		})
+		if err != nil {
+			return err
+		}
+
 		// Install the AWS EBS CSI addon
 		_, err = eks.NewAddon(ctx, "aws-ebs-csi", &eks.AddonArgs{
 			ClusterName:              testCluster.Name,
