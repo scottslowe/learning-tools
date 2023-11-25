@@ -77,12 +77,45 @@ func main() {
 			return err
 		}
 
+		// Install the VPC CNI addon
+		_, err = eks.NewAddon(ctx, "aws-vpc-cni", &eks.AddonArgs{
+			ClusterName:              testCluster.Name,
+			AddonName:                pulumi.String("vpc-cni"),
+			AddonVersion:             pulumi.String("v1.15.4-eksbuild.1"),
+			ResolveConflictsOnUpdate: pulumi.String("OVERWRITE"),
+		})
+		if err != nil {
+			return err
+		}
+
+		// Install the CoreDNS addon
+		_, err = eks.NewAddon(ctx, "coredns", &eks.AddonArgs{
+			ClusterName:              testCluster.Name,
+			AddonName:                pulumi.String("coredns"),
+			AddonVersion:             pulumi.String("v1.10.1-eksbuild.6"),
+			ResolveConflictsOnUpdate: pulumi.String("OVERWRITE"),
+		})
+		if err != nil {
+			return err
+		}
+
 		// Install the AWS EBS CSI addon
 		_, err = eks.NewAddon(ctx, "aws-ebs-csi", &eks.AddonArgs{
 			ClusterName:              testCluster.Name,
 			AddonName:                pulumi.String("aws-ebs-csi-driver"),
-			AddonVersion:             pulumi.String("v1.24.0-eksbuild.1"),
-			ResolveConflictsOnUpdate: pulumi.String("PRESERVE"),
+			AddonVersion:             pulumi.String("v1.25.0-eksbuild.1"),
+			ResolveConflictsOnUpdate: pulumi.String("OVERWRITE"),
+		})
+		if err != nil {
+			return err
+		}
+
+		// Install the Kube-Proxy addon
+		_, err = eks.NewAddon(ctx, "kube-proxy", &eks.AddonArgs{
+			ClusterName:              testCluster.Name,
+			AddonName:                pulumi.String("kube-proxy"),
+			AddonVersion:             pulumi.String("v1.28.2-eksbuild.2"),
+			ResolveConflictsOnUpdate: pulumi.String("OVERWRITE"),
 		})
 		if err != nil {
 			return err
