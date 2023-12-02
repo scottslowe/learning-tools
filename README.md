@@ -15,6 +15,9 @@ The contents of this repository are organized according to primary technology ar
 * Debian GNU/Linux
 * Docker
 * etcd distributed key-value store
+* Fedora Linux
+* Golang
+* Kubernetes
 * KVM
 * LXC and LXD
 * Network operating systems (JunOS, EOS, Cumulus, etc.)
@@ -22,6 +25,7 @@ The contents of this repository are organized according to primary technology ar
 * Open vSwitch (OVS) and Open Virtual Network (OVN)
 * Packer
 * Photon OS
+* Pulumi (primarily with Golang)
 * The rkt ("Rocket") container runtime
 * SSH
 * Terraform

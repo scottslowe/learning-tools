@@ -1,0 +1,3 @@
+name: aws-k8s-infra
+runtime: go
+description: A Go Pulumi program to stand up AWS infrastructure for Kubernetes
