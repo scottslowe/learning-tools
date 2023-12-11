@@ -2,6 +2,8 @@
 
 Everything in this folder is focused around CentOS Atomic Host.
 
+**NOTE:** CentOS Atomic Host is no longer active and has been replaced by CoreOS. The code, examples, and configurations found in this folder may no longer work.
+
 ## Contents
 
 **docker-cloudinit**: This folder provides an example of how to use `cloud-init` to customize the Docker daemon on a CentOS Atomic Host instance on AWS.
