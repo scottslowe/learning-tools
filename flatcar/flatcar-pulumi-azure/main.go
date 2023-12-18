@@ -4,6 +4,7 @@ import (
 	"github.com/pulumi/pulumi-azure-native-sdk/compute/v2"
 	"github.com/pulumi/pulumi-azure-native-sdk/network/v2"
 	"github.com/pulumi/pulumi-azure-native-sdk/resources/v2"
+	"github.com/pulumi/pulumi-azure-native-sdk/storage/v2"
 	tls "github.com/pulumi/pulumi-tls/sdk/v4/go/tls"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi/config"
@@ -62,6 +63,44 @@ func main() {
 		if err != nil {
 			return err
 		}
+
+		// Create a storage account
+		flatcarSa, err := storage.NewStorageAccount(ctx, "flatcar-storage-acct", &storage.StorageAccountArgs{
+			Kind:              pulumi.String("BlobStorage"),
+			Location:          pulumi.String("westus2"),
+			ResourceGroupName: flatcarRg.Name,
+		})
+		if err != nil {
+			return err
+		}
+
+		// Create a storage container to house the VHD
+		flatcarSc, err := storage.NewBlobContainer(ctx, "flatcar-storage-container", &storage.BlobContainerArgs{
+			AccountName:       flatcarSa.Name,
+			ResourceGroupName: flatcarRg.Name,
+		})
+		if err != nil {
+			return err
+		}
+
+		// Here I'll need to add code to upload the VHD to the
+		// storage container; this needs to be done before
+		// registering the VM image (below)
+
+		// Create a VM image from VHD
+		flatcarImg, err := compute.NewImage(ctx, "flatcar-image", &compute.ImageArgs{
+			ImageName:         pulumi.String("flatcar-container-linux-stable-3602.2.3"),
+			Location:          pulumi.String("westus2"),
+			ResourceGroupName: flatcarRg.Name,
+			StorageProfile: compute.ImageStorageProfileArgs{
+				OsDisk: &compute.ImageOSDiskArgs{
+					BlobUri: pulumi.String("value"),
+					OsState: compute.OperatingSystemStateTypesGeneralized,
+					OsType:  compute.OperatingSystemTypesLinux,
+				},
+				ZoneResilient: pulumi.Bool(true),
+			},
+		})
 
 		// Create a public IP address for the VM
 		flatcarPubIp, err := network.NewPublicIPAddress(ctx, "flatcar-pub-ip", &network.PublicIPAddressArgs{
