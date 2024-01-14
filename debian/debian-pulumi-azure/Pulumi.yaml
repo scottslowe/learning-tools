@@ -1,0 +1,3 @@
+name: debian-pulumi-azure
+runtime: go
+description: An Azure Native Go program to stand up a Debian VM
