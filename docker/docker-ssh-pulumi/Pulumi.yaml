@@ -1,0 +1,3 @@
+name: docker-ssh-pulumi
+runtime: go
+description: A Go Pulumi program to use SSH with a remote Docker host on AWS
