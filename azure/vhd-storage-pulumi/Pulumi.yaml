@@ -1,3 +1,0 @@
-name: vhd-storage-pulumi
-runtime: go
-description: An Azure Native Go Pulumi program to create VHD-related storage resources
