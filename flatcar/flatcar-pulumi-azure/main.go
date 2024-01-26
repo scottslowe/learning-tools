@@ -3,8 +3,6 @@ package main
 import (
     "github.com/pulumi/pulumi-azure-native-sdk/compute/v2"
     "github.com/pulumi/pulumi-azure-native-sdk/network/v2"
-    "github.com/pulumi/pulumi-azure-native-sdk/resources/v2"
-    "github.com/pulumi/pulumi-azure-native-sdk/storage/v2"
     tls "github.com/pulumi/pulumi-tls/sdk/v4/go/tls"
     "github.com/pulumi/pulumi/sdk/v3/go/pulumi"
     "github.com/pulumi/pulumi/sdk/v3/go/pulumi/config"
@@ -19,6 +17,11 @@ func main() {
         if err != nil {
             vmSize = "Standard_A1_v2"
         }
+        rgName, err := cfg.Try("resourcegroup")
+        if err != nil {
+            rgName = "flatcarRg"
+        }
+        imageUrl := cfg.Require("imageurl")
 
         // Set parameters for looking up the VM image
         // osImagePublisher := "kinvolk"
@@ -35,15 +38,9 @@ func main() {
             return err
         }
 
-        // Create a resource group
-        flatcarRg, err := resources.NewResourceGroup(ctx, "flatcar-rg", nil)
-        if err != nil {
-            return err
-        }
-
         // Create a virtual network
         flatcarVnet, err := network.NewVirtualNetwork(ctx, "flatcar-vnet", &network.VirtualNetworkArgs{
-            ResourceGroupName: flatcarRg.Name,
+            ResourceGroupName: rgName,
             AddressSpace: network.AddressSpaceArgs{
                 AddressPrefixes: pulumi.ToStringArray([]string{
                     "10.0.0.0/16",
@@ -57,57 +54,21 @@ func main() {
         // Create a subnet within the virtual network
         flatcarSubnet, err := network.NewSubnet(ctx, "flatcar-subnet", &network.SubnetArgs{
             AddressPrefix:      pulumi.String("10.0.1.0/24"),
-            ResourceGroupName:  flatcarRg.Name,
+            ResourceGroupName:  rgName,
             VirtualNetworkName: flatcarVnet.Name,
         })
         if err != nil {
             return err
         }
 
-        // Create a storage account
-        flatcarSa, err := storage.NewStorageAccount(ctx, "flatcarsa", &storage.StorageAccountArgs{
-            AccessTier:        storage.AccessTierHot,
-            Kind:              pulumi.String("BlobStorage"),
-            Location:          pulumi.String("westus2"),
-            ResourceGroupName: flatcarRg.Name,
-            Sku: &storage.SkuArgs{
-                Name: pulumi.String("Standard_LRS"),
-            },
-        })
-        if err != nil {
-            return err
-        }
-
-        // Create a storage container to house the VHD
-        flatcarSc, err := storage.NewBlobContainer(ctx, "flatcar-sc", &storage.BlobContainerArgs{
-            AccountName:       flatcarSa.Name,
-            ResourceGroupName: flatcarRg.Name,
-        })
-        if err != nil {
-            return err
-        }
-
-        // Define a file asset for the downloaded VHD
-        vhdFile := pulumi.NewFileAsset("./flatcar_production_azure_image.vhd.bz2")
-
-        // Create a storage blob from the VHD
-        flatcarSb, err := storage.NewBlob(ctx, "flatcar-sb", &storage.BlobArgs{
-            AccountName:        flatcarSa.Name,
-            BlobName:           pulumi.String("flatcar-vhd"),
-            ContainerName:      flatcarSc.Name,
-            ResourceGroupName:  flatcarRg.Name,
-            Source:             vhdFile,
-            Type:               storage.BlobTypeBlock,
-        })
-
         // Create a VM image from VHD
         flatcarImg, err := compute.NewImage(ctx, "flatcar-img", &compute.ImageArgs{
             ImageName:         pulumi.String("flatcar-container-linux-stable-3602.2.3"),
             Location:          pulumi.String("westus2"),
-            ResourceGroupName: flatcarRg.Name,
+            ResourceGroupName: rgName,
             StorageProfile: compute.ImageStorageProfileArgs{
                 OsDisk: &compute.ImageOSDiskArgs{
-                    BlobUri: flatcarSb.Url,
+                    BlobUri: imageUrl,
                     OsState: compute.OperatingSystemStateTypesGeneralized,
                     OsType:  compute.OperatingSystemTypesLinux,
                 },
@@ -117,7 +78,7 @@ func main() {
 
         // Create a public IP address for the VM
         flatcarPubIp, err := network.NewPublicIPAddress(ctx, "flatcar-pub-ip", &network.PublicIPAddressArgs{
-            ResourceGroupName:        flatcarRg.Name,
+            ResourceGroupName:        rgName,
             PublicIPAllocationMethod: pulumi.StringPtr("Dynamic"),
         })
         if err != nil {
@@ -126,7 +87,7 @@ func main() {
 
         // Create a security group allowing inbound access over ports 80 (for HTTP) and 22 (for SSH)
         flatcarSg, err := network.NewNetworkSecurityGroup(ctx, "flatcar-sg", &network.NetworkSecurityGroupArgs{
-            ResourceGroupName: flatcarRg.Name,
+            ResourceGroupName: rgName,
             SecurityRules: network.SecurityRuleTypeArray{
                 network.SecurityRuleTypeArgs{
                     Name:                     pulumi.StringPtr("flatcar-allow-ssh"),
@@ -149,7 +110,7 @@ func main() {
 
         // Create a network interface with the virtual network, IP address, and security group
         flatcarNetIface, err := network.NewNetworkInterface(ctx, "flatcar-net-iface", &network.NetworkInterfaceArgs{
-            ResourceGroupName: flatcarRg.Name,
+            ResourceGroupName: rgName,
             NetworkSecurityGroup: &network.NetworkSecurityGroupTypeArgs{
                 Id: flatcarSg.ID(),
             },
@@ -172,7 +133,7 @@ func main() {
 
         // Create the virtual machine
         flatcarVm, err := compute.NewVirtualMachine(ctx, "flatcar-vm", &compute.VirtualMachineArgs{
-            ResourceGroupName: flatcarRg.Name,
+            ResourceGroupName: rgName,
             NetworkProfile: &compute.NetworkProfileArgs{
                 NetworkInterfaces: compute.NetworkInterfaceReferenceArray{
                     &compute.NetworkInterfaceReferenceArgs{
@@ -216,7 +177,7 @@ func main() {
         // Once the machine is created, fetch its IP address and DNS hostname
         address := flatcarVm.ID().ApplyT(func(_ pulumi.ID) network.LookupPublicIPAddressResultOutput {
             return network.LookupPublicIPAddressOutput(ctx, network.LookupPublicIPAddressOutputArgs{
-                ResourceGroupName:   flatcarRg.Name,
+                ResourceGroupName:   rgName,
                 PublicIpAddressName: flatcarPubIp.Name,
             })
         })
