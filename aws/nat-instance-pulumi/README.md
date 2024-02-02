@@ -2,14 +2,11 @@
 
 This [Pulumi](https://www.pulumi.com) project allows users to stand up and configure a NAT instance---instead of a Managed NAT Gateway---for internet connectivity from private subnets in a VPC. This Pulumi program was written in [Go](https://go.dev).
 
-<!--Need to update the rest of this section-->
-
 While not complex, the Pulumi program here does illustrate a few things that might be useful for newer users:
 
-* Use of the `value, ok := map[key]` idiom for checking configuration values passed in from the user
+* How to structure Go code in Pulumi when splitting into multiple files for manageability
 * Supporting both X86_64/AMD64- as well as ARM64-based configurations
 * Dynamically looking up an AMI
-* Modifying the default values for an AWSX VPC to create only public subnets
 * Creating an SSH key
 
 ## Contents
@@ -18,11 +15,15 @@ While not complex, the Pulumi program here does illustrate a few things that mig
 
 * `go.sum`: This file contains checksums for each of the direct and indirect dependencies. The checksum is used to validate that none of them has been modified.
 
-* `main.go`: This Go file is the Pulumi program executed by the `pulumi` CLI, and contains the resource definitions to create a VPC with public and private subnets, a security group to allow SSH access, an EC2 instance configured as a NAT instance, and a Debian-based EC2 instance in one of the private subnets.
+* `main.go`: This Go file is the Pulumi program executed by the `pulumi` CLI. It calls `vpc.go` and `nat.go` to build out all the underlying infrastructure, then launches an Ubuntu-based EC2 instance in a private subnet. This instance can be used to verify connectivity is working through the NAT instance as expected.
+
+* `nat.go`: This Go file contains a function (`buildNat`) that is called by `main.go` to build out the pieces for the NAT instance.
 
 * `Pulumi.yaml`: This is the Pulumi project file.
 
 * `README.md`: This file you're currently reading.
+
+* `vpc.go`: This Go file contains a function (`buildInfrastructure`) that is called by `main.go` to create the VPC, subnets, and route tables. Routes for public subnets are also created here, but routes for private subnets are defined in `nat.go`.
 
 ## Instructions
 
@@ -37,7 +38,6 @@ These instructions assume you've already installed and configured Pulumi and all
 1. (Optional) Run `pulumi config set` to set configuration values that affect the behavior of the Pulumi program. The optional configuration values are:
 
     * `architecture`: Set this to "amd64" or "arm64". The values "x86_64" and "x64" are also supported and will have the same effect as "amd64". The default value is "arm64".
-    * `networkcidr`: Set this to control the CIDR that will be used when the VPC is created. The default value is "10.0.0.0/16".
     * `versionname`: Set this to "bionic", "focal", or "jammy" to control the version of Ubuntu used in the EC2 instance. These version names correspond to the 18.04, 20.04, and 22.04 releases, respectively. The default value is "jammy".
 
 1. Run `pulumi up` to instantiate the resources.

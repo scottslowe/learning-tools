@@ -5,7 +5,6 @@ import (
 	"log"
 
 	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/ec2"
-	awsx "github.com/pulumi/pulumi-awsx/sdk/v2/go/awsx/ec2"
 	"github.com/pulumi/pulumi-tls/sdk/v4/go/tls"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi/config"
@@ -30,10 +29,10 @@ func main() {
 		if instanceCpuArch == "x86_64" || instanceCpuArch == "x64" {
 			instanceCpuArch = "amd64"
 		}
-		vpcNetworkCidr, err := config.Try(ctx, "networkcidr")
-		if err != nil {
-			vpcNetworkCidr = "10.0.0.0/16"
-		}
+		// vpcNetworkCidr, err := config.Try(ctx, "networkcidr")
+		// if err != nil {
+		// 	vpcNetworkCidr = "10.0.0.0/16"
+		// }
 		versionName, err := config.Try(ctx, "version")
 		if err != nil {
 			versionName = "jammy"
@@ -44,22 +43,32 @@ func main() {
 			versionNum = "22.04"
 		}
 
-		// Create a new VPC, subnets, and associated infrastructure
-		testVpc, err := awsx.NewVpc(ctx, "test-vpc", &awsx.VpcArgs{
-			CidrBlock:          &vpcNetworkCidr,
-			EnableDnsHostnames: pulumi.Bool(true),
-			EnableDnsSupport:   pulumi.Bool(true),
-			NatGateways: &awsx.NatGatewayConfigurationArgs{
-				Strategy: awsx.NatGatewayStrategyNone,
-			},
+		// Create an SSH key
+		natSshKey, err := tls.NewPrivateKey(ctx, "nat-ssh-key", &tls.PrivateKeyArgs{
+			Algorithm: pulumi.String("ED25519"),
 		})
 		if err != nil {
-			log.Printf("error creating VPC: %s", err.Error())
+			log.Printf("error creating SSH key: %s", err.Error())
 		}
 
-		// Create a Security Group that we can use to connect to our instance
-		testSg, err := ec2.NewSecurityGroup(ctx, "test-sg", &ec2.SecurityGroupArgs{
-			VpcId: testVpc.VpcId,
+		// Create an AWS key pair
+		natKeyPair, err := ec2.NewKeyPair(ctx, "nat-key-pair", &ec2.KeyPairArgs{
+			PublicKey: natSshKey.PublicKeyOpenssh,
+		})
+		if err != nil {
+			log.Printf("error creating AWS key pair: %s", err.Error())
+		}
+
+		// Create a new VPC, subnets, route tables, and public route
+		// Private routes will be created later
+		buildInfrastructure(ctx)
+
+		// Create the NAT infrastructure
+		buildNat(ctx, natKeyPair.KeyName)
+
+		// Create a security group that we can use to connect to our instance
+		privateSg, err := ec2.NewSecurityGroup(ctx, "private-sg", &ec2.SecurityGroupArgs{
+			VpcId: idOfVpc,
 			Egress: ec2.SecurityGroupEgressArray{
 				ec2.SecurityGroupEgressArgs{
 					Protocol:   pulumi.String("-1"),
@@ -73,7 +82,7 @@ func main() {
 					Protocol:   pulumi.String("tcp"),
 					FromPort:   pulumi.Int(22),
 					ToPort:     pulumi.Int(22),
-					CidrBlocks: pulumi.StringArray{pulumi.String("0.0.0.0/0")},
+					CidrBlocks: pulumi.StringArray{pulumi.String("10.0.0.0/16")},
 				},
 			},
 		})
@@ -97,45 +106,14 @@ func main() {
 			log.Printf("error looking up Ubuntu AMI: %s", err.Error())
 		}
 
-		// Get AMI ID for the fck-nat instance
-		natAmi, err := ec2.LookupAmi(ctx, &ec2.LookupAmiArgs{
-			Owners:     []string{"568608671756"},
-			MostRecent: pulumi.BoolRef(true),
-			Filters: []ec2.GetAmiFilter{
-				{Name: "name", Values: []string{"fck-nat-amzn2-*"}},
-				{Name: "root-device-type", Values: []string{"ebs"}},
-				{Name: "virtualization-type", Values: []string{"hvm"}},
-				{Name: "architecture", Values: []string{"arm64"}},
-			},
-		})
-		if err != nil {
-			log.Printf("error looking up NAT AMI: %s", err.Error())
-		}
-
-		// Create an SSH key
-		sshKey, err := tls.NewPrivateKey(ctx, "ssh-key", &tls.PrivateKeyArgs{
-			Algorithm: pulumi.String("ED25519"),
-		})
-		if err != nil {
-			log.Printf("error creating SSH key: %s", err.Error())
-		}
-
-		// Create an AWS key pair
-		testKeyPair, err := ec2.NewKeyPair(ctx, "test-key-pair", &ec2.KeyPairArgs{
-			PublicKey: sshKey.PublicKeyOpenssh,
-		})
-		if err != nil {
-			log.Printf("error creating AWS key pair: %s", err.Error())
-		}
-
 		// Launch an instance using Ubuntu AMI
 		ubuntuInstance, err := ec2.NewInstance(ctx, "ubuntu-instance", &ec2.InstanceArgs{
 			Ami:                      pulumi.String(ubuntuAmi.Id),
 			InstanceType:             pulumi.String(instanceType),
 			AssociatePublicIpAddress: pulumi.Bool(false),
-			KeyName:                  testKeyPair.KeyName,
-			SubnetId:                 testVpc.PrivateSubnetIds.Index(pulumi.Int(0)),
-			VpcSecurityGroupIds:      pulumi.StringArray{testSg.ID()},
+			KeyName:                  natKeyPair.KeyName,
+			SubnetId:                 privateSubnets[0],
+			VpcSecurityGroupIds:      pulumi.StringArray{privateSg.ID()},
 			Tags: pulumi.StringMap{
 				"Name": pulumi.String("ubuntu-instance"),
 			},
@@ -144,28 +122,11 @@ func main() {
 			log.Printf("error launching instance: %s", err.Error())
 		}
 
-		// Launch a fck-nat instance
-		natInstance, err := ec2.NewInstance(ctx, "nat-instance", &ec2.InstanceArgs{
-			Ami:                      pulumi.String(natAmi.Id),
-			InstanceType:             pulumi.String("t4g.nano"),
-			AssociatePublicIpAddress: pulumi.Bool(true),
-			KeyName:                  testKeyPair.KeyName,
-			SourceDestCheck:          pulumi.BoolPtr(false),
-			SubnetId:                 testVpc.PublicSubnetIds.Index(pulumi.Int(0)),
-			VpcSecurityGroupIds:      pulumi.StringArray{testSg.ID()},
-			Tags: pulumi.StringMap{
-				"Name": pulumi.String("nat-instance"),
-			},
-		})
-		if err != nil {
-			log.Printf("error launching instance: %s", err.Error())
-		}
-
 		// Export some values as stack outputs
 		ctx.Export("instanceId", ubuntuInstance.ID())
-		ctx.Export("natPublicIpAddress", natInstance.PublicIp)
+		ctx.Export("natPublicIpAddress", natPubIpAddr)
 		ctx.Export("instancePrivateIpAddress", ubuntuInstance.PrivateIp)
-		ctx.Export("privateKey", sshKey.PrivateKeyOpenssh)
+		ctx.Export("privateKey", natSshKey.PrivateKeyOpenssh)
 
 		return nil
 	})
