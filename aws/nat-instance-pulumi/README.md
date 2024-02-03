@@ -4,7 +4,7 @@ This [Pulumi](https://www.pulumi.com) project allows users to stand up and confi
 
 While not complex, the Pulumi program here does illustrate a few things that might be useful for newer users:
 
-* How to structure Go code in Pulumi when splitting into multiple files for manageability
+* How to structure Go code in Pulumi when splitting the code into multiple files for manageability
 * Supporting both X86_64/AMD64- as well as ARM64-based configurations
 * Dynamically looking up an AMI
 * Creating an SSH key
@@ -27,7 +27,7 @@ While not complex, the Pulumi program here does illustrate a few things that mig
 
 ## Instructions
 
-These instructions assume you've already installed and configured Pulumi and all necessary dependencies (Go, for this example). Please refer to the Pulumi documentation for more details on installation or configuration.
+These instructions assume you've already installed and configured Pulumi and all necessary dependencies (the AWS CLI and Go, for this example). Please refer to the Pulumi documentation for more details on installation or configuration.
 
 1. Copy the contents of this directory down to a directory on your system, or clone the entire repository and then change into the directory where this section of the cloned repository resides.
 
@@ -42,7 +42,9 @@ These instructions assume you've already installed and configured Pulumi and all
 
 1. Run `pulumi up` to instantiate the resources.
 
-Enjoy! When you're finished, run `pulumi destroy` to tear down all the provisioned resources.
+Once the resources are provisioned, you should be able to SSH to the NAT instance, or use the NAT instance as an SSH bastion host to get to the private instance. The private instance should have full Internet connectivity.
+
+When you're finished, run `pulumi destroy` to tear down all the provisioned resources.
 
 ## License
 
