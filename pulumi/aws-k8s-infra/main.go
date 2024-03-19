@@ -7,8 +7,8 @@ import (
 	"net/netip"
 
 	"github.com/apparentlymart/go-cidr/cidr"
-	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws"
-	"github.com/pulumi/pulumi-aws/sdk/v5/go/aws/ec2"
+	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws"
+	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/ec2"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi/config"
 )
@@ -16,28 +16,24 @@ import (
 func main() {
 	pulumi.Run(func(ctx *pulumi.Context) error {
 		// Get some values from the Pulumi stack configuration
-		keyPair := config.Require(ctx, "sshKeyPair")
-		bastionAmiType, err := config.Try(ctx, "bastionType")
-		if err != nil {
-			bastionAmiType = "t3a.small"
-		}
-		vpcNetworkCidr, err := config.Try(ctx, "networkCidr")
+		keyPair := config.Require(ctx, "sshkeypair")
+		vpcNetworkCidr, err := config.Try(ctx, "networkcidr")
 		if err != nil {
 			vpcNetworkCidr = "10.0.0.0/16"
 		}
-		subnetMask, err := config.TryInt(ctx, "subnetMask")
+		subnetMask, err := config.TryInt(ctx, "subnetmask")
 		if err != nil {
 			subnetMask = 22
 		}
-		clusterName, err := config.Try(ctx, "clusterName")
+		clusterName, err := config.Try(ctx, "clustername")
 		if err != nil {
 			clusterName = "test"
 		}
-		ownerTagValue, err := config.Try(ctx, "ownerTagValue")
+		ownerTagValue, err := config.Try(ctx, "ownertagvalue")
 		if err != nil {
 			ownerTagValue = "nobody@nowhere.com"
 		}
-		teamTagValue, err := config.Try(ctx, "teamTagValue")
+		teamTagValue, err := config.Try(ctx, "teamtagvalue")
 		if err != nil {
 			teamTagValue = "TeamOfOne"
 		}
@@ -110,7 +106,7 @@ func main() {
 				log.Printf("error calculating subnet CIDR: %s", err.Error())
 				return err
 			}
-			subnet, err := ec2.NewSubnet(ctx, fmt.Sprintf("%s-public-%d", clusterName, idx), &ec2.SubnetArgs{
+			subnet, err := ec2.NewSubnet(ctx, fmt.Sprintf("public-%d", idx), &ec2.SubnetArgs{
 				VpcId:               vpc.ID(),
 				AvailabilityZone:    pulumi.String(azNames[idx]),
 				CidrBlock:           pulumi.String(subnetCidr.String()),
@@ -147,7 +143,7 @@ func main() {
 		ctx.Export("gatewayId", gw.ID())
 
 		// Adopt the default route table in the new VPC
-		defrt, err := ec2.NewDefaultRouteTable(ctx, "def-rt", &ec2.DefaultRouteTableArgs{
+		defRt, err := ec2.NewDefaultRouteTable(ctx, "def-rt", &ec2.DefaultRouteTableArgs{
 			DefaultRouteTableId: vpc.DefaultRouteTableId,
 			Tags: pulumi.StringMap{
 				"Name":  pulumi.Sprintf("%s-def-rt", clusterName),
@@ -159,11 +155,11 @@ func main() {
 		if err != nil {
 			log.Printf("error adopting default route table: %s", err.Error())
 		}
-		ctx.Export("defaultRoute", defrt.ID())
+		ctx.Export("defaultRoute", defRt.ID())
 
 		// Create a route for Internet access in the default route table
 		route, err := ec2.NewRoute(ctx, "inet-route", &ec2.RouteArgs{
-			RouteTableId:         defrt.ID(),
+			RouteTableId:         defRt.ID(),
 			DestinationCidrBlock: pulumi.String("0.0.0.0/0"),
 			GatewayId:            gw.ID(),
 		})
@@ -179,7 +175,7 @@ func main() {
 			if err != nil {
 				log.Printf("error calculating subnet CIDR: %s", err.Error())
 			}
-			subnet, err := ec2.NewSubnet(ctx, fmt.Sprintf("%s-private-%d", clusterName, idx), &ec2.SubnetArgs{
+			subnet, err := ec2.NewSubnet(ctx, fmt.Sprintf("private-%d", idx), &ec2.SubnetArgs{
 				VpcId:               vpc.ID(),
 				AvailabilityZone:    pulumi.String(azNames[idx]),
 				CidrBlock:           pulumi.String(subnetCidr.String()),
@@ -199,75 +195,11 @@ func main() {
 		}
 		ctx.Export("privSubnetIds", pulumi.StringArray(privSubnetIds))
 
-		// Create/allocate an Elastic IP address for the NAT gateway for private subnets
-		eip, err := ec2.NewEip(ctx, "natgw-eip", &ec2.EipArgs{
-			Vpc: pulumi.Bool(true),
-			Tags: pulumi.StringMap{
-				"Name":  pulumi.Sprintf("%s-natgw-eip", clusterName),
-				k8sTag:  pulumi.String("shared"),
-				"Owner": pulumi.String(ownerTagValue),
-				"Team":  pulumi.String(teamTagValue),
-			},
-		})
-		if err != nil {
-			log.Printf("error creating EIP: %s", err.Error())
-		}
-		ctx.Export("EIP", eip.AllocationId)
-
-		// Create a NAT gateway for the private subnets
-		// All private subnets share one NAT Gateway
-		natgw, err := ec2.NewNatGateway(ctx, "natgw", &ec2.NatGatewayArgs{
-			AllocationId: eip.ID(),
-			SubnetId:     pubSubnetIds[0],
-			Tags: pulumi.StringMap{
-				"Name":  pulumi.Sprintf("%s-natgw", clusterName),
-				k8sTag:  pulumi.String("shared"),
-				"Owner": pulumi.String(ownerTagValue),
-				"Team":  pulumi.String(teamTagValue),
-			},
-		}, pulumi.DependsOn([]pulumi.Resource{eip}))
-		if err != nil {
-			log.Printf("error creating NAT gateway: %s", err.Error())
-		}
-		ctx.Export("natGateway", natgw.ID())
-
-		// Create a new route table for Internet access from private subnets
-		privrt, err := ec2.NewRouteTable(ctx, "priv-rt", &ec2.RouteTableArgs{
-			VpcId: vpc.ID(),
-			Tags: pulumi.StringMap{
-				"Name":  pulumi.Sprintf("%s-priv-rt", clusterName),
-				k8sTag:  pulumi.String("shared"),
-				"Owner": pulumi.String(ownerTagValue),
-				"Team":  pulumi.String(teamTagValue),
-			},
-			Routes: ec2.RouteTableRouteArray{
-				&ec2.RouteTableRouteArgs{
-					CidrBlock:    pulumi.String("0.0.0.0/0"),
-					NatGatewayId: natgw.ID(),
-				},
-			},
-		})
-		if err != nil {
-			log.Printf("error creating private route table: %s", err.Error())
-		}
-		ctx.Export("privRouteTableId", privrt.ID())
-
-		// Associate the private subnets with the NAT gateway route table
-		for idx := 0; idx < numOfAZs; idx++ {
-			_, err := ec2.NewRouteTableAssociation(ctx, fmt.Sprintf("priv-rta-%d", idx), &ec2.RouteTableAssociationArgs{
-				SubnetId:     privSubnetIds[idx],
-				RouteTableId: privrt.ID(),
-			})
-			if err != nil {
-				log.Printf("error associating private subnet with route table: %s", err.Error())
-			}
-		}
-
-		// Create a security group for traffic to the SSH bastion host
-		bastionSecGrp, err := ec2.NewSecurityGroup(ctx, "bastion-sg", &ec2.SecurityGroupArgs{
-			Name:        pulumi.Sprintf("%s-bastion-sg", clusterName),
+		// Create a security group for the NAT instance/bastion host
+		edgeSecGrp, err := ec2.NewSecurityGroup(ctx, "edge-sg", &ec2.SecurityGroupArgs{
+			Name:        pulumi.Sprintf("%s-edge-sg", clusterName),
 			VpcId:       vpc.ID(),
-			Description: pulumi.String("Allows SSH traffic to bastion hosts"),
+			Description: pulumi.String("Allows inbound SSH and WG traffic"),
 			Ingress: ec2.SecurityGroupIngressArray{
 				ec2.SecurityGroupIngressArgs{
 					Protocol:    pulumi.String("tcp"),
@@ -283,6 +215,13 @@ func main() {
 					Description: pulumi.String("Allow Wireguard VPN (UDP 51280) from anywhere"),
 					CidrBlocks:  pulumi.StringArray{pulumi.String("0.0.0.0/0")},
 				},
+				ec2.SecurityGroupIngressArgs{
+					Protocol:    pulumi.String("-1"),
+					ToPort:      pulumi.Int(0),
+					FromPort:    pulumi.Int(0),
+					Description: pulumi.String("Allow all traffic from VPC network CIDR"),
+					CidrBlocks:  pulumi.StringArray{pulumi.String(vpcNetworkCidr)},
+				},
 			},
 			Egress: ec2.SecurityGroupEgressArray{
 				ec2.SecurityGroupEgressArgs{
@@ -294,7 +233,7 @@ func main() {
 				},
 			},
 			Tags: pulumi.StringMap{
-				"Name":  pulumi.Sprintf("%s-bastion-sg", clusterName),
+				"Name":  pulumi.Sprintf("%s-edge-sg", clusterName),
 				k8sTag:  pulumi.String("shared"),
 				"Owner": pulumi.String(ownerTagValue),
 				"Team":  pulumi.String(teamTagValue),
@@ -303,7 +242,77 @@ func main() {
 		if err != nil {
 			log.Printf("error creating security group: %s", err.Error())
 		}
-		ctx.Export("bastionSecGrpId", bastionSecGrp.ID())
+		ctx.Export("edgeSecGrpId", edgeSecGrp.ID())
+
+		// Get AMI ID for the NAT instance
+		natAmi, err := ec2.LookupAmi(ctx, &ec2.LookupAmiArgs{
+			Owners:     []string{"568608671756"},
+			MostRecent: pulumi.BoolRef(true),
+			Filters: []ec2.GetAmiFilter{
+				{Name: "name", Values: []string{"fck-nat-amzn2-*"}},
+				{Name: "root-device-type", Values: []string{"ebs"}},
+				{Name: "virtualization-type", Values: []string{"hvm"}},
+				{Name: "architecture", Values: []string{"arm64"}},
+			},
+		})
+		if err != nil {
+			log.Printf("error looking up NAT AMI: %s", err.Error())
+		}
+
+		// Launch a fck-nat instance
+		natInstance, err := ec2.NewInstance(ctx, "nat-instance", &ec2.InstanceArgs{
+			Ami:                      pulumi.String(natAmi.Id),
+			InstanceType:             pulumi.String("t4g.nano"),
+			AssociatePublicIpAddress: pulumi.Bool(true),
+			KeyName:                  pulumi.String(keyPair),
+			SourceDestCheck:          pulumi.BoolPtr(false),
+			SubnetId:                 pubSubnetIds[0],
+			VpcSecurityGroupIds:      pulumi.StringArray{edgeSecGrp.ID()},
+			Tags: pulumi.StringMap{
+				"Name":  pulumi.String("nat-instance"),
+				k8sTag:  pulumi.String("shared"),
+				"Owner": pulumi.String(ownerTagValue),
+				"Team":  pulumi.String(teamTagValue),
+			},
+		})
+		if err != nil {
+			log.Printf("error launching instance: %s", err.Error())
+		}
+		ctx.Export("natInstanceId", natInstance.ID())
+		ctx.Export("natPublicIpAddress", natInstance.PublicIp)
+		ctx.Export("natPrivateIpAddress", natInstance.PrivateIp)
+
+		// Create a new route table for Internet access from private subnets
+		privrt, err := ec2.NewRouteTable(ctx, "priv-rt", &ec2.RouteTableArgs{
+			VpcId: vpc.ID(),
+			Tags: pulumi.StringMap{
+				"Name":  pulumi.Sprintf("%s-priv-rt", clusterName),
+				k8sTag:  pulumi.String("shared"),
+				"Owner": pulumi.String(ownerTagValue),
+				"Team":  pulumi.String(teamTagValue),
+			},
+			Routes: ec2.RouteTableRouteArray{
+				&ec2.RouteTableRouteArgs{
+					CidrBlock:          pulumi.String("0.0.0.0/0"),
+					NetworkInterfaceId: natInstance.PrimaryNetworkInterfaceId.ToStringOutput(),
+				},
+			},
+		})
+		if err != nil {
+			log.Printf("error creating private route table: %s", err.Error())
+		}
+		ctx.Export("privRouteTableId", privrt.ID())
+
+		// Associate the private subnets with the NAT instance route table
+		for idx := 0; idx < numOfAZs; idx++ {
+			_, err := ec2.NewRouteTableAssociation(ctx, fmt.Sprintf("priv-rta-%d", idx), &ec2.RouteTableAssociationArgs{
+				SubnetId:     privSubnetIds[idx],
+				RouteTableId: privrt.ID(),
+			})
+			if err != nil {
+				log.Printf("error associating private subnet with route table: %s", err.Error())
+			}
+		}
 
 		// Create a security group for Kubernetes nodes in this VPC
 		nodeSecGrp, err := ec2.NewSecurityGroup(ctx, "node-sg", &ec2.SecurityGroupArgs{
@@ -312,11 +321,11 @@ func main() {
 			Description: pulumi.String("Allows traffic between and among K8s nodes"),
 			Ingress: ec2.SecurityGroupIngressArray{
 				ec2.SecurityGroupIngressArgs{
-					Protocol:       pulumi.String("tcp"),
-					ToPort:         pulumi.Int(22),
-					FromPort:       pulumi.Int(22),
-					Description:    pulumi.String("Allow inbound SSH (TCP 22) from bastion hosts"),
-					SecurityGroups: pulumi.StringArray{bastionSecGrp.ID()},
+					Protocol:       pulumi.String("-1"),
+					ToPort:         pulumi.Int(0),
+					FromPort:       pulumi.Int(0),
+					Description:    pulumi.String("Allow all traffic from edge security group"),
+					SecurityGroups: pulumi.StringArray{edgeSecGrp.ID()},
 				},
 				ec2.SecurityGroupIngressArgs{
 					Protocol:    pulumi.String("-1"),
@@ -363,45 +372,6 @@ func main() {
 			log.Printf("error creating security group: %s", err.Error())
 		}
 		ctx.Export("k8sSecGrpId", k8sSecGrp.ID())
-
-		// Get AMI ID for bastion host
-		mostRecent := true
-		instanceAmi, err := ec2.LookupAmi(ctx, &ec2.LookupAmiArgs{
-			Owners:     []string{"099720109477"},
-			MostRecent: &mostRecent,
-			Filters: []ec2.GetAmiFilter{
-				{Name: "name", Values: []string{"ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server*"}},
-				{Name: "root-device-type", Values: []string{"ebs"}},
-				{Name: "virtualization-type", Values: []string{"hvm"}},
-				{Name: "architecture", Values: []string{"x86_64"}},
-			},
-		})
-		if err != nil {
-			log.Printf("error looking up AMI: %s", err.Error())
-		}
-
-		// Launch an instance to serve as bastion host
-		bastion, err := ec2.NewInstance(ctx, "bastion", &ec2.InstanceArgs{
-			Ami:                      pulumi.String(instanceAmi.Id),
-			InstanceType:             pulumi.String(bastionAmiType),
-			AssociatePublicIpAddress: pulumi.Bool(true),
-			KeyName:                  pulumi.String(keyPair),
-			SubnetId:                 pubSubnetIds[0],
-			SourceDestCheck:          pulumi.Bool(false),
-			VpcSecurityGroupIds:      pulumi.StringArray{bastionSecGrp.ID()},
-			Tags: pulumi.StringMap{
-				"Name":  pulumi.Sprintf("bastion-%s", clusterName),
-				k8sTag:  pulumi.String("shared"),
-				"Owner": pulumi.String(ownerTagValue),
-				"Team":  pulumi.String(teamTagValue),
-			},
-		})
-		if err != nil {
-			log.Printf("error launching instance: %s", err.Error())
-		}
-		ctx.Export("bastionInstanceId", bastion.ID())
-		ctx.Export("bastionPublicIpAddress", bastion.PublicIp)
-		ctx.Export("bastionPrivateIpAddress", bastion.PrivateIp)
 
 		return nil
 	})
