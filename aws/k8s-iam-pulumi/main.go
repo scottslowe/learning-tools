@@ -2,13 +2,14 @@ package main
 
 import (
 	"encoding/json"
+
 	"github.com/pulumi/pulumi-aws/sdk/v6/go/aws/iam"
 	"github.com/pulumi/pulumi/sdk/v3/go/pulumi"
 )
 
 func main() {
 	pulumi.Run(func(ctx *pulumi.Context) error {
-		// Create a policy for Kubernetes control plane nodes
+		// Create a policy for the Kubernetes control plane nodes
 		tmpJSON0, err := json.Marshal(map[string]interface{}{
 			"Version": "2012-10-17",
 			"Statement": []map[string]interface{}{
@@ -80,10 +81,8 @@ func main() {
 			return err
 		}
 		json0 := string(tmpJSON0)
-
-		// Define IAM policy using JSON object previously defined
-		cpInstancePolicy, err := iam.NewPolicy(ctx, "cp-instance-policy", &iam.PolicyArgs{
-			Name:        pulumi.String("control-plane-instance-policy"),
+		controlPlanePolicy, err := iam.NewPolicy(ctx, "control-plane-policy", &iam.PolicyArgs{
+			Name:        pulumi.String("control-plane-policy"),
 			Path:        pulumi.String("/"),
 			Description: pulumi.String("Policy for Kubernetes control plane nodes to interact with AWS API"),
 			Policy:      pulumi.String(json0),
@@ -91,9 +90,9 @@ func main() {
 		if err != nil {
 			return err
 		}
-		ctx.Export("cpInstancePolicyArn", cpInstancePolicy.Arn)
+		ctx.Export("controlPlanePolicyArn", controlPlanePolicy.Arn)
 
-		// Create a policy for Kubernetes control plane nodes
+		// Create a policy for the Kubernetes worker nodes
 		tmpJSON1, err := json.Marshal(map[string]interface{}{
 			"Version": "2012-10-17",
 			"Statement": []map[string]interface{}{
@@ -118,10 +117,8 @@ func main() {
 			return err
 		}
 		json1 := string(tmpJSON1)
-
-		// Define IAM policy using JSON object previously defined
-		nodeInstancePolicy, err := iam.NewPolicy(ctx, "node-instance-policy", &iam.PolicyArgs{
-			Name:        pulumi.String("node-instance-policy"),
+		workerNodePolicy, err := iam.NewPolicy(ctx, "worker-node-policy", &iam.PolicyArgs{
+			Name:        pulumi.String("worker-node-policy"),
 			Path:        pulumi.String("/"),
 			Description: pulumi.String("Policy for Kubernetes worker nodes to interact with AWS API"),
 			Policy:      pulumi.String(json1),
@@ -129,7 +126,81 @@ func main() {
 		if err != nil {
 			return err
 		}
-		ctx.Export("nodeInstancePolicyArn", nodeInstancePolicy.Arn)
+		ctx.Export("workerNodePolicyArn", workerNodePolicy.Arn)
+
+		// Create formatted JSON for a role assumption policy
+		tmpJSON2, err := json.Marshal(map[string]interface{}{
+			"Version": "2012-10-17",
+			"Statement": []map[string]interface{}{
+				map[string]interface{}{
+					"Action": "sts:AssumeRole",
+					"Effect": "Allow",
+					"Principal": map[string]interface{}{
+						"Service": "ec2.amazonaws.com",
+					},
+				},
+			},
+		})
+		if err != nil {
+			return err
+		}
+		json2 := string(tmpJSON2)
+
+		// Define a role for the Kubernetes control plane nodes
+		controlPlaneRole, err := iam.NewRole(ctx, "control-plane-role", &iam.RoleArgs{
+			AssumeRolePolicy: pulumi.String(json2),
+			Name:             pulumi.String("control-plane-role"),
+		})
+		if err != nil {
+			return err
+		}
+
+		// Attach the control plane policy to the control plane role
+		_, err = iam.NewRolePolicyAttachment(ctx, "cp-policy-attach", &iam.RolePolicyAttachmentArgs{
+			PolicyArn: controlPlanePolicy.Arn,
+			Role:      controlPlaneRole.Name,
+		})
+		if err != nil {
+			return err
+		}
+
+		// Create an instance profile using the control plane role
+		cpInstanceProfile, err := iam.NewInstanceProfile(ctx, "cp-instance-profile", &iam.InstanceProfileArgs{
+			Name: pulumi.String("control-plane-instance-profile"),
+			Role: controlPlaneRole.Name,
+		})
+		if err != nil {
+			return err
+		}
+		ctx.Export("cpInstanceProfileName", cpInstanceProfile.Name)
+
+		// Define a role for the Kubernetes worker nodes
+		workerNodeRole, err := iam.NewRole(ctx, "worker-node-role", &iam.RoleArgs{
+			AssumeRolePolicy: pulumi.String(json2),
+			Name:             pulumi.String("worker-node-role"),
+		})
+		if err != nil {
+			return err
+		}
+
+		// Attach the worker node policy to the worker node role
+		_, err = iam.NewRolePolicyAttachment(ctx, "worker-policy-attach", &iam.RolePolicyAttachmentArgs{
+			PolicyArn: workerNodePolicy.Arn,
+			Role:      workerNodeRole.Name,
+		})
+		if err != nil {
+			return err
+		}
+
+		// Create an instance profile using the control plane role
+		wkrInstanceProfile, err := iam.NewInstanceProfile(ctx, "wkr-instance-profile", &iam.InstanceProfileArgs{
+			Name: pulumi.String("worker-node-instance-profile"),
+			Role: workerNodeRole.Name,
+		})
+		if err != nil {
+			return err
+		}
+		ctx.Export("wkrInstanceProfileName", wkrInstanceProfile.Name)
 
 		return nil
 	})
