@@ -8,9 +8,6 @@
 *.tfvars
 .terraform
 
-# Ignore go.sum
-go.sum
-
 # Ignore various other files
 real-adminrc
 *.taskpaper
@@ -19,8 +16,9 @@ consul-*.config.json
 ssh.cfg
 known_hosts
 
-# Ignore Pulumi stack files
+# Ignore Pulumi stack files and Pulumi state directories
 Pulumi.*.yaml
+.pulumi
 
 # Ignore TypeScript/NodeJS directories
 node_modules/
