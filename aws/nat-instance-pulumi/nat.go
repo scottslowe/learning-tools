@@ -47,7 +47,7 @@ func buildNat(ctx *pulumi.Context, key pulumi.StringInput) (err error) {
 		Owners:     []string{"568608671756"},
 		MostRecent: pulumi.BoolRef(true),
 		Filters: []ec2.GetAmiFilter{
-			{Name: "name", Values: []string{"fck-nat-amzn2-*"}},
+			{Name: "name", Values: []string{"fck-nat-al2023-*"}},
 			{Name: "root-device-type", Values: []string{"ebs"}},
 			{Name: "virtualization-type", Values: []string{"hvm"}},
 			{Name: "architecture", Values: []string{"arm64"}},
